@@ -1,0 +1,145 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+
+/* 360 Viewer styles */
+.viewer-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.hotspot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hotspot:hover {
+  transform: translate(-50%, -50%) scale(1.2);
+}
+
+/* ==========================================
+   ENTERPRISE ANIMATED HOTSPOT KEYFRAMES
+   ========================================== */
+
+/* 1. Pulse Ring - expanding circle pulse */
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+/* 2. Bounce Marker - soft vertical bounce */
+@keyframes bounce-marker {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* 3. Glow Beacon - subtle glow fade in/out */
+@keyframes glow-beacon {
+  0%, 100% { filter: drop-shadow(0 0 2px currentColor); }
+  50% { filter: drop-shadow(0 0 12px currentColor); }
+}
+
+/* 4. Ripple Target - radar ripple circles */
+@keyframes ripple-target {
+  0% { transform: scale(0.5); opacity: 1; }
+  100% { transform: scale(3); opacity: 0; }
+}
+
+/* 5. Floating Label - icon with floating text badge */
+@keyframes floating-label {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* 6. Direction Arrow Sweep - animated arrow for navigation */
+@keyframes arrow-sweep {
+  0% { transform: translateX(-10px); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateX(10px); opacity: 0; }
+}
+
+/* 7. Breathing Dot - scale in/out smooth */
+@keyframes breathing-dot {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+}
+
+/* 8. Orbit Halo - rotating ring around icon */
+@keyframes orbit-halo {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 9. Ping Locator - fast attention ping */
+@keyframes ping-locator {
+  0% { transform: scale(1); opacity: 1; }
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+
+/* 10. Spotlight Cone - directional light effect */
+@keyframes spotlight-cone {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+
+/* 11. Tooltip Reveal - text appears on hover (handled via CSS transitions) */
+
+/* 12. Progress Marker - circular progress indicator */
+@keyframes progress-marker {
+  0% { stroke-dashoffset: 100; }
+  100% { stroke-dashoffset: 0; }
+}
+
+/* 13. Warning Flash - red pulse for hazards */
+@keyframes warning-flash {
+  0%, 100% { opacity: 1; filter: brightness(1); }
+  50% { opacity: 0.5; filter: brightness(2); }
+}
+
+/* 14. Checkmark Success - green animated confirmation */
+@keyframes checkmark-success {
+  0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+  50% { transform: scale(1.2) rotate(-45deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}

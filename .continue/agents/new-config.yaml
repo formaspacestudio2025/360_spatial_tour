@@ -1,0 +1,62 @@
+name: Local Ollama Multi-Model Config
+version: 1.0.0
+schema: v1
+
+models:
+  # Best overall coding / agent tasks
+  - name: Qwen Coder 7B
+    provider: ollama
+    model: qwen2.5-coder:7b
+    apiBase: http://localhost:11434
+
+  # Fast lightweight option
+  - name: Qwen Coder 3B
+    provider: ollama
+    model: qwen2.5-coder:3b
+    apiBase: http://localhost:11434
+
+  # Good for chat / explanations
+  - name: DeepSeek Coder 6.7B
+    provider: ollama
+    model: deepseek-coder:6.7b
+    apiBase: http://localhost:11434
+
+# Optional tab autocomplete model
+tabAutocompleteModel:
+  name: Qwen Coder 3B
+  provider: ollama
+  model: qwen2.5-coder:3b
+  apiBase: http://localhost:11434
+
+# Optional embeddings model (install separately if desired)
+# ollama pull nomic-embed-text
+embeddingsProvider:
+  provider: ollama
+  model: nomic-embed-text
+  apiBase: http://localhost:11434
+
+context:
+  - provider: code
+  - provider: docs
+  - provider: terminal
+  - provider: diff
+  - provider: folder
+
+mcpServers: []
+
+prompts:
+  - name: explain
+    description: Explain selected code clearly
+    prompt: Explain the selected code, purpose, risks, and improvements.
+
+  - name: refactor
+    description: Improve selected code
+    prompt: Refactor the selected code for readability, performance, and maintainability.
+
+  - name: tests
+    description: Create tests
+    prompt: Generate useful unit tests for the selected code.
+
+  - name: bugfix
+    description: Fix issue
+    prompt: Find likely bugs in the selected code and provide corrected code.
