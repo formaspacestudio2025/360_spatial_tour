@@ -1,49 +1,21 @@
-import { db } from '../database';
-import { Issue, CreateIssueData } from '../types/issue';
+import db from '../config/database';
 
-export class IssueService {
-  /**
-   * Create a new issue
-   */
-  async create(data: CreateIssueData): Promise<Issue> {
-    const id = generateId();
-    const stmt = db.prepare(`
-      INSERT INTO issues (id, title, description, status, priority)
-      VALUES (?, ?, ?, ?, ?)
-    `);
-    stmt.run(id, data.title, data.description, data.status, data.priority);
-    return { id, ...data };
-  }
+interface Issue {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+}
 
-  /**
-   * Update an issue
-   */
-  async update(id: string, data: Partial<Issue>): Promise<Issue> {
-    const stmt = db.prepare(`
-      UPDATE issues SET 
-        title = ?,
-        description = ?,
-        status = ?,
-        priority = ?
-      WHERE id = ?
-    `);
-    stmt.run(data.title, data.description, data.status, data.priority, id);
-    return { ...data, id };
-  }
+export async function createIssue(data: { title: string; description: string; status: string }): Promise<Issue> {
+  const id = generateId();
+  const sql = 'INSERT INTO issues (id, title, description, status) VALUES (?, ?, ?, ?)';
+  await db.prepare(sql).run(id, data.title, data.description, data.status);
+  return { id, ...data };
+}
 
-  /**
-   * Delete an issue
-   */
-  async delete(id: string): Promise<void> {
-    const stmt = db.prepare('DELETE FROM issues WHERE id = ?');
-    stmt.run(id);
-  }
-
-  /**
-   * List all issues
-   */
-  async list(): Promise<Issue[]> {
-    const stmt = db.prepare('SELECT * FROM issues');
-    return stmt.all() as Issue[];
-  }
+export async function getIssues(): Promise<Issue[]> {
+  const sql = 'SELECT * FROM issues';
+  const issues = await db.all(sql);
+  return issues;
 }
