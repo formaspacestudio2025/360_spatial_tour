@@ -8,6 +8,8 @@ interface IssueListPageProps {
 
 const IssueListPage: React.FC<IssueListPageProps> = ({ apiUrl }) => {
   const [issues, setIssues] = useState<Issue[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchIssues = async () => {
@@ -16,11 +18,17 @@ const IssueListPage: React.FC<IssueListPageProps> = ({ apiUrl }) => {
         setIssues(response.data);
       } catch (error) {
         console.error('Error fetching issues:', error);
+        setError('Failed to fetch issues. Please try again.');
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchIssues();
   }, [apiUrl]);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
 
   return (
     <div>

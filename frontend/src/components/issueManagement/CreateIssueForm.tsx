@@ -8,6 +8,8 @@ interface CreateIssueFormProps {
 const CreateIssueForm: React.FC<CreateIssueFormProps> = ({ apiUrl }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -15,13 +17,19 @@ const CreateIssueForm: React.FC<CreateIssueFormProps> = ({ apiUrl }) => {
       await axios.post(apiUrl, { title, description });
       setTitle('');
       setDescription('');
+      setError(null);
+      setSuccessMessage('Issue created successfully!');
     } catch (error) {
       console.error('Error creating issue:', error);
+      setError('Failed to create issue. Please try again.');
+      setSuccessMessage(null);
     }
   };
 
   return (
     <form onSubmit={handleSubmit}>
+      {successMessage && <p className="text-green-500">{successMessage}</p>}
+      {error && <p className="text-red-500">{error}</p>}
       <div>
         <label htmlFor="title">Title:</label>
         <input
