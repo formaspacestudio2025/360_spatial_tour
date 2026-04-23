@@ -1,4 +1,5 @@
 import db from '../config/database';
+import { generateId } from '../utils/generateId';
 
 interface Issue {
   id: string;
