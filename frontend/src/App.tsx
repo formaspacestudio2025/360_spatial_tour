@@ -4,6 +4,7 @@ import WalkthroughViewer from './pages/WalkthroughViewer';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import IssueListPage from './components/issueManagement/IssueListPage';
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/walkthrough/:id" element={<ProtectedRoute><WalkthroughViewer /></ProtectedRoute>} />
+      <Route path="/issues" element={<ProtectedRoute><IssueListPage apiUrl="/api/issues" /></ProtectedRoute>} />
     </Routes>
   );
 }

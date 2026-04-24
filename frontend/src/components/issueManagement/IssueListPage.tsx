@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Issue } from '../types'; // Assuming you have a type definition for Issue
+import { Issue } from '../../types';
 
 interface IssueListPageProps {
   apiUrl: string;
@@ -36,7 +36,8 @@ const IssueListPage: React.FC<IssueListPageProps> = ({ apiUrl }) => {
       <ul>
         {issues.map((issue) => (
           <li key={issue.id}>
-            {issue.title} - {issue.status}
+            {issue.title} - <span className={`status-${issue.status}`}>{issue.status}</span>
+            <span> ({issue.severity})</span>
           </li>
         ))}
       </ul>

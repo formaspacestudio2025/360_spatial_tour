@@ -215,7 +215,7 @@ export class AIService {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
-    const insertMany = db.transaction((tags) => {
+    const insertMany = db.transaction((tags: AITag[]) => {
       for (const tag of tags) {
         stmt.run(
           tag.id,

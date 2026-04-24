@@ -13,7 +13,7 @@ import dashboardRoutes from './routes/dashboard';
 import hotspotRoutes from './routes/hotspots';
 import hotspotMediaRoutes from './routes/hotspot-media';
 import hotspotLinkRoutes from './routes/hotspot-links';
-import issueRoutes from './routes/issues';  // Add this line
+import apiRoutes from './routes';
 
 // Load environment variables
 dotenv.config();
@@ -51,7 +51,7 @@ app.use('/api', hotspotRoutes);
 app.use('/api', hotspotMediaRoutes);
 app.use('/api', hotspotLinkRoutes);
 app.use('/api', aiRoutes);
-app.use('/api/issues', issueRoutes);  // Add this line
+app.use('/api', apiRoutes);
 
 // Error handling
 app.use(notFoundHandler);

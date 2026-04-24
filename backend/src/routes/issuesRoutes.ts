@@ -9,8 +9,9 @@ router.post('/', async (req, res) => {
     const issueData = req.body;
     const issue = await createIssue(issueData);
     res.status(201).json(issue);
-  } catch (error) {
-    res.status(error.statusCode || 500).json({ message: error.message });
+  } catch (error: unknown) {
+    const err = error as { statusCode?: number; message?: string };
+    res.status(err.statusCode || 500).json({ message: err.message });
   }
 });
 
@@ -19,8 +20,9 @@ router.get('/', async (req, res) => {
   try {
     const issues = await getIssues();
     res.json(issues);
-  } catch (error) {
-    res.status(error.statusCode || 500).json({ message: error.message });
+  } catch (error: unknown) {
+    const err = error as { statusCode?: number; message?: string };
+    res.status(err.statusCode || 500).json({ message: err.message });
   }
 });
 
