@@ -18,14 +18,26 @@ function Header() {
     <>
     <header className="bg-gray-900 border-b border-gray-800 px-6 py-4">
       <div className="flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-3">
-          <Box size={28} className="text-primary-500" />
-          <div>
-            <h1 className="text-xl font-bold text-white">Spatial Tours</h1>
-            <p className="text-xs text-gray-400">360° Walkthrough Platform</p>
+        <div className="flex items-center gap-4">
+          <Link to="/" className="flex items-center gap-3">
+            <Box size={28} className="text-primary-500" />
+            <div>
+              <h1 className="text-xl font-bold text-white">Spatial Tours</h1>
+              <p className="text-xs text-gray-400">360° Walkthrough Platform</p>
+            </div>
+          </Link>
+
+          {/* Navigation Links */}
+          <div className="hidden md:flex items-center gap-6">
+            <Link to="/" className="text-gray-300 hover:text-white transition-colors">
+              Dashboard
+            </Link>
+            <Link to="/issues" className="text-gray-300 hover:text-white transition-colors">
+              Issue Management
+            </Link>
           </div>
-        </Link>
-        
+        </div>
+
         <div className="flex items-center gap-4">
           {user && (
             <div className="flex items-center gap-3">
@@ -37,16 +49,16 @@ function Header() {
                   {user.role}
                 </span>
               </div>
-              
+
               {canEdit(user.role) && (
-                <button 
+                <button
                   onClick={() => setShowForm(true)}
                   className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
                 >
                   New Walkthrough
                 </button>
               )}
-              
+
               <button
                 onClick={handleLogout}
                 className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
