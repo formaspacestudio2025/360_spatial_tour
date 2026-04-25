@@ -4,20 +4,25 @@ import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import Sphere360 from './Sphere360';
 import HotspotMarker from './HotspotMarker';
+import IssueMarker from './IssueMarker';
 import NadirPatch from './NadirPatch';
 import { AITagMarker } from '../ai/AITagMarker';
 import { useHotspotStore } from '@/stores/hotspotStore';
 import { useAITagStore } from '@/stores/aiTagStore';
 import { Hotspot } from '@/api/hotspots';
 import { AITag } from '@/api/ai';
+import { Issue } from '@/types/issue';
 import { Maximize2, Minimize2, ZoomIn, Loader2, Eye, EyeOff } from 'lucide-react';
 
 interface Viewer360Props {
   imageUrl: string;
   hotspots?: Hotspot[];
   aiTags?: AITag[];
+  issueMarkers?: Issue[];
   onSceneChange?: (sceneId: string, orientation?: { yaw: number; pitch: number }) => void;
   onPlaceHotspot?: (yaw: number, pitch: number) => void;
+  onPlaceIssue?: (yaw: number, pitch: number) => void;
+  isPlacingIssue?: boolean;
   nadirImage?: string; // NEW: Nadir patch image URL
   nadirScale?: number; // NEW: Nadir image scale (default 1.0)
   nadirRotation?: number; // NEW: Nadir image rotation in degrees (default 0)
@@ -28,8 +33,11 @@ function SceneContent({
   imageUrl,
   hotspots,
   aiTags,
+  issueMarkers,
   onSceneChange,
   onPlaceHotspot,
+  onPlaceIssue,
+  isPlacingIssue,
   nadirImage,
   nadirScale,
   nadirRotation,
@@ -38,8 +46,11 @@ function SceneContent({
   imageUrl: string;
   hotspots?: Hotspot[];
   aiTags?: AITag[];
+  issueMarkers?: Issue[];
   onSceneChange?: (sceneId: string, orientation?: { yaw: number; pitch: number }) => void;
   onPlaceHotspot?: (yaw: number, pitch: number) => void;
+  onPlaceIssue?: (yaw: number, pitch: number) => void;
+  isPlacingIssue?: boolean;
   nadirImage?: string;
   nadirScale?: number;
   nadirRotation?: number;
@@ -73,7 +84,9 @@ function SceneContent({
 
   const handleClick = useCallback(
     (e: ThreeEvent<MouseEvent>) => {
-      if (!isPlacing || !onPlaceHotspot) return;
+      const placingHotspot = isPlacing && onPlaceHotspot;
+      const placingIssue = (isPlacingIssue ?? false) && onPlaceIssue;
+      if (!placingHotspot && !placingIssue) return;
       e.stopPropagation();
 
       // Raycast against the sphere
@@ -88,12 +101,16 @@ function SceneContent({
           // Convert to yaw/pitch
           const yaw = Math.atan2(p.x, p.z);
           const pitch = Math.asin(Math.max(-1, Math.min(1, p.y)));
-          onPlaceHotspot(yaw, pitch);
+          if (placingHotspot) {
+            onPlaceHotspot!(yaw, pitch);
+          } else if (placingIssue) {
+            onPlaceIssue!(yaw, pitch);
+          }
           break;
         }
       }
     },
-    [isPlacing, onPlaceHotspot, camera, raycaster, scene]
+    [isPlacing, isPlacingIssue, onPlaceHotspot, onPlaceIssue, camera, raycaster, scene]
   );
 
   return (
@@ -108,6 +125,9 @@ function SceneContent({
       ))}
       {showTags && filteredTags.map((tag) => (
         <AITagMarker key={tag.id} tag={tag} />
+      ))}
+      {issueMarkers?.map((issue) => (
+        <IssueMarker key={issue.id} issue={issue} />
       ))}
       {/* NEW: Nadir Patch */}
       {nadirImage && (
@@ -212,6 +232,11 @@ function Viewer360({ imageUrl, hotspots, aiTags, onSceneChange, onPlaceHotspot, 
           Click on the scene to place hotspot
         </div>
       )}
+      {isPlacingIssue && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-20 bg-red-500/20 border border-red-500/40 text-red-300 px-4 py-2 rounded-lg text-sm font-medium">
+          Click on the scene to place issue pin
+        </div>
+      )}
 
       {/* Controls overlay */}
       <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
@@ -253,8 +278,11 @@ function Viewer360({ imageUrl, hotspots, aiTags, onSceneChange, onPlaceHotspot, 
             imageUrl={currentImage}
             hotspots={hotspots}
             aiTags={aiTags}
+            issueMarkers={issueMarkers}
             onSceneChange={onSceneChange}
             onPlaceHotspot={onPlaceHotspot}
+            onPlaceIssue={onPlaceIssue}
+            isPlacingIssue={isPlacingIssue}
             nadirImage={nadirImage}
             nadirScale={nadirScale}
             nadirRotation={nadirRotation}

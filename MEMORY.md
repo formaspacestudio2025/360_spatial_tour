@@ -50,8 +50,14 @@
 ### Login Flow
 `Login.tsx` → `authStore.login()` → `api/auth.ts` → `backend/auth routes` → `auth service` → `db.users` → token returned → `authStore` persisted
 
-### Issue Management Flow
-`Header.tsx` (nav link) → `/issues` route → `IssueListPage.tsx` → axios GET `/api/issues` → `issuesRoutes.ts` → `issue.service.getIssues()` → `db.issues` → returns list → renders UI
+### Issue Management Flow (Spatial Pinning)
+`WalkthroughViewer.tsx` → Issues tab → `Viewer360` (renders `IssueMarker` components at yaw/pitch)
+  → click panorama in placement mode → `handlePlaceIssue` → prompt for title/description
+  → `issuesApi.create()` → POST `/api/issues` → `issuesRoutes.ts` → `issue.service.createIssue()` (stores yaw, pitch, floor, room)
+  → `db.issues` → marker appears on panorama
+
+### Issue Dashboard Flow
+`Header.tsx` (nav link) → `/issues` route → `IssueListPage.tsx` → `issuesApi.getAll()` → GET `/api/issues` → returns list → renders UI
 
 ### Walkthrough Flow
 `Dashboard.tsx` → TanStack Query `walkthroughApi.getAll()` → GET `/api/walkthroughs` → `walkthroughRoutes.ts` → walkthrough service → `db.walkthroughs` → returns list → renders cards

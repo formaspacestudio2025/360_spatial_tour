@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { walkthroughApi } from '@/api/walkthroughs';
 import { scenesApi } from '@/api/scenes';
 import { hotspotsApi } from '@/api/hotspots';
+import { issuesApi, Issue } from '@/api/issuesApi';
 import { aiApi, AITag } from '@/api/ai';
 import Viewer360 from '@/components/viewer/Viewer360';
 import SceneList from '@/components/viewer/SceneList';
@@ -20,10 +21,10 @@ import { useAITagStore } from '@/stores/aiTagStore';
 import { canEdit } from '@/stores/authStore';
 import { useAuthStore } from '@/stores/authStore';
 import { Scene } from '@/types';
-import { ArrowLeft, Upload, Image, Navigation2, BrainCircuit, GitGraph } from 'lucide-react';
+import { ArrowLeft, Upload, Image, Navigation2, BrainCircuit, GitGraph, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-type SidebarTab = 'scenes' | 'hotspots' | 'ai' | 'graph';
+type SidebarTab = 'scenes' | 'hotspots' | 'ai' | 'graph' | 'issues';
 
 function WalkthroughViewer() {
   const { id } = useParams<{ id: string }>();
@@ -38,6 +39,8 @@ function WalkthroughViewer() {
   const { setHotspots, setPendingHotspot, hotspots } = useHotspotStore();
   const { setTags: setAITags } = useAITagStore();
   const queryClient = useQueryClient();
+  const [issues, setIssues] = useState<Issue[]>([]);
+  const [isPlacingIssue, setIsPlacingIssue] = useState(false);
 
   const { data: walkthroughData } = useQuery({
     queryKey: ['walkthrough', id],
@@ -62,6 +65,16 @@ function WalkthroughViewer() {
 
   const scenes = scenesData?.data || [];
   const walkthrough = walkthroughData?.data;
+
+  // Fetch issues for current scene
+  const { data: issuesData } = useQuery({
+    queryKey: ['issues', currentScene?.id],
+    queryFn: () => issuesApi.getAll({ scene_id: currentScene!.id }),
+    enabled: !!currentScene?.id,
+  });
+  useEffect(() => {
+    setIssues(issuesData?.data || []);
+  }, [issuesData]);
 
   // Update hotspot store when data changes
   useEffect(() => {
@@ -117,6 +130,29 @@ function WalkthroughViewer() {
       }
     }
   }, [scenes, handleSceneSelect]);
+
+  const handlePlaceIssue = useCallback(async (yaw: number, pitch: number) => {
+    const title = prompt('Enter issue title:');
+    if (!title) return;
+    const description = prompt('Enter description (optional):') || '';
+    try {
+      await issuesApi.create({
+        walkthrough_id: id!,
+        scene_id: currentScene!.id,
+        yaw,
+        pitch,
+        type: 'maintenance',
+        severity: 'medium',
+        title,
+        description,
+      });
+      queryClient.invalidateQueries({ queryKey: ['issues', currentScene?.id] });
+      setIsPlacingIssue(false);
+    } catch (error) {
+      console.error('Failed to create issue:', error);
+      alert('Failed to create issue. See console for details.');
+    }
+  }, [id, currentScene, queryClient]);
 
   // Set first scene as current when scenes load
   useEffect(() => {
@@ -250,6 +286,17 @@ function WalkthroughViewer() {
               <GitGraph size={14} />
               Graph
             </button>
+            <button
+              onClick={() => { setActiveTab('issues'); setViewMode('viewer'); }}
+              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                activeTab === 'issues'
+                  ? 'text-primary-400 border-b-2 border-primary-500'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <AlertCircle size={14} />
+              Issues
+            </button>
           </div>
 
           {/* Tab content */}
@@ -287,6 +334,35 @@ function WalkthroughViewer() {
                 />
                 <AITagFilter compact />
               </div>
+            ) : activeTab === 'issues' ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-white font-semibold">Issues</h3>
+                  {editorMode === 'edit' && (
+                    <button
+                      onClick={() => setIsPlacingIssue(!isPlacingIssue)}
+                      className={`px-3 py-1.5 rounded-lg text-xs transition-colors ${
+                        isPlacingIssue
+                          ? 'bg-red-600 hover:bg-red-700 text-white'
+                          : 'bg-primary-600 hover:bg-primary-700 text-white'
+                      }`}
+                    >
+                      {isPlacingIssue ? 'Cancel' : 'Place Issue Pin'}
+                    </button>
+                  )}
+                </div>
+                <div className="text-gray-400 text-sm">
+                  {issues.length === 0 ? 'No issues for this scene.' : `${issues.length} issue(s) found.`}
+                </div>
+                <div className="space-y-2">
+                  {issues.map(issue => (
+                    <div key={issue.id} className="p-3 bg-gray-800 rounded-lg">
+                      <div className="text-white text-sm font-medium">{issue.title}</div>
+                      <div className="text-gray-400 text-xs">{issue.status} • {issue.severity}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             ) : (
               <div className="text-gray-400 text-sm text-center py-8">
                 Switch to Graph view to see navigation map
@@ -302,9 +378,12 @@ function WalkthroughViewer() {
               <Viewer360
                 imageUrl={currentScene.image_url}
                 hotspots={hotspots}
+                issueMarkers={issues}
                 aiTags={aiTags.filter((t) => t.scene_id === currentScene.id)}
                 onSceneChange={handleSceneChange}
                 onPlaceHotspot={handlePlaceHotspot}
+                onPlaceIssue={handlePlaceIssue}
+                isPlacingIssue={isPlacingIssue && editorMode === 'edit'}
                 nadirImage={currentScene.nadir_image_url || currentScene.nadir_image_path}
                 nadirScale={currentScene.nadir_scale || 1.0}
                 nadirRotation={currentScene.nadir_rotation || 0}

@@ -67,6 +67,50 @@ Created three documentation files:
 
 ---
 
+## 2026-04-25
+
+### Issue: Implement Spatial Issue Pinning (Phase 1 of Issue Management Upgrade)
+**Issue:**
+- User wanted to upgrade issue management with spatial pinning (click exact location in panorama, drop marker/pin, attach issue to hotspot, support multiple pins per scene)
+- Existing issue management had basic components but no spatial awareness
+- No way to place issues directly on 360° panorama at specific (yaw, pitch) coordinates
+
+**Fix: (Phase 1 – Spatial Issue Pinning)**
+1. **Extended Issue model** (backend and frontend) with spatial fields: `yaw`, `pitch`, `floor?`, `room?`
+2. **Created IssueMarker component** (`frontend/src/components/viewer/IssueMarker.tsx`) – renders 3D markers in panorama at (yaw, pitch) with status‑based colors
+3. **Updated Viewer360** to accept `issueMarkers`, `onPlaceIssue`, `isPlacingIssue` props and render IssueMarker components
+4. **Updated WalkthroughViewer** with new “Issues” tab in sidebar, issue placement mode, and `issuesApi` integration
+5. **Created frontend Issue types** (`frontend/src/types/issue.ts`) and fully implemented `frontend/src/api/issuesApi.ts`
+6. **Updated backend issue service and routes** to handle new fields and support filtering by `scene_id` / `walkthrough_id`
+
+**Files changed:**
+- `backend/src/types/issue.ts` – added yaw, pitch, floor, room fields to Issue interface
+- `backend/src/services/issue.service.ts` – updated createIssue to persist spatial fields
+- `backend/src/routes/issuesRoutes.ts` – added query‑param filtering (scene_id, walkthrough_id)
+- `frontend/src/types/issue.ts` – new file, frontend Issue interface + CreateIssueData
+- `frontend/src/api/issuesApi.ts` – new file, full CRUD API functions
+- `frontend/src/components/viewer/IssueMarker.tsx` – new file, 3D marker component
+- `frontend/src/components/viewer/Viewer360.tsx` – added issue marker rendering + placement handling
+- `frontend/src/pages/WalkthroughViewer.tsx` – added Issues tab, placement mode, issue fetching
+
+**Risk:**
+- LOW – All changes are additive (new fields, new components). No existing functionality is removed.
+- The JSON database (`backend/data/db.json`) auto‑persists new fields; no migration needed.
+- IssueMarker follows the same pattern as existing HotspotMarker.
+- The new Issues tab is only visible when viewing a walkthrough; does not affect other pages.
+
+**How to verify:**
+1. Start backend: `cd backend && npm run dev`
+2. Start frontend: `cd frontend && npm run dev`
+3. Login at `http://localhost:5173`, open a walkthrough
+4. Click the “Issues” tab in the sidebar
+5. If in Edit mode, click “Place Issue Pin” button
+6. Click anywhere on the 360° panorama – a prompt will ask for title/description
+7. After submitting, an issue marker (colored dot) appears at that location
+8. Refresh the page – marker persists (data saved to `db.json`)
+
+---
+
 ## Template for Future Entries
 
 ## YYYY-MM-DD

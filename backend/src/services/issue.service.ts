@@ -1,9 +1,14 @@
-import db from '../config/database';import { generateId } from '../utils/generateId';
+import db from '../config/database';
+import { generateId } from '../utils/generateId';
 
 interface Issue {
   id: string;
   walkthrough_id: string;
   scene_id: string;
+  yaw: number;
+  pitch: number;
+  floor?: number;
+  room?: string;
   type: 'damage' | 'safety' | 'maintenance' | 'compliance' | 'custom';
   severity: 'low' | 'medium' | 'high' | 'critical';
   status: 'open' | 'in_progress' | 'resolved' | 'closed';
@@ -16,6 +21,10 @@ interface Issue {
 export async function createIssue(data: {
   walkthrough_id: string;
   scene_id: string;
+  yaw: number;
+  pitch: number;
+  floor?: number;
+  room?: string;
   type: 'damage' | 'safety' | 'maintenance' | 'compliance' | 'custom';
   severity: 'low' | 'medium' | 'high' | 'critical';
   title: string;
@@ -23,9 +32,9 @@ export async function createIssue(data: {
 }): Promise<Issue> {
   const id = generateId();
   const now = new Date().toISOString();
-  const sql = `INSERT INTO issues (id, walkthrough_id, scene_id, type, severity, status, title, description, created_at, updated_at)
-               VALUES (?, ?, ?, ?, ?, 'open', ?, ?, ?, ?)`;
-  await db.prepare(sql).run(id, data.walkthrough_id, data.scene_id, data.type, data.severity, data.title, data.description || '', now, now);
+  const sql = `INSERT INTO issues (id, walkthrough_id, scene_id, yaw, pitch, floor, room, type, severity, status, title, description, created_at, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?, ?, ?)`;
+  await db.prepare(sql).run(id, data.walkthrough_id, data.scene_id, data.yaw, data.pitch, data.floor || null, data.room || null, data.type, data.severity, data.title, data.description || '', now, now);
   return { id, ...data, status: 'open', created_at: now, updated_at: now };
 }
 

@@ -15,10 +15,17 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Get all issues
+// Get all issues with optional filters
 router.get('/', async (req, res) => {
   try {
-    const issues = await getIssues();
+    const { scene_id, walkthrough_id } = req.query;
+    let issues = await getIssues();
+    if (scene_id) {
+      issues = issues.filter(issue => issue.scene_id === scene_id);
+    }
+    if (walkthrough_id) {
+      issues = issues.filter(issue => issue.walkthrough_id === walkthrough_id);
+    }
     res.json(issues);
   } catch (error: unknown) {
     const err = error as { statusCode?: number; message?: string };
