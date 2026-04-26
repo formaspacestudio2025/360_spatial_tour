@@ -149,9 +149,9 @@
       "media_url": null,
       "custom_icon_url": null,
       "is_locked": 0,
-      "metadata": "{\"iconSize\":2,\"customIconUrl\":\"\",\"mediaType\":\"\",\"mediaUrl\":\"\"}",
+      "metadata": "{\"iconSize\":2,\"customIconUrl\":\"\",\"mediaType\":\"\",\"mediaUrl\":\"\",\"transitionStyle\":\"zoom-fade\"}",
       "created_at": "2026-04-20T19:37:50.091Z",
-      "updated_at": "2026-04-22T07:35:01.575Z",
+      "updated_at": "2026-04-26T08:57:35.035Z",
       "animation_type": "ping",
       "animation_speed": 1,
       "animation_intensity": 0.5,
@@ -179,9 +179,9 @@
       "media_url": null,
       "custom_icon_url": null,
       "is_locked": 0,
-      "metadata": "{\"iconSize\":2,\"customIconUrl\":\"\",\"mediaType\":\"\",\"mediaUrl\":\"\"}",
+      "metadata": "{\"iconSize\":2,\"customIconUrl\":\"\",\"mediaType\":\"\",\"mediaUrl\":\"\",\"transitionStyle\":\"zoom-fade\"}",
       "created_at": "2026-04-20T19:41:37.913Z",
-      "updated_at": "2026-04-22T07:36:30.308Z",
+      "updated_at": "2026-04-26T08:58:07.509Z",
       "animation_type": "ping",
       "animation_speed": 1,
       "animation_intensity": 0.5,
@@ -201,24 +201,24 @@
       "target_yaw": null,
       "target_pitch": null,
       "label": "",
-      "icon_type": "room",
-      "icon_color": "#06b6d4",
-      "title": "Bedroom 1",
+      "icon_type": "navigation",
+      "icon_color": "#10b981",
+      "title": "",
       "description": "",
       "media_type": null,
       "media_url": null,
       "custom_icon_url": null,
       "is_locked": 0,
-      "metadata": "{\"iconSize\":2,\"customIconUrl\":\"\",\"mediaType\":\"\",\"mediaUrl\":\"\",\"transitionStyle\":\"instant\"}",
+      "metadata": "{\"iconSize\":1,\"customIconUrl\":\"\",\"mediaType\":\"\",\"mediaUrl\":\"\",\"transitionStyle\":\"zoom-fade\"}",
       "created_at": "2026-04-21T11:54:10.305Z",
-      "updated_at": "2026-04-25T21:32:36.831Z",
-      "animation_type": "ping",
+      "updated_at": "2026-04-26T08:57:59.203Z",
+      "animation_type": "pulse-ring",
       "animation_speed": 1,
       "animation_intensity": 0.5,
-      "icon_size": 2,
+      "icon_size": 1,
       "opacity": 1,
       "label_position": "top",
-      "hover_scale": 1,
+      "hover_scale": 1.2,
       "visible_distance": 0,
       "always_visible": 1,
       "background_color": "#06b6d4"
@@ -283,7 +283,7 @@
       "always_visible": 1,
       "background_color": null,
       "created_at": "2026-04-24T19:07:10.311Z",
-      "updated_at": "2026-04-25T21:33:42.507Z"
+      "updated_at": "2026-04-26T08:57:14.635Z"
     },
     {
       "id": "663af7b9-166d-4b02-9d82-a3841b1144c3",
@@ -314,7 +314,7 @@
       "always_visible": 1,
       "background_color": null,
       "created_at": "2026-04-25T09:33:03.974Z",
-      "updated_at": "2026-04-25T21:33:53.934Z"
+      "updated_at": "2026-04-26T08:57:20.101Z"
     },
     {
       "id": "f119b6b9-d289-4c23-9731-e460e45ad23b",
@@ -333,7 +333,7 @@
       "media_url": null,
       "custom_icon_url": null,
       "is_locked": 0,
-      "metadata": "{\"iconSize\":2,\"customIconUrl\":\"\",\"mediaType\":\"\",\"mediaUrl\":\"\"}",
+      "metadata": "{\"iconSize\":2,\"customIconUrl\":\"\",\"mediaType\":\"\",\"mediaUrl\":\"\",\"transitionStyle\":\"zoom-fade\"}",
       "animation_type": "ping",
       "animation_speed": 1,
       "animation_intensity": 0.5,
@@ -345,7 +345,7 @@
       "always_visible": 1,
       "background_color": null,
       "created_at": "2026-04-25T09:37:07.408Z",
-      "updated_at": "2026-04-25T09:38:14.157Z"
+      "updated_at": "2026-04-26T08:57:40.161Z"
     },
     {
       "id": "650aaf5c-9e52-430e-a90b-bd189cbb123f",
@@ -376,7 +376,7 @@
       "always_visible": 1,
       "background_color": null,
       "created_at": "2026-04-25T14:10:13.895Z",
-      "updated_at": "2026-04-25T21:34:06.357Z"
+      "updated_at": "2026-04-26T08:57:24.434Z"
     }
   ],
   "ai_tags": [],
@@ -391,8 +391,8 @@
       "room": null,
       "type": "maintenance",
       "severity": "medium",
-      "priority": "medium",
-      "status": "open",
+      "priority": "critical",
+      "status": "pending_approval",
       "title": "cracked wall ",
       "description": "",
       "assigned_to": "nadeemkolu22@gmail.com",
@@ -403,12 +403,38 @@
           "action": "created",
           "timestamp": "2026-04-25T13:41:26.002Z",
           "details": "Issue created"
+        },
+        {
+          "id": "115c2dc1-aec5-4d84-8f31-0d2c77f0b6f5",
+          "issue_id": "28304f13-19f5-488b-92b3-5802dbc027ba",
+          "action": "sla_escalated",
+          "field": "status",
+          "old_value": "open",
+          "new_value": "pending_approval",
+          "user_id": "system",
+          "user_name": "SLA Auto-Escalation",
+          "timestamp": "2026-04-26T08:53:52.114Z",
+          "details": "Auto-escalated after 21 days overdue",
+          "created_at": "2026-04-26T08:53:52.114Z"
+        },
+        {
+          "id": "a69c4308-6814-4967-a642-491ad5fe4cd5",
+          "issue_id": "28304f13-19f5-488b-92b3-5802dbc027ba",
+          "action": "sla_priority_escalated",
+          "field": "priority",
+          "old_value": "medium",
+          "new_value": "critical",
+          "user_id": "system",
+          "user_name": "SLA Auto-Escalation",
+          "timestamp": "2026-04-26T08:53:52.114Z",
+          "details": "Priority escalated after 21 days overdue",
+          "created_at": "2026-04-26T08:53:52.114Z"
         }
       ],
       "comments": [],
       "attachments": [],
       "created_at": "2026-04-25T13:41:26.002Z",
-      "updated_at": "2026-04-25T13:41:26.002Z"
+      "updated_at": "2026-04-26T08:53:52.114Z"
     },
     {
       "id": "d4cd894f-279c-47a4-98a0-b7cedd9d3cfc",
@@ -420,8 +446,8 @@
       "room": null,
       "type": "damage",
       "severity": "low",
-      "priority": "high",
-      "status": "open",
+      "priority": "critical",
+      "status": "pending_approval",
       "title": "Floor is damaged",
       "description": "Please replace the flooring ",
       "assigned_to": "nadeem",
@@ -438,12 +464,38 @@
           "action": "updated",
           "timestamp": "2026-04-25T14:04:26.057Z",
           "details": "Status changed to resolved"
+        },
+        {
+          "id": "b72b7539-1009-4e4d-a692-c594ec419ee6",
+          "issue_id": "d4cd894f-279c-47a4-98a0-b7cedd9d3cfc",
+          "action": "sla_escalated",
+          "field": "status",
+          "old_value": "open",
+          "new_value": "pending_approval",
+          "user_id": "system",
+          "user_name": "SLA Auto-Escalation",
+          "timestamp": "2026-04-26T08:53:52.109Z",
+          "details": "Auto-escalated after 21 days overdue",
+          "created_at": "2026-04-26T08:53:52.109Z"
+        },
+        {
+          "id": "c4d166e5-2757-42e6-9afd-561c8e696cb6",
+          "issue_id": "d4cd894f-279c-47a4-98a0-b7cedd9d3cfc",
+          "action": "sla_priority_escalated",
+          "field": "priority",
+          "old_value": "high",
+          "new_value": "critical",
+          "user_id": "system",
+          "user_name": "SLA Auto-Escalation",
+          "timestamp": "2026-04-26T08:53:52.109Z",
+          "details": "Priority escalated after 21 days overdue",
+          "created_at": "2026-04-26T08:53:52.109Z"
         }
       ],
       "comments": [],
       "attachments": [],
       "created_at": "2026-04-25T13:59:51.601Z",
-      "updated_at": "2026-04-25T13:59:51.601Z"
+      "updated_at": "2026-04-26T08:53:52.110Z"
     }
   ],
   "versions": [],

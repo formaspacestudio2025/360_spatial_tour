@@ -126,6 +126,7 @@
 17. Frontend `types/issue.ts` is outdated (uses old status values `in-progress`/`resolved`/`closed`, missing `priority`, `floor`, `room`, `attachments`, `comments`, `history` fields) — backend `types/issue.ts` is the correct reference
 18. Dashboard API enhanced (backend `dashboard.service.ts` provides `getStats`, `getActivity`, `getIssuesByStatus`, `getIssuesByType`, `getIssuesByPriority`, `getIssueTrend`; frontend `api/dashboard.ts` fully wired)
 19. Dashboard UI enhanced (date range filter with quick 7d/30d/90d buttons, property-specific dashboard via `?walkthroughId=`, KPI cards with overdue/critical counts, activity feed)
+20. Issue SLA Timer + Auto-Escalation (backend: `checkAndEscalateSLA()` in `issue.service.ts` with priority escalation rules, `getSlaStats()` for stats; API: `POST /api/issues/sla/check` and `GET /api/issues/sla/stats`; frontend: live countdown via `setInterval`, SLA stats in header, manual "Run SLA Check" button)
 
 ## Dangerous Areas (Edit with Caution)
 1. **Auth Logic**: `authStore.ts`, `ProtectedRoute.tsx`, `backend/src/routes/auth.ts` - breaks all logins

@@ -393,7 +393,7 @@ export async function getSlaStats(): Promise<{
   for (const issue of resolved) {
     const created = new Date(issue.created_at);
     const updated = new Date(issue.updated_at);
-    totalDays += (updated.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
+    totalDays += (updated.getTime() - created.getTime()) / (1000 * 60 * 60 * 24);
     counted++;
   }
 

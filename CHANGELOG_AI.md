@@ -253,6 +253,61 @@ The user reported that the Issue management feature was still not working. Addit
 
 ---
 
+
+## 2026-04-26
+
+### Issue: Issue SLA Timer + Auto-Escalation (Phase 1.12)
+
+**Issue:**
+- Issues have `due_date` and `priority` fields but no SLA enforcement
+- No visual countdown timer for overdue issues
+- No automatic escalation when SLA is breached
+- Users couldn't see SLA statistics or trigger manual checks
+
+**Fix:**
+1. **Backend SLA Logic (`backend/src/services/issue.service.ts`):**
+   - Added `checkAndEscalateSLA()` function that scans issues for breaches
+   - Escalation rules:
+     * ≥1 day overdue: priority upgrade (low→medium→high→critical)
+     * ≥3 days overdue: status → 'pending_approval' (manager escalation)
+   - Added `getSlaStats()` for dashboard metrics
+   - Each escalation creates history entries with system audit trail
+
+2. **API Endpoints (`backend/src/routes/issuesRoutes.ts`):**
+   - `POST /api/issues/sla/check` - Trigger manual SLA check
+   - `GET /api/issues/sla/stats` - Get SLA statistics
+
+3. **Frontend UI (`frontend/src/components/issueManagement/IssueListPage.tsx`):**
+   - Live countdown timer (updates every minute via `setInterval`)
+   - SLA stats in header: tracked issues, overdue count, critical overdue
+   - "Run SLA Check" button for manual escalation
+   - Updated `getSlaInfo()` uses live clock for accurate countdown
+   - Added SLA stats query via `issuesApi.getSlaStats()`
+
+**Files changed:**
+- `backend/src/services/issue.service.ts` (added SLA escalation logic)
+- `backend/src/routes/issuesRoutes.ts` (added SLA endpoints)
+- `frontend/src/api/issuesApi.ts` (added SLA API methods)
+- `frontend/src/components/issueManagement/IssueListPage.tsx` (SLA UI + live timer)
+
+**Risk:**
+- MEDIUM - Backend logic changes issue priority/status automatically
+- Mitigation: Only affects open/in_progress issues; creates audit history
+- All changes are additive; existing functionality preserved
+
+**How to verify:**
+1. Start backend: `cd backend && npm run dev`
+2. Start frontend: `cd frontend && npm run dev`
+3. Login at `http://localhost:5173`
+4. Navigate to Issues page (`/issues`)
+5. Verify SLA stats in header (top-right, hidden on mobile)
+6. Create an issue with past due date to see countdown turn red
+7. Click "Run SLA Check" to trigger manual escalation
+8. Check issue history for SLA escalation entries
+9. Verify priority/status changes per escalation rules
+
+---
+
 ## 2026-04-25
 
 ### Issue: Issue File Attachments UI (Phase 1.9)
