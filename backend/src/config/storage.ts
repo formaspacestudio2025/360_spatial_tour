@@ -8,12 +8,14 @@ export const storagePaths = {
   base: STORAGE_BASE,
   walkthroughs: (walkthroughId: string) => 
     path.join(STORAGE_BASE, 'walkthroughs', walkthroughId),
-  scenes: (walkthroughId: string) => 
+  scenes: (walkthroughId: string) =>
     path.join(STORAGE_BASE, 'walkthroughs', walkthroughId, 'scenes'),
-  thumbnails: (walkthroughId: string) => 
+  thumbnails: (walkthroughId: string) =>
     path.join(STORAGE_BASE, 'walkthroughs', walkthroughId, 'thumbnails'),
-  exports: (walkthroughId: string) => 
+  exports: (walkthroughId: string) =>
     path.join(STORAGE_BASE, 'walkthroughs', walkthroughId, 'exports'),
+  issues: (walkthroughId: string) =>
+    path.join(STORAGE_BASE, 'walkthroughs', walkthroughId, 'issues'),
 };
 
 // Ensure storage directories exist

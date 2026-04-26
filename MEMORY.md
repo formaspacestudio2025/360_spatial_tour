@@ -107,11 +107,25 @@
 - Env: `backend/.env` (PORT, CORS, JWT_SECRET, DB_PATH)
 
 ## Known Issues
-1. Issue management panel not initially visible (fixed: added route + nav link)
+1. Issue CREATE bug (fixed: misaligned `INSERT` query arguments caused JSON database wrapper to serialize wrong columns)
 2. Backend requires `db:init` script (json db creates file automatically)
-3. `frontend/src/api/issuesApi.ts` is empty - IssueListPage uses direct axios import
+3. `frontend/src/api/issuesApi.ts` is now fully implemented (was empty) — IssueListPage uses it via TanStack Query
 4. Issue service uses SQLite-style API but DB is JSON file (works via emulation)
 5. CORS may block requests if frontend port differs
+6. Blank screen on walkthrough click (fixed: corrected missing prop destructuring in Viewer360.tsx and added Suspense boundary)
+7. Issue management CRUD (fixed: standardized backend response format, implemented update/delete logic on both ends, and replaced prompt with proper modal)
+8. Enterprise transitions (added: zoom-into-hotspot effect using smooth FOV interpolation)
+9. Blank screen on walkthrough click V2 (fixed: added missing useFrame import in Viewer360.tsx)
+10. Enterprise Scene Transitions V2 (added: directional zoom support via OrbitControls setAzimuthalAngle, and Smart Preview Tooltips on hover).
+11. Enterprise Issue Management V2 (added: expanded schema for assignment, due dates, SLAs, automated history tracking; IssueForm with tabs; threaded comments fully implemented in backend + frontend)
+12. Configurable Scene Transitions (added: ability to choose `zoom-fade`, `fade`, `pan-slide`, `instant` per hotspot in HotspotEditor and execute them dynamically).
+13. Issue CSV Export (implemented: backend route `/api/issues/export/csv`, frontend button in IssueListPage)
+14. Dashboard Charts (implemented: Recharts integration via `DashboardCharts.tsx` — Area, Bar, Pie charts for issue trends, types, priorities, status)
+15. Issue Attachments UI implemented (added: expandable attachment panel in IssueListPage with upload, list, preview, and delete; backend `POST/GET/DELETE /api/issues/:id/attachments` routes + `addAttachment/getAttachments/deleteAttachment` in service; frontend API ready)
+16. User Management routes exist (backend `routes/users.ts` with GET/POST/PUT/DELETE, auth middleware, role checks) but NOT mounted in `routes/index.ts` — frontend UI missing
+17. Frontend `types/issue.ts` is outdated (uses old status values `in-progress`/`resolved`/`closed`, missing `priority`, `floor`, `room`, `attachments`, `comments`, `history` fields) — backend `types/issue.ts` is the correct reference
+18. Dashboard API enhanced (backend `dashboard.service.ts` provides `getStats`, `getActivity`, `getIssuesByStatus`, `getIssuesByType`, `getIssuesByPriority`, `getIssueTrend`; frontend `api/dashboard.ts` fully wired)
+19. Dashboard UI enhanced (date range filter with quick 7d/30d/90d buttons, property-specific dashboard via `?walkthroughId=`, KPI cards with overdue/critical counts, activity feed)
 
 ## Dangerous Areas (Edit with Caution)
 1. **Auth Logic**: `authStore.ts`, `ProtectedRoute.tsx`, `backend/src/routes/auth.ts` - breaks all logins

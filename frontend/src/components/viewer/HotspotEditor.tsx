@@ -129,6 +129,7 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
   const [visibleDistance, setVisibleDistance] = useState(0);
   const [alwaysVisible, setAlwaysVisible] = useState(true);
   const [backgroundColor, setBackgroundColor] = useState('');
+  const [transitionStyle, setTransitionStyle] = useState('zoom-fade');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaFileInputRef = useRef<HTMLInputElement>(null);
@@ -172,10 +173,9 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
       label,
       title,
       description,
-      to_scene_id: targetSceneId,
       icon_type: iconType,
       icon_color: iconColor,
-      metadata: { iconSize, customIconUrl, mediaType, mediaUrl },
+      metadata: { iconSize, customIconUrl, mediaType, mediaUrl, transitionStyle },
       is_locked: isLocked,
       // NEW: Animation & Style fields
       animation_type: animationType,
@@ -228,6 +228,7 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
     setVisibleDistance(0);
     setAlwaysVisible(true);
     setBackgroundColor('');
+    setTransitionStyle('zoom-fade');
   };
 
   // Reset selection when scene changes
@@ -282,6 +283,7 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
     setVisibleDistance(hotspot.visible_distance || 0);
     setAlwaysVisible(hotspot.always_visible !== undefined ? hotspot.always_visible : true);
     setBackgroundColor(hotspot.background_color || '');
+    setTransitionStyle(hotspot.metadata?.transitionStyle || 'zoom-fade');
   };
 
   const handleSaveHotspot = () => {
@@ -301,7 +303,7 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
       media_url: mediaUrl || undefined,
       custom_icon_url: customIconUrl || undefined,
       is_locked: isLocked,
-      metadata: { iconSize },
+      metadata: { iconSize, transitionStyle },
       // NEW: Animation & Style fields
       animation_type: animationType,
       animation_speed: animationSpeed,
@@ -539,6 +541,21 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
                 </select>
               </div>
 
+              {/* Transition Style */}
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Scene Transition Style</label>
+                <select
+                  value={transitionStyle}
+                  onChange={(e) => setTransitionStyle(e.target.value)}
+                  className="w-full px-2.5 py-1.5 bg-gray-900 border border-gray-700 rounded-md text-white text-xs focus:outline-none focus:border-primary-500"
+                >
+                  <option value="zoom-fade">Zoom & Fade (Enterprise)</option>
+                  <option value="fade">Crossfade</option>
+                  <option value="pan-slide">Pan & Slide</option>
+                  <option value="instant">Instant Cut</option>
+                </select>
+              </div>
+
               {/* Lock Hotspot */}
               <div className="flex items-center gap-2">
                 <button
@@ -755,9 +772,24 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
                       />
                     </div>
 
+                    {/* Scene Transition Style */}
+                    <div>
+                      <label className="block text-xs text-gray-400 mb-2">Scene Transition</label>
+                      <select
+                        value={transitionStyle}
+                        onChange={(e) => setTransitionStyle(e.target.value)}
+                        className="w-full px-2.5 py-1.5 bg-gray-900 border border-gray-700 rounded-md text-white text-xs"
+                      >
+                        <option value="zoom-fade">Zoom & Fade (Enterprise)</option>
+                        <option value="fade">Crossfade</option>
+                        <option value="pan-slide">Pan & Slide</option>
+                        <option value="instant">Instant Cut</option>
+                      </select>
+                    </div>
+
                     {/* Animation Type */}
                     <div>
-                      <label className="block text-xs text-gray-400 mb-2">Animation</label>
+                      <label className="block text-xs text-gray-400 mb-2">Hotspot Marker Animation</label>
                       <select
                         value={animationType}
                         onChange={(e) => {

@@ -13,7 +13,7 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/walkthrough/:id" element={<ProtectedRoute><WalkthroughViewer /></ProtectedRoute>} />
-      <Route path="/issues" element={<ProtectedRoute><IssueListPage apiUrl="/api/issues" /></ProtectedRoute>} />
+      <Route path="/issues" element={<ProtectedRoute><IssueListPage /></ProtectedRoute>} />
     </Routes>
   );
 }

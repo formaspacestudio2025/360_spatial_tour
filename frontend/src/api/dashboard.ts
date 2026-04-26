@@ -7,6 +7,10 @@ export interface DashboardStats {
   resolved_issues: number;
   total_ai_tags: number;
   total_users: number;
+  critical_issues: number;
+  overdue_issues: number;
+  in_progress_issues: number;
+  total_issues: number;
 }
 
 export interface ActivityItem {
@@ -26,9 +30,28 @@ export interface TeamMember {
   online: boolean;
 }
 
+export interface ChartDataPoint {
+  name: string;
+  value: number;
+  color?: string;
+}
+
+export interface TrendDataPoint {
+  date: string;
+  created: number;
+  resolved: number;
+}
+
 export const dashboardApi = {
-  getStats: async () => {
-    const response = await apiClient.get<{ success: boolean; data: DashboardStats }>('/api/dashboard/stats');
+  getStats: async (startDate?: string, endDate?: string, walkthroughId?: string) => {
+    const query = new URLSearchParams();
+    if (startDate) query.set('startDate', startDate);
+    if (endDate) query.set('endDate', endDate);
+    if (walkthroughId) query.set('walkthroughId', walkthroughId);
+    const qs = query.toString();
+    const response = await apiClient.get<{ success: boolean; data: DashboardStats }>(
+      `/api/dashboard/stats${qs ? `?${qs}` : ''}`
+    );
     return response.data;
   },
 
@@ -41,4 +64,53 @@ export const dashboardApi = {
     const response = await apiClient.get<{ success: boolean; data: TeamMember[] }>('/api/dashboard/team');
     return response.data;
   },
+
+  getIssuesByStatus: async (startDate?: string, endDate?: string, walkthroughId?: string) => {
+    const query = new URLSearchParams();
+    if (startDate) query.set('startDate', startDate);
+    if (endDate) query.set('endDate', endDate);
+    if (walkthroughId) query.set('walkthroughId', walkthroughId);
+    const qs = query.toString();
+    const response = await apiClient.get<{ success: boolean; data: ChartDataPoint[] }>(
+      `/api/dashboard/charts/issues-by-status${qs ? `?${qs}` : ''}`
+    );
+    return response.data;
+  },
+
+  getIssuesByType: async (startDate?: string, endDate?: string, walkthroughId?: string) => {
+    const query = new URLSearchParams();
+    if (startDate) query.set('startDate', startDate);
+    if (endDate) query.set('endDate', endDate);
+    if (walkthroughId) query.set('walkthroughId', walkthroughId);
+    const qs = query.toString();
+    const response = await apiClient.get<{ success: boolean; data: ChartDataPoint[] }>(
+      `/api/dashboard/charts/issues-by-type${qs ? `?${qs}` : ''}`
+    );
+    return response.data;
+  },
+
+  getIssuesByPriority: async (startDate?: string, endDate?: string, walkthroughId?: string) => {
+    const query = new URLSearchParams();
+    if (startDate) query.set('startDate', startDate);
+    if (endDate) query.set('endDate', endDate);
+    if (walkthroughId) query.set('walkthroughId', walkthroughId);
+    const qs = query.toString();
+    const response = await apiClient.get<{ success: boolean; data: ChartDataPoint[] }>(
+      `/api/dashboard/charts/issues-by-priority${qs ? `?${qs}` : ''}`
+    );
+    return response.data;
+  },
+
+  getIssueTrend: async (startDate?: string, endDate?: string, walkthroughId?: string) => {
+    const query = new URLSearchParams();
+    if (startDate) query.set('startDate', startDate);
+    if (endDate) query.set('endDate', endDate);
+    if (walkthroughId) query.set('walkthroughId', walkthroughId);
+    const qs = query.toString();
+    const response = await apiClient.get<{ success: boolean; data: TrendDataPoint[] }>(
+      `/api/dashboard/charts/issue-trend${qs ? `?${qs}` : ''}`
+    );
+    return response.data;
+  },
 };
+

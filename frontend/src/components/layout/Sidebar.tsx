@@ -4,7 +4,7 @@ interface SidebarProps {
 
 function Sidebar({ children }: SidebarProps) {
   return (
-    <aside className="w-80 bg-gray-900 border-r border-gray-800 h-full overflow-hidden">
+    <aside className="w-80 bg-gray-900 border-r border-gray-800 h-full overflow-y-auto">
       {children}
     </aside>
   );

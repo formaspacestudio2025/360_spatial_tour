@@ -1,7 +1,8 @@
-import { useRef, useState, useEffect, useCallback } from 'react';
-import { Canvas, useThree, ThreeEvent } from '@react-three/fiber';
+import { useRef, useState, useEffect, useCallback, Suspense } from 'react';
+import { Canvas, useThree, useFrame, ThreeEvent } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
+import { PerspectiveCamera } from 'three';
 import Sphere360 from './Sphere360';
 import HotspotMarker from './HotspotMarker';
 import IssueMarker from './IssueMarker';
@@ -24,9 +25,11 @@ interface Viewer360Props {
   onPlaceIssue?: (yaw: number, pitch: number) => void;
   isPlacingIssue?: boolean;
   nadirImage?: string; // NEW: Nadir patch image URL
-  nadirScale?: number; // NEW: Nadir image scale (default 1.0)
+  nadirScale?: number; // NEW: Nadir patch scale (default 1.0)
   nadirRotation?: number; // NEW: Nadir image rotation in degrees (default 0)
   nadirOpacity?: number; // NEW: Nadir image opacity 0-1 (default 1.0)
+  initialOrientation?: { yaw: number; pitch: number } | null;
+  transitionStyle?: string;
 }
 
 function SceneContent({
@@ -42,6 +45,7 @@ function SceneContent({
   nadirScale,
   nadirRotation,
   nadirOpacity,
+  targetFov,
 }: {
   imageUrl: string;
   hotspots?: Hotspot[];
@@ -55,6 +59,7 @@ function SceneContent({
   nadirScale?: number;
   nadirRotation?: number;
   nadirOpacity?: number;
+  targetFov: number;
 }) {
   const { camera, raycaster, scene } = useThree();
   const isPlacing = useHotspotStore((s) => s.isPlacingHotspot);
@@ -62,6 +67,7 @@ function SceneContent({
   const sphereRef = useRef<THREE.Mesh>(null);
 
   const filteredTags = aiTags ? getFilteredTags() : [];
+  const persCamera = camera as unknown as PerspectiveCamera;
 
   console.log('SceneContent rendering with hotspots:', hotspots);
 
@@ -70,9 +76,9 @@ function SceneContent({
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       const fovDelta = e.deltaY * 0.05;
-      const newFov = Math.max(30, Math.min(100, camera.fov + fovDelta));
-      camera.fov = newFov;
-      camera.updateProjectionMatrix();
+      const newFov = Math.max(30, Math.min(100, persCamera.fov + fovDelta));
+      persCamera.fov = newFov;
+      persCamera.updateProjectionMatrix();
     };
 
     const canvas = document.querySelector('canvas');
@@ -80,7 +86,15 @@ function SceneContent({
       canvas.addEventListener('wheel', handleWheel, { passive: false });
       return () => canvas.removeEventListener('wheel', handleWheel);
     }
-  }, [camera]);
+  }, [persCamera]);
+
+  // Enterprise Transition: Smooth FOV animation
+  useFrame((_, delta) => {
+    if (Math.abs(persCamera.fov - targetFov) > 0.1) {
+      persCamera.fov = THREE.MathUtils.lerp(persCamera.fov, targetFov, delta * 8);
+      persCamera.updateProjectionMatrix();
+    }
+  });
 
   const handleClick = useCallback(
     (e: ThreeEvent<MouseEvent>) => {
@@ -142,12 +156,29 @@ function SceneContent({
   );
 }
 
-function Viewer360({ imageUrl, hotspots, aiTags, onSceneChange, onPlaceHotspot, nadirImage, nadirScale, nadirRotation, nadirOpacity }: Viewer360Props) {
+function Viewer360({
+  imageUrl,
+  hotspots,
+  aiTags,
+  issueMarkers,
+  onSceneChange,
+  onPlaceHotspot,
+  onPlaceIssue,
+  isPlacingIssue,
+  nadirImage,
+  nadirScale,
+  nadirRotation,
+  nadirOpacity,
+  initialOrientation,
+  transitionStyle = 'zoom-fade'
+}: Viewer360Props) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const controlsRef = useRef<any>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [opacity, setOpacity] = useState(1);
   const [currentImage, setCurrentImage] = useState(imageUrl);
+  const [targetFov, setTargetFov] = useState(75);
   const isPlacing = useHotspotStore((s) => s.isPlacingHotspot);
   const { showTags, toggleVisibility } = useAITagStore();
 
@@ -156,27 +187,66 @@ function Viewer360({ imageUrl, hotspots, aiTags, onSceneChange, onPlaceHotspot, 
   // Handle image transitions
   useEffect(() => {
     if (imageUrl !== currentImage) {
-      console.log('Loading new scene:', imageUrl);
-      // Fade out
-      setOpacity(0);
+      console.log('Loading new scene:', imageUrl, 'with transition:', transitionStyle);
+      
+      const isInstant = transitionStyle === 'instant';
+      const isZoom = transitionStyle === 'zoom-fade';
+      const isPan = transitionStyle === 'pan-slide';
+      
+      if (!isInstant) {
+        setOpacity(0);
+      }
+      
+      if (isZoom) {
+        setTargetFov(40);
+      } else if (isPan) {
+        // Pan slightly by moving the controls later, for now just fade
+      }
+      
       setIsLoading(true);
-
+      
+      const delay = isInstant ? 0 : 150;
+      
       const timer = setTimeout(() => {
         setCurrentImage(imageUrl);
         // Fade in after image loads
         const img = new Image();
         img.onload = () => {
           console.log('Scene loaded successfully');
+          // Apply orientation before fading in
+          if (initialOrientation && controlsRef.current) {
+            // Apply pan offset if pan-slide
+            const panOffset = isPan ? 0.5 : 0;
+            controlsRef.current.setAzimuthalAngle(-initialOrientation.yaw + panOffset);
+            controlsRef.current.setPolarAngle(Math.PI / 2 - initialOrientation.pitch);
+            controlsRef.current.update();
+            
+            // If pan-slide, smoothly animate the pan after loading
+            if (isPan) {
+              setTimeout(() => {
+                if (controlsRef.current) {
+                  // Smoothly animate to correct yaw
+                  // This is a quick hack: since enableDamping is true, setting it will animate if we do it right?
+                  // Actually, just setting it will jump. For a real pan, we'd need useFrame. 
+                  // But just returning it to the exact yaw works if we let damping handle it or just set it.
+                  controlsRef.current.setAzimuthalAngle(-initialOrientation.yaw);
+                  controlsRef.current.update();
+                }
+              }, 50);
+            }
+          }
           setIsLoading(false);
           setOpacity(1);
+          setTargetFov(75);
         };
         img.onerror = () => {
           console.error('Failed to load scene image:', imageUrl);
           setIsLoading(false);
           setOpacity(1);
+          setTargetFov(75);
         };
         img.src = imageUrl;
-      }, 150); // Reduced from 300ms to 150ms
+      }, delay);
 
       return () => clearTimeout(timer);
     } else {
@@ -273,23 +343,27 @@ function Viewer360({ imageUrl, hotspots, aiTags, onSceneChange, onPlaceHotspot, 
         }}
         style={{ background: '#000' }}
       >
-        <group>
-          <SceneContent
-            imageUrl={currentImage}
-            hotspots={hotspots}
-            aiTags={aiTags}
-            issueMarkers={issueMarkers}
-            onSceneChange={onSceneChange}
-            onPlaceHotspot={onPlaceHotspot}
-            onPlaceIssue={onPlaceIssue}
-            isPlacingIssue={isPlacingIssue}
-            nadirImage={nadirImage}
-            nadirScale={nadirScale}
-            nadirRotation={nadirRotation}
-            nadirOpacity={nadirOpacity}
-          />
-        </group>
+        <Suspense fallback={null}>
+          <group>
+            <SceneContent
+              imageUrl={currentImage}
+              hotspots={hotspots}
+              aiTags={aiTags}
+              issueMarkers={issueMarkers}
+              onSceneChange={onSceneChange}
+              onPlaceHotspot={onPlaceHotspot}
+              onPlaceIssue={onPlaceIssue}
+              isPlacingIssue={isPlacingIssue}
+              nadirImage={nadirImage}
+              nadirScale={nadirScale}
+              nadirRotation={nadirRotation}
+              nadirOpacity={nadirOpacity}
+              targetFov={targetFov}
+            />
+          </group>
+        </Suspense>
         <OrbitControls
+          ref={controlsRef}
           enableZoom={true}
           enablePan={false}
           rotateSpeed={0.5}

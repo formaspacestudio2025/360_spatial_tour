@@ -10,7 +10,7 @@ export class StorageService {
   async saveFile(
     walkthroughId: string,
     file: Express.Multer.File,
-    subfolder: 'scenes' | 'thumbnails' | 'exports' = 'scenes'
+    subfolder: 'scenes' | 'thumbnails' | 'exports' | 'issues' = 'scenes'
   ): Promise<string> {
     const folder = storagePaths[subfolder](walkthroughId);
     

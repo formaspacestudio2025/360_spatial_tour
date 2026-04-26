@@ -9,6 +9,7 @@ import DeleteConfirmModal from '@/components/walkthrough/DeleteConfirmModal';
 import SearchFilterBar from '@/components/walkthrough/SearchFilterBar';
 import StatCards from '@/components/dashboard/StatCards';
 import ActivityFeed from '@/components/dashboard/ActivityFeed';
+import DashboardCharts from '@/components/dashboard/DashboardCharts';
 import { useAuthStore, canEdit, canDelete } from '@/stores/authStore';
 import { Box, Image, Pencil, Trash2, MapPin, Building2, AlertCircle } from 'lucide-react';
 
@@ -19,6 +20,12 @@ function Dashboard() {
   const [showForm, setShowForm] = useState(false);
   const [editingWalkthrough, setEditingWalkthrough] = useState<any>(null);
   const [deletingWalkthrough, setDeletingWalkthrough] = useState<any>(null);
+  const [dateRange, setDateRange] = useState<{ start: string; end: string }>({ start: '', end: '' });
+  // Property-specific dashboard: read walkthroughId from URL query (?walkthroughId=xxx)
+  const [propertyId, setPropertyId] = useState<string>(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('walkthroughId') || '';
+  });
 
   // Fetch walkthroughs with filters
   const { data: walkthroughsData, isLoading: walkthroughsLoading } = useQuery({
@@ -32,10 +39,14 @@ function Dashboard() {
     queryFn: () => walkthroughApi.getClients(),
   });
 
-  // Fetch dashboard stats
+  // Fetch dashboard stats with date filter and optional property filter
   const { data: statsData, isLoading: statsLoading } = useQuery({
-    queryKey: ['dashboard-stats'],
-    queryFn: () => dashboardApi.getStats(),
+    queryKey: ['dashboard-stats', dateRange, propertyId],
+    queryFn: () => dashboardApi.getStats(
+      dateRange.start || undefined,
+      dateRange.end || undefined,
+      propertyId || undefined
+    ),
   });
 
   // Fetch activity feed
@@ -73,6 +84,17 @@ function Dashboard() {
   const stats = statsData?.data;
   const activities = activityData?.data;
 
+  // Helper to set quick date range
+  const setQuickRange = (days: number) => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - days);
+    setDateRange({
+      start: start.toISOString().slice(0, 10),
+      end: end.toISOString().slice(0, 10),
+    });
+  };
+
   // Debug: Log walkthrough data to check scene_count
   console.log('[Dashboard] Walkthroughs:', walkthroughs.map(w => ({ id: w.id, name: w.name, scene_count: w.scene_count })));
 
@@ -82,9 +104,85 @@ function Dashboard() {
 
       <main className="p-6 lg:p-8">
         <div className="max-w-7xl mx-auto">
+          {propertyId && (
+            <div className="flex items-center gap-4 mb-4">
+              <button
+                onClick={() => {
+                  setPropertyId('');
+                  window.history.pushState({}, '', '/');
+                }}
+                className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+                title="Back to all properties"
+              >
+                ← Back
+              </button>
+              <h2 className="text-2xl font-bold">
+                Property Dashboard: {walkthroughs.find(w => w.id === propertyId)?.name || propertyId}
+              </h2>
+            </div>
+          )}
+
+          {/* Date Filter */}
+          <div className="mb-6 bg-gray-900 border border-gray-800 rounded-xl p-4">
+            <div className="flex flex-col md:flex-row md:items-center gap-4">
+              <div className="flex items-center gap-2 text-sm text-gray-400">
+                <span>Date Range:</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <input
+                  type="date"
+                  value={dateRange.start}
+                  onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                  className="bg-gray-800/50 border border-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                />
+                <span className="text-gray-500">to</span>
+                <input
+                  type="date"
+                  value={dateRange.end}
+                  onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                  className="bg-gray-800/50 border border-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                />
+                {(dateRange.start || dateRange.end) && (
+                  <button
+                    onClick={() => setDateRange({ start: '', end: '' })}
+                    className="text-xs text-gray-400 hover:text-white"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <div className="flex gap-2 ml-auto">
+                {[
+                  { label: '7d', days: 7 },
+                  { label: '30d', days: 30 },
+                  { label: '90d', days: 90 },
+                ].map((r) => (
+                  <button
+                    key={r.label}
+                    onClick={() => setQuickRange(r.days)}
+                    className={`px-3 py-1.5 rounded-lg text-xs transition-colors ${
+                      dateRange.start && dateRange.end
+                        ? (new Date(dateRange.end).getTime() - new Date(dateRange.start).getTime() === r.days * 86400000)
+                          ? 'bg-primary-600 text-white'
+                          : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
           {/* Stat Cards */}
-          <div className="mb-8">
+          <div className="mb-6">
             <StatCards stats={stats} isLoading={statsLoading} />
+          </div>
+
+          {/* Enterprise Charts */}
+          <div className="mb-8">
+            <DashboardCharts stats={stats} startDate={dateRange.start || undefined} endDate={dateRange.end || undefined} propertyId={propertyId || undefined} />
           </div>
 
           {/* Main Content Grid */}
@@ -183,6 +281,16 @@ function Dashboard() {
                         </div>
 
                         <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => {
+                              setPropertyId(walkthrough.id);
+                              window.history.pushState({}, '', `?walkthroughId=${walkthrough.id}`);
+                            }}
+                            className="p-1.5 text-gray-400 hover:text-primary-400 hover:bg-primary-500/10 rounded-lg transition-colors"
+                            title="Property Dashboard"
+                          >
+                            📊
+                          </button>
                           {canEdit(user?.role || '') && (
                             <button
                               onClick={() => setEditingWalkthrough(walkthrough)}

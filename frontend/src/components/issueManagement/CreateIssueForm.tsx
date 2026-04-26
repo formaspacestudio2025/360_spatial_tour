@@ -1,33 +1,51 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { issuesApi } from '@/api/issuesApi';
 
 interface CreateIssueFormProps {
-  apiUrl: string;
   walkthroughId: string;
   sceneId: string;
+  yaw?: number;
+  pitch?: number;
+  floor?: number;
+  room?: string;
 }
 
-const CreateIssueForm: React.FC<CreateIssueFormProps> = ({ apiUrl, walkthroughId, sceneId }) => {
+const CreateIssueForm: React.FC<CreateIssueFormProps> = ({ walkthroughId, sceneId, yaw, pitch, floor, room }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState<'damage' | 'safety' | 'maintenance' | 'compliance' | 'custom'>('maintenance');
   const [severity, setSeverity] = useState<'low' | 'medium' | 'high' | 'critical'>('medium');
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     try {
-      await axios.post(apiUrl, {
+      // Create issue with optional spatial fields
+      const issue = await issuesApi.create({
         walkthrough_id: walkthroughId,
         scene_id: sceneId,
+        yaw: (typeof yaw === 'number' ? yaw : undefined) as any,
+        pitch: (typeof pitch === 'number' ? pitch : undefined) as any,
+        floor,
+        room,
         title,
         description,
         type,
-        severity
+        severity,
+        // priority can be added later if needed
       });
+
+      // Upload attachment if provided
+      if (attachmentFile) {
+        await issuesApi.uploadAttachment(issue.data.id, attachmentFile);
+      }
+
+      // Reset form fields
       setTitle('');
       setDescription('');
+      setAttachmentFile(null);
       setError(null);
       setSuccessMessage('Issue created successfully!');
     } catch (error) {
@@ -78,7 +96,11 @@ const CreateIssueForm: React.FC<CreateIssueFormProps> = ({ apiUrl, walkthroughId
           <option value="critical">Critical</option>
         </select>
       </div>
-      <button type="submit">Create Issue</button>
+      <div>
+            <label htmlFor="attachment">Attachment (optional):</label>
+            <input type="file" id="attachment" onChange={(e) => setAttachmentFile(e.target.files && e.target.files[0] || null)} />
+          </div>
+          <button type="submit">Create Issue</button>
     </form>
   );
 };

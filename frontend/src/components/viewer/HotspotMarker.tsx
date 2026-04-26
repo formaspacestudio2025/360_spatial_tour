@@ -13,7 +13,7 @@ import {
 
 interface HotspotMarkerProps {
   hotspot: Hotspot;
-  onNavigate: (sceneId: string, orientation?: { yaw: number; pitch: number }) => void;
+  onNavigate: (sceneId: string, orientation?: { yaw: number; pitch: number }, transitionStyle?: string) => void;
 }
 
 function yawPitchToPosition(yaw: number, pitch: number, radius: number = 10): THREE.Vector3 {
@@ -135,8 +135,10 @@ function HotspotMarker({ hotspot, onNavigate }: HotspotMarkerProps) {
     const orientation = (hotspot.target_yaw !== undefined && hotspot.target_pitch !== undefined)
       ? { yaw: hotspot.target_yaw, pitch: hotspot.target_pitch }
       : undefined;
+      
+    const transitionStyle = hotspot.metadata?.transitionStyle || 'zoom-fade';
     
-    onNavigate(hotspot.to_scene_id, orientation);
+    onNavigate(hotspot.to_scene_id, orientation, transitionStyle);
   };
 
   return (

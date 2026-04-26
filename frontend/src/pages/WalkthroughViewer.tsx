@@ -4,7 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { walkthroughApi } from '@/api/walkthroughs';
 import { scenesApi } from '@/api/scenes';
 import { hotspotsApi } from '@/api/hotspots';
-import { issuesApi, Issue } from '@/api/issuesApi';
+import { issuesApi } from '@/api/issuesApi';
+import { Issue } from '@/types/issue';
 import { aiApi, AITag } from '@/api/ai';
 import Viewer360 from '@/components/viewer/Viewer360';
 import SceneList from '@/components/viewer/SceneList';
@@ -15,6 +16,7 @@ import { AIProcessingPanel } from '@/components/ai/AIProcessingPanel';
 import { AITagFilter } from '@/components/ai/AITagFilter';
 import { SceneGraphEditor } from '@/components/graph/SceneGraphEditor';
 import Sidebar from '@/components/layout/Sidebar';
+import IssueFormModal from '@/components/viewer/IssueFormModal';
 import { useViewerStore } from '@/stores/viewerStore';
 import { useHotspotStore } from '@/stores/hotspotStore';
 import { useAITagStore } from '@/stores/aiTagStore';
@@ -41,6 +43,11 @@ function WalkthroughViewer() {
   const queryClient = useQueryClient();
   const [issues, setIssues] = useState<Issue[]>([]);
   const [isPlacingIssue, setIsPlacingIssue] = useState(false);
+  const [pendingIssueCoord, setPendingIssueCoord] = useState<{ yaw: number; pitch: number } | null>(null);
+  const [editingIssue, setEditingIssue] = useState<Issue | null>(null);
+  const [showIssueModal, setShowIssueModal] = useState(false);
+  const [targetOrientation, setTargetOrientation] = useState<{ yaw: number; pitch: number } | null>(null);
+  const [transitionStyle, setTransitionStyle] = useState<string>('zoom-fade');
 
   const { data: walkthroughData } = useQuery({
     queryKey: ['walkthrough', id],
@@ -75,6 +82,11 @@ function WalkthroughViewer() {
   useEffect(() => {
     setIssues(issuesData?.data || []);
   }, [issuesData]);
+
+  // Filter issues that have valid spatial coordinates
+  const spatialIssues = issues.filter(
+    (i) => typeof i.yaw === 'number' && typeof i.pitch === 'number'
+  );
 
   // Update hotspot store when data changes
   useEffect(() => {
@@ -119,40 +131,69 @@ function WalkthroughViewer() {
     setPendingHotspot({ yaw, pitch });
   }, [setPendingHotspot]);
 
-  const handleSceneChange = useCallback((sceneId: string, orientation?: { yaw: number; pitch: number }) => {
+  const handleSceneChange = useCallback((sceneId: string, orientation?: { yaw: number; pitch: number }, transition?: string) => {
     const scene = scenes.find((s) => s.id === sceneId);
     if (scene) {
-      handleSceneSelect(scene);
-      // TODO: Apply orientation to camera after scene loads
       if (orientation) {
         console.log('[Viewer] Applying orientation:', orientation);
-        // Will be handled by Viewer360 component
+        setTargetOrientation(orientation);
+      } else {
+        setTargetOrientation(null);
       }
+      if (transition) {
+        setTransitionStyle(transition);
+      } else {
+        setTransitionStyle('zoom-fade');
+      }
+      handleSceneSelect(scene);
     }
   }, [scenes, handleSceneSelect]);
 
-  const handlePlaceIssue = useCallback(async (yaw: number, pitch: number) => {
-    const title = prompt('Enter issue title:');
-    if (!title) return;
-    const description = prompt('Enter description (optional):') || '';
-    try {
-      await issuesApi.create({
+  const handlePlaceIssue = useCallback((yaw: number, pitch: number) => {
+    setPendingIssueCoord({ yaw, pitch });
+    setEditingIssue(null);
+    setShowIssueModal(true);
+  }, []);
+
+  const createIssueMutation = useMutation({
+    mutationFn: (data: any) => issuesApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['issues', currentScene?.id] });
+      setShowIssueModal(false);
+      setIsPlacingIssue(false);
+      setPendingIssueCoord(null);
+    },
+  });
+
+  const updateIssueMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => issuesApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['issues', currentScene?.id] });
+      setShowIssueModal(false);
+      setEditingIssue(null);
+    },
+  });
+
+  const deleteIssueMutation = useMutation({
+    mutationFn: (id: string) => issuesApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['issues', currentScene?.id] });
+    },
+  });
+
+  const handleIssueSubmit = (formData: any) => {
+    if (editingIssue) {
+      updateIssueMutation.mutate({ id: editingIssue.id, data: formData });
+    } else if (pendingIssueCoord) {
+      createIssueMutation.mutate({
+        ...formData,
         walkthrough_id: id!,
         scene_id: currentScene!.id,
-        yaw,
-        pitch,
-        type: 'maintenance',
-        severity: 'medium',
-        title,
-        description,
+        yaw: pendingIssueCoord.yaw,
+        pitch: pendingIssueCoord.pitch,
       });
-      queryClient.invalidateQueries({ queryKey: ['issues', currentScene?.id] });
-      setIsPlacingIssue(false);
-    } catch (error) {
-      console.error('Failed to create issue:', error);
-      alert('Failed to create issue. See console for details.');
     }
-  }, [id, currentScene, queryClient]);
+  };
 
   // Set first scene as current when scenes load
   useEffect(() => {
@@ -241,10 +282,10 @@ function WalkthroughViewer() {
         {/* Sidebar */}
         <Sidebar>
           {/* Tabs */}
-          <div className="flex border-b border-gray-800">
+          <div className="flex overflow-x-auto flex-nowrap border-b border-gray-800">
             <button
               onClick={() => { setActiveTab('scenes'); setViewMode('viewer'); }}
-              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+              className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
                 activeTab === 'scenes'
                   ? 'text-primary-400 border-b-2 border-primary-500'
                   : 'text-gray-400 hover:text-white'
@@ -255,7 +296,7 @@ function WalkthroughViewer() {
             </button>
             <button
               onClick={() => { setActiveTab('hotspots'); setViewMode('viewer'); }}
-              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+              className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
                 activeTab === 'hotspots'
                   ? 'text-primary-400 border-b-2 border-primary-500'
                   : 'text-gray-400 hover:text-white'
@@ -266,7 +307,7 @@ function WalkthroughViewer() {
             </button>
             <button
               onClick={() => { setActiveTab('ai'); setViewMode('viewer'); }}
-              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+              className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
                 activeTab === 'ai'
                   ? 'text-primary-400 border-b-2 border-primary-500'
                   : 'text-gray-400 hover:text-white'
@@ -277,7 +318,7 @@ function WalkthroughViewer() {
             </button>
             <button
               onClick={() => { setActiveTab('graph'); setViewMode('graph'); }}
-              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+              className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
                 activeTab === 'graph'
                   ? 'text-primary-400 border-b-2 border-primary-500'
                   : 'text-gray-400 hover:text-white'
@@ -288,7 +329,7 @@ function WalkthroughViewer() {
             </button>
             <button
               onClick={() => { setActiveTab('issues'); setViewMode('viewer'); }}
-              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+              className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
                 activeTab === 'issues'
                   ? 'text-primary-400 border-b-2 border-primary-500'
                   : 'text-gray-400 hover:text-white'
@@ -356,9 +397,45 @@ function WalkthroughViewer() {
                 </div>
                 <div className="space-y-2">
                   {issues.map(issue => (
-                    <div key={issue.id} className="p-3 bg-gray-800 rounded-lg">
-                      <div className="text-white text-sm font-medium">{issue.title}</div>
-                      <div className="text-gray-400 text-xs">{issue.status} • {issue.severity}</div>
+                    <div key={issue.id} className="p-3 bg-gray-800/50 border border-gray-700 rounded-xl hover:border-primary-500/50 transition-all group">
+                      <div className="flex items-start justify-between mb-1">
+                        <div className="text-white text-sm font-semibold truncate flex-1">{issue.title}</div>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => {
+                              setEditingIssue(issue);
+                              setShowIssueModal(true);
+                            }}
+                            className="p-1 text-gray-400 hover:text-primary-400"
+                          >
+                            <Navigation2 size={12} />
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (confirm('Delete this issue?')) {
+                                deleteIssueMutation.mutate(issue.id);
+                              }
+                            }}
+                            className="p-1 text-gray-400 hover:text-red-400"
+                          >
+                            <AlertCircle size={12} />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium uppercase ${
+                          issue.severity === 'critical' ? 'bg-red-500/20 text-red-400' :
+                          issue.severity === 'high' ? 'bg-orange-500/20 text-orange-400' :
+                          issue.severity === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                          'bg-blue-500/20 text-blue-400'
+                        }`}>
+                          {issue.severity}
+                        </span>
+                        <span className="text-[10px] text-gray-500 capitalize">{issue.status}</span>
+                      </div>
+                      {issue.description && (
+                        <div className="text-gray-400 text-xs mt-2 line-clamp-2">{issue.description}</div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -378,7 +455,7 @@ function WalkthroughViewer() {
               <Viewer360
                 imageUrl={currentScene.image_url}
                 hotspots={hotspots}
-                issueMarkers={issues}
+                issueMarkers={spatialIssues}
                 aiTags={aiTags.filter((t) => t.scene_id === currentScene.id)}
                 onSceneChange={handleSceneChange}
                 onPlaceHotspot={handlePlaceHotspot}
@@ -388,6 +465,8 @@ function WalkthroughViewer() {
                 nadirScale={currentScene.nadir_scale || 1.0}
                 nadirRotation={currentScene.nadir_rotation || 0}
                 nadirOpacity={currentScene.nadir_opacity || 1.0}
+                initialOrientation={targetOrientation}
+                transitionStyle={transitionStyle}
               />
             ) : (
               <div className="h-full flex items-center justify-center bg-gray-900">
@@ -417,6 +496,20 @@ function WalkthroughViewer() {
           )}
         </div>
       </div>
+
+      {/* Issue Modal */}
+      <IssueFormModal
+        isOpen={showIssueModal}
+        onClose={() => {
+          setShowIssueModal(false);
+          setEditingIssue(null);
+          setPendingIssueCoord(null);
+        }}
+        onSubmit={handleIssueSubmit}
+        initialData={editingIssue || undefined}
+        mode={editingIssue ? 'edit' : 'create'}
+        isPending={createIssueMutation.isPending || updateIssueMutation.isPending}
+      />
 
       {/* Upload Modal */}
       <BulkUpload

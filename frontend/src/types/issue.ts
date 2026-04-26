@@ -1,3 +1,36 @@
+export interface IssueAttachment {
+  id: string;
+  issue_id: string;
+  file_url: string;
+  file_type: string; // MIME type
+  created_at: string;
+}
+
+export interface IssueComment {
+  id: string;
+  user_id: string;
+  user_name: string;
+  body: string;
+  timestamp: string;
+  attachments?: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface IssueHistory {
+  id: string;
+  issue_id: string;
+  action: string;
+  field?: string;
+  old_value?: any;
+  new_value?: any;
+  user_id: string;
+  user_name?: string;
+  timestamp?: string;
+  details?: string;
+  created_at: string;
+}
+
 export interface Issue {
   id: string;
   walkthrough_id: string;
@@ -8,49 +41,21 @@ export interface Issue {
   room?: string;
   type: 'damage' | 'safety' | 'maintenance' | 'compliance' | 'custom';
   severity: 'low' | 'medium' | 'high' | 'critical';
-  status: 'open' | 'in_progress' | 'resolved' | 'closed';
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  status: 'open' | 'assigned' | 'in_progress' | 'pending_approval' | 'resolved' | 'verified' | 'closed' | 'reopened';
   title: string;
   description?: string;
+  assigned_to?: string;
+  due_date?: string;
+  resolution_proof_url?: string;
+  history?: IssueHistory[];
+  comments?: IssueComment[];
+  attachments?: IssueAttachment[];
   created_at: string;
   updated_at: string;
-
-  // Extended fields (Phase 2+)
-  priority?: 'low' | 'medium' | 'high' | 'critical';
-  department?: string;
-  assigned_to?: string;
-  due_date?: string;
-  cost_estimate?: number;
-  vendor_details?: string;
-  attachments?: IssueAttachment[];
-  voice_note_url?: string;
-  ai_summary?: string;
 }
 
-export interface IssueAttachment {
-  id: string;
-  issue_id: string;
-  file_url: string;
-  file_type: 'image' | 'video' | 'audio' | 'document';
-  created_at: string;
-}
-
-export interface CreateIssueData {
-  walkthrough_id: string;
-  scene_id: string;
-  yaw: number;
-  pitch: number;
-  floor?: number;
-  room?: string;
-  type: 'damage' | 'safety' | 'maintenance' | 'compliance' | 'custom';
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  title: string;
-  description?: string;
-
-  // Extended
-  priority?: 'low' | 'medium' | 'high' | 'critical';
-  department?: string;
-  assigned_to?: string;
-  due_date?: string;
-  cost_estimate?: number;
-  vendor_details?: string;
-}
+export type CreateIssueData = Omit<Issue, 'id' | 'created_at' | 'updated_at' | 'history' | 'comments' | 'attachments' | 'status' | 'priority'> & {
+  status?: Issue['status'];
+  priority?: Issue['priority'];
+};

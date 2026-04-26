@@ -13,6 +13,7 @@ import dashboardRoutes from './routes/dashboard';
 import hotspotRoutes from './routes/hotspots';
 import hotspotMediaRoutes from './routes/hotspot-media';
 import hotspotLinkRoutes from './routes/hotspot-links';
+import userRoutes from './routes/users';
 import apiRoutes from './routes';
 
 // Load environment variables
@@ -51,6 +52,7 @@ app.use('/api', hotspotRoutes);
 app.use('/api', hotspotMediaRoutes);
 app.use('/api', hotspotLinkRoutes);
 app.use('/api', aiRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api', apiRoutes);
 
 // Error handling

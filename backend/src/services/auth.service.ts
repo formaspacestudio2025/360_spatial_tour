@@ -125,6 +125,68 @@ export class AuthService {
   }
 
   /**
+   * Get all users (without password hashes)
+   */
+  getAllUsers(): Omit<User, 'password_hash'>[] {
+    const stmt = db.prepare('SELECT id, username, email, role, created_at FROM users');
+    return stmt.all() as Omit<User, 'password_hash'>[];
+  }
+
+  /**
+   * Update user by ID
+   */
+  updateUser(id: string, data: { username?: string; email?: string; role?: UserRole; password?: string }): User | undefined {
+    const user = this.getUserById(id);
+    if (!user) return undefined;
+
+    const updates: string[] = [];
+    const params: any[] = [];
+
+    if (data.username !== undefined) {
+      // check uniqueness
+      const existing = this.getUserByUsername(data.username);
+      if (existing && existing.id !== id) {
+        throw new Error('Username already taken');
+      }
+      updates.push('username = ?');
+      params.push(data.username);
+    }
+    if (data.email !== undefined) {
+      const existing = this.getUserByEmail(data.email);
+      if (existing && existing.id !== id) {
+        throw new Error('Email already registered');
+      }
+      updates.push('email = ?');
+      params.push(data.email);
+    }
+    if (data.role !== undefined) {
+      updates.push('role = ?');
+      params.push(data.role);
+    }
+    if (data.password !== undefined) {
+      updates.push('password_hash = ?');
+      params.push(bcryptjs.hashSync(data.password, 10));
+    }
+
+    if (updates.length === 0) return user;
+
+    params.push(id);
+    const sql = `UPDATE users SET ${updates.join(', ')} WHERE id = ?`;
+    const stmt = db.prepare(sql);
+    stmt.run(...params);
+    return this.getUserById(id);
+  }
+
+  /**
+   * Delete user by ID
+   */
+  deleteUser(id: string): boolean {
+    const stmt = db.prepare('DELETE FROM users WHERE id = ?');
+    const result = stmt.run(id);
+    return result.changes > 0;
+  }
+
+  /**
    * Generate JWT token
    */
   private generateToken(user: User): string {

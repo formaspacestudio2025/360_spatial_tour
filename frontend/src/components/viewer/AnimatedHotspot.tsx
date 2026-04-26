@@ -7,7 +7,7 @@ import {
 
 interface AnimatedHotspotProps {
   hotspot: Hotspot;
-  onNavigate: (sceneId: string, orientation?: { yaw: number; pitch: number }) => void;
+  onNavigate: (sceneId: string, orientation?: { yaw: number; pitch: number }, transitionStyle?: string) => void;
   isHovered: boolean;
   isSelected: boolean;
   onClick: () => void;
@@ -88,7 +88,8 @@ export default function AnimatedHotspot({
       const orientation = (hotspot.target_yaw !== undefined && hotspot.target_pitch !== undefined)
         ? { yaw: hotspot.target_yaw, pitch: hotspot.target_pitch }
         : undefined;
-      onNavigate(hotspot.to_scene_id, orientation);
+      const transitionStyle = hotspot.metadata?.transitionStyle || 'zoom-fade';
+      onNavigate(hotspot.to_scene_id, orientation, transitionStyle);
     }
   };
 
@@ -509,7 +510,7 @@ export default function AnimatedHotspot({
 
   return (
     <div
-      className="cursor-pointer transition-transform duration-200"
+      className="cursor-pointer transition-transform duration-200 relative flex items-center justify-center"
       style={{ 
         opacity,
         transform: isHovered ? `scale(${hover_scale})` : 'scale(1)',
@@ -517,6 +518,20 @@ export default function AnimatedHotspot({
       onClick={handleClick}
     >
       {renderAnimation()}
+      
+      {/* Enterprise Smart Preview Tooltip */}
+      {isHovered && title && animation_type !== 'tooltip' && animation_type !== 'floating' && (
+        <div className={`absolute ${labelPositionClass} px-3 py-2 bg-black/90 backdrop-blur-md border border-gray-700/50 rounded-xl shadow-2xl z-50 min-w-[120px] max-w-[200px] text-center transition-all animate-in fade-in slide-in-from-bottom-2 duration-200 pointer-events-none`}>
+          <div className="text-sm font-semibold text-white whitespace-normal">{title}</div>
+          {hotspot.description && (
+            <div className="text-[10px] text-gray-400 mt-0.5 whitespace-normal leading-tight">
+              {hotspot.description}
+            </div>
+          )}
+          {/* Smart Preview Arrow (optional visual sugar) */}
+          <div className="absolute left-1/2 -bottom-1 -translate-x-1/2 border-solid border-t-black/90 border-t-4 border-x-transparent border-x-4 border-b-0" />
+        </div>
+      )}
     </div>
   );
 }
