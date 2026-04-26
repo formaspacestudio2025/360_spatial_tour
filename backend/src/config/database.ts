@@ -17,6 +17,7 @@ interface Database {
   navigation_edges: any[];
   ai_tags: any[];
   issues: any[];
+  assets: any[];
   versions: any[];
   walkthrough_members: any[];
   comments: any[];
@@ -32,6 +33,7 @@ let db: Database = {
   navigation_edges: [],
   ai_tags: [],
   issues: [],
+  assets: [],
   versions: [],
   walkthrough_members: [],
   comments: [],

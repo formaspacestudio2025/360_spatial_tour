@@ -40,6 +40,11 @@ function Header() {
                 User Management
               </Link>
             )}
+            {user && user.role === 'admin' && (
+              <Link to="/assets" className="text-gray-300 hover:text-white transition-colors">
+                Asset Management
+              </Link>
+            )}
           </div>
         </div>
 

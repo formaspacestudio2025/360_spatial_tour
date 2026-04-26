@@ -6,24 +6,26 @@
 
 ## Frontend Structure (frontend/src/)
 - **Entry**: `main.tsx` → React + React Router + TanStack Query
-- **Pages**: `pages/Dashboard.tsx`, `pages/Login.tsx`, `pages/Register.tsx`, `pages/WalkthroughViewer.tsx`, `pages/UserManagement.tsx`
+- **Pages**: `pages/Dashboard.tsx`, `pages/Login.tsx`, `pages/Register.tsx`, `pages/WalkthroughViewer.tsx`, `pages/UserManagement.tsx`, `pages/AssetManagement.tsx`
 - **Components**:
   - `layout/Header.tsx` - Main nav with issue management + user management links
   - `issueManagement/IssueListPage.tsx` - Issue list (route: `/issues`)
   - `issueManagement/CreateIssueForm.tsx` - Issue creation form
   - `issueManagement/EditIssueStatus.tsx` - Issue status editor
+  - `viewer/AssetFormModal.tsx` - Asset creation/editing form modal
+  - `viewer/AssetMarker.tsx` - 3D asset marker in 360° viewer
   - `walkthrough/` - Walkthrough CRUD components
   - `auth/ProtectedRoute.tsx` - Route guard
-- **API Layer**: `api/client.ts` (axios instance with auth interceptor), `api/walkthroughs.ts`, `api/issuesApi.ts`, `api/usersApi.ts`
+- **API Layer**: `api/client.ts` (axios instance with auth interceptor), `api/walkthroughs.ts`, `api/issuesApi.ts`, `api/usersApi.ts`, `api/assetsApi.ts`
 - **State**: `stores/authStore.ts` (Zustand + persist)
-- **Types**: `types/index.ts` (User, UserRole, Walkthrough, Scene, Issue, etc.)
+- **Types**: `types/index.ts` (User, UserRole, Walkthrough, Scene, Issue, Asset, etc.)
 
 ## Backend Structure (backend/src/)
 - **Entry**: `index.ts` (Express + CORS + JSON middleware)
-- **Routes**: `routes/` (auth, dashboard, walkthroughs, scenes, hotspots, hotspot-media, hotspot-links, ai, issuesRoutes, index.ts)
-- **Services**: `services/issue.service.ts`, `services/ai.service.ts`
+- **Routes**: `routes/` (auth, dashboard, walkthroughs, scenes, hotspots, hotspot-media, hotspot-links, ai, issuesRoutes, assetsRoutes, index.ts)
+- **Services**: `services/issue.service.ts`, `services/ai.service.ts`, `services/asset.service.ts`
 - **Database**: `config/database.ts` (JSON file-based, NOT SQLite), `data/db.json`
-- **Types**: `types/issue.ts`
+- **Types**: `types/issue.ts`, `types/asset.ts`
 
 ## Database Flow
 - **Type**: JSON file store (`backend/data/db.json`)
@@ -65,6 +67,10 @@
 ### Image Upload Flow
 `WalkthroughViewer.tsx` → `hotspot-media.ts` API → POST `/api/hotspot-media` → `hotspotMediaRoutes.ts` → storage service → `backend/storage/` → DB record
 
+### Asset Management Flow
+`AssetManagement.tsx` → `assetsApi.getAll()` → GET `/api/assets` → `assetsRoutes.ts` → `asset.service.ts` → `db.assets` → returns list
+`Viewer360.tsx` → `AssetMarker` components rendered at yaw/pitch → click to view/edit → `AssetFormModal` → `assetsApi.create/update()` → POST/PUT `/api/assets`
+
 ## Critical Files List
 
 ### Entry Points
@@ -80,8 +86,10 @@
 - `backend/src/routes/index.ts` (mounts all sub-routes)
 - `backend/src/routes/issuesRoutes.ts`
 - `backend/src/routes/walkthroughs.ts`
+- `backend/src/routes/assetsRoutes.ts`
 - `frontend/src/api/client.ts`
 - `frontend/src/api/walkthroughs.ts`
+- `frontend/src/api/assetsApi.ts`
 
 ### Services
 - `backend/src/services/issue.service.ts`
@@ -127,6 +135,7 @@
 18. Dashboard API enhanced (backend `dashboard.service.ts` provides `getStats`, `getActivity`, `getIssuesByStatus`, `getIssuesByType`, `getIssuesByPriority`, `getIssueTrend`; frontend `api/dashboard.ts` fully wired)
 19. Dashboard UI enhanced (date range filter with quick 7d/30d/90d buttons, property-specific dashboard via `?walkthroughId=`, KPI cards with overdue/critical counts, activity feed)
 20. Issue SLA Timer + Auto-Escalation (backend: `checkAndEscalateSLA()` in `issue.service.ts` with priority escalation rules, `getSlaStats()` for stats; API: `POST /api/issues/sla/check` and `GET /api/issues/sla/stats`; frontend: live countdown via `setInterval`, SLA stats in header, manual "Run SLA Check" button)
+21. Asset TypeScript Build Error (fixed: `status` field in `AssetFormModal.tsx` and `AssetManagement.tsx` used `as const` which narrowed type to `'active'` only, changed to `as Asset['status']` to match union type `'active' | 'maintenance' | 'retired'`)
 
 ## Dangerous Areas (Edit with Caution)
 1. **Auth Logic**: `authStore.ts`, `ProtectedRoute.tsx`, `backend/src/routes/auth.ts` - breaks all logins

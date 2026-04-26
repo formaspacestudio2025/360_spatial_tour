@@ -331,6 +331,34 @@ The user reported that the Issue management feature was still not working. Addit
 
 ## 2026-04-25
 
+## 2026-04-26
+
+### Issue: TypeScript Build Error - Asset Status Type Mismatch
+**Issue:**
+- `npm run build` failed with TypeScript errors in `AssetFormModal.tsx` and `AssetManagement.tsx`
+- Error: `Type '"active" | "maintenance" | "retired"' is not assignable to type '"active"'`
+- The `status` field in form state was initialized with `as const`, which narrowed the type to literal `'active'` only
+- This prevented assigning values like `'maintenance'` or `'retired'` from `Asset.status`
+
+**Fix:**
+1. Changed `status: 'active' as const` to `status: 'active' as Asset['status']` in both files
+2. This allows the form state to accept all valid Asset status values (`'active' | 'maintenance' | 'retired'`)
+
+**Files changed:**
+- `frontend/src/components/viewer/AssetFormModal.tsx` (lines 22, 42 - fixed type assertion)
+- `frontend/src/pages/AssetManagement.tsx` (line 18 - fixed type assertion)
+
+**Risk:**
+- VERY LOW - Pure type annotation fix; no behavior changes
+- `as Asset['status']` is more correct and expressive than `as const`
+
+**How to verify:**
+1. Run `cd frontend && npm run build`
+2. Build should complete successfully without TypeScript errors
+3. Test creating/editing assets with different status values (active, maintenance, retired)
+
+---
+
 ### Issue: Issue File Attachments UI (Phase 1.9)
 
 **Issue:**

@@ -31,7 +31,7 @@
 | Issue Management | ✅ Working | Full CRUD + comments + attachments + history + CSV export; SLA/approval workflow |
 | Dashboard | ⚠️ Weak | Basic stat cards (count-only), no charts, no KPIs |
 | Authentication | ✅ Working | JWT, role-based (admin/editor/viewer) |
-| User Management | ⚠️ Partial | Listed in dashboard team section; no full CRUD UI |
+| User Management | ✅ Completed | Listed in dashboard team section; no full CRUD UI |
 | Walkthrough CRUD | ✅ Working | Create/edit/delete/search walkthroughs |
 | AI Tag System | ✅ Working | Tags placed on scene, filter/visibility toggle |
 | Hotspot Media Manager | ✅ Working | Upload/manage images, videos, documents per hotspot |
@@ -245,10 +245,10 @@
 **Phase 1 Exit Criteria:**
 - [X] Issues: full CRUD + comments + attachments + SLA + approval workflow
 - [X] Dashboard: charts showing trends, not just counts
-- [ ] User Management: full admin UI
+- [X] User Management: full admin UI
 - [ ] RBAC: org/property-level permissions enforced
 - [ ] Inspection Mode: usable in the viewer
-- [ ] Asset Registry: assets pinned to scenes
+- [ ] Asset Registry: assets pinned to scenes (basic CRUD implemented, scene pin in progress)
 - [ ] PDF reports: issue + inspection exportable
 
 ---
@@ -421,6 +421,8 @@
 ### Current Sprint Overview
 - **Sprint 1.12** – Issue SLA Timer + Auto‑Escalation – ✅ Completed (2026‑04‑26)
 - **Sprint 1.13** – User Management UI (full CRUD) – ✅ Completed (2026‑04‑26)
+- **Sprint 1.14** – Asset Registry (Basic CRUD + scene pin) – 🔴 Planned
+- **Sprint 1.15** – TypeScript Build Fix (AssetFormModal, AssetManagement) – ✅ Completed (2026‑04‑26)
 
 ### Phase 1 Status
 
@@ -441,6 +443,7 @@
 | 1.12 | Issue SLA Timer + Auto-Escalation | ✅ Done | P1 |
 | 1.13 | User Management UI (full CRUD) | ✅ Done | P2 |
 | 1.14 | Asset Registry (Basic CRUD + scene pin) | 🔴 Planned | P2 |
+| 1.14.1 | Asset TypeScript Build Fix | ✅ Done | - |
 | 1.15 | Inspection Mode in Viewer | 🔴 Planned | P2 |
 | 1.16 | PDF Report Export | 🔴 Planned | P2 |
 | 1.17 | Issue PDF Export | 🔴 Planned | P2 |

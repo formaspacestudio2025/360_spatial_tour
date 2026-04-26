@@ -6,6 +6,7 @@ import { PerspectiveCamera } from 'three';
 import Sphere360 from './Sphere360';
 import HotspotMarker from './HotspotMarker';
 import IssueMarker from './IssueMarker';
+import AssetMarker from './AssetMarker';
 import NadirPatch from './NadirPatch';
 import { AITagMarker } from '../ai/AITagMarker';
 import { useHotspotStore } from '@/stores/hotspotStore';
@@ -13,6 +14,7 @@ import { useAITagStore } from '@/stores/aiTagStore';
 import { Hotspot } from '@/api/hotspots';
 import { AITag } from '@/api/ai';
 import { Issue } from '@/types/issue';
+import { Asset } from '@/types';
 import { Maximize2, Minimize2, ZoomIn, Loader2, Eye, EyeOff } from 'lucide-react';
 
 interface Viewer360Props {
@@ -20,6 +22,7 @@ interface Viewer360Props {
   hotspots?: Hotspot[];
   aiTags?: AITag[];
   issueMarkers?: Issue[];
+  assetMarkers?: Asset[];
   onSceneChange?: (sceneId: string, orientation?: { yaw: number; pitch: number }) => void;
   onPlaceHotspot?: (yaw: number, pitch: number) => void;
   onPlaceIssue?: (yaw: number, pitch: number) => void;
@@ -30,6 +33,8 @@ interface Viewer360Props {
   nadirOpacity?: number; // NEW: Nadir image opacity 0-1 (default 1.0)
   initialOrientation?: { yaw: number; pitch: number } | null;
   transitionStyle?: string;
+      isPlacingAsset?: boolean;
+      onPlaceAsset?: (yaw: number, pitch: number) => void;
 }
 
 function SceneContent({
@@ -37,10 +42,13 @@ function SceneContent({
   hotspots,
   aiTags,
   issueMarkers,
+  assetMarkers,
   onSceneChange,
   onPlaceHotspot,
   onPlaceIssue,
+  onPlaceAsset,
   isPlacingIssue,
+  isPlacingAsset,
   nadirImage,
   nadirScale,
   nadirRotation,
@@ -51,10 +59,13 @@ function SceneContent({
   hotspots?: Hotspot[];
   aiTags?: AITag[];
   issueMarkers?: Issue[];
+  assetMarkers?: Asset[];
   onSceneChange?: (sceneId: string, orientation?: { yaw: number; pitch: number }) => void;
   onPlaceHotspot?: (yaw: number, pitch: number) => void;
   onPlaceIssue?: (yaw: number, pitch: number) => void;
+  onPlaceAsset?: (yaw: number, pitch: number) => void;
   isPlacingIssue?: boolean;
+  isPlacingAsset?: boolean;
   nadirImage?: string;
   nadirScale?: number;
   nadirRotation?: number;
@@ -100,7 +111,8 @@ function SceneContent({
     (e: ThreeEvent<MouseEvent>) => {
       const placingHotspot = isPlacing && onPlaceHotspot;
       const placingIssue = (isPlacingIssue ?? false) && onPlaceIssue;
-      if (!placingHotspot && !placingIssue) return;
+    const placingAsset = (isPlacingAsset ?? false) && onPlaceAsset;
+      if (!placingHotspot && !placingIssue && !placingAsset) return;
       e.stopPropagation();
 
       // Raycast against the sphere
@@ -115,16 +127,18 @@ function SceneContent({
           // Convert to yaw/pitch
           const yaw = Math.atan2(p.x, p.z);
           const pitch = Math.asin(Math.max(-1, Math.min(1, p.y)));
-          if (placingHotspot) {
-            onPlaceHotspot!(yaw, pitch);
-          } else if (placingIssue) {
-            onPlaceIssue!(yaw, pitch);
+          if (placingHotspot && onPlaceHotspot) {
+            onPlaceHotspot(yaw, pitch);
+          } else if (placingIssue && onPlaceIssue) {
+            onPlaceIssue(yaw, pitch);
+          } else if (placingAsset && onPlaceAsset) {
+            onPlaceAsset(yaw, pitch);
           }
           break;
         }
       }
     },
-    [isPlacing, isPlacingIssue, onPlaceHotspot, onPlaceIssue, camera, raycaster, scene]
+    [isPlacing, isPlacingIssue, isPlacingAsset, onPlaceHotspot, onPlaceIssue, onPlaceAsset, camera, raycaster, scene]
   );
 
   return (
@@ -134,7 +148,7 @@ function SceneContent({
         <HotspotMarker
           key={hotspot.id}
           hotspot={hotspot}
-          onNavigate={(id, orientation) => onSceneChange?.(id, orientation)}
+          onNavigate={(id, orientation) => onSceneChange && onSceneChange(id, orientation)}
         />
       ))}
       {showTags && filteredTags.map((tag) => (
@@ -142,6 +156,9 @@ function SceneContent({
       ))}
       {issueMarkers?.map((issue) => (
         <IssueMarker key={issue.id} issue={issue} />
+      ))}
+      {assetMarkers?.map((asset) => (
+        <AssetMarker key={asset.id} asset={asset} />
       ))}
       {/* NEW: Nadir Patch */}
       {nadirImage && (
@@ -161,10 +178,13 @@ function Viewer360({
   hotspots,
   aiTags,
   issueMarkers,
+  assetMarkers,
   onSceneChange,
   onPlaceHotspot,
   onPlaceIssue,
+  onPlaceAsset,
   isPlacingIssue,
+  isPlacingAsset,
   nadirImage,
   nadirScale,
   nadirRotation,
@@ -278,7 +298,7 @@ function Viewer360({
   return (
     <div
       ref={containerRef}
-      className={`w-full h-full relative bg-black ${isPlacing ? 'cursor-crosshair' : 'cursor-grab'}`}
+      className={`w-full h-full relative bg-black ${isPlacing || isPlacingIssue || isPlacingAsset ? 'cursor-crosshair' : 'cursor-grab'}`}
     >
       {/* Loading overlay */}
       {(isLoading || opacity < 1) && (
@@ -350,10 +370,13 @@ function Viewer360({
               hotspots={hotspots}
               aiTags={aiTags}
               issueMarkers={issueMarkers}
+              assetMarkers={assetMarkers}
               onSceneChange={onSceneChange}
               onPlaceHotspot={onPlaceHotspot}
               onPlaceIssue={onPlaceIssue}
+              onPlaceAsset={onPlaceAsset}
               isPlacingIssue={isPlacingIssue}
+              isPlacingAsset={isPlacingAsset}
               nadirImage={nadirImage}
               nadirScale={nadirScale}
               nadirRotation={nadirRotation}

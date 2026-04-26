@@ -125,6 +125,26 @@ export interface Comment {
   created_at: string;
 }
 
+export type AssetType = 'HVAC' | 'Elevator' | 'Fire Extinguisher' | 'Lighting' | 'Plumbing' | 'Other';
+
+export interface Asset {
+  id: string;
+  name: string;
+  type: AssetType;
+  brand?: string;
+  model?: string;
+  serial_number?: string;
+  scene_id?: string;
+  yaw?: number;
+  pitch?: number;
+  floor?: number;
+  room?: string;
+  status: 'active' | 'maintenance' | 'retired';
+  walkthrough_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 // API Response Types
 export interface ApiResponse<T> {
   success: boolean;

@@ -6,6 +6,7 @@ import Register from './pages/Register';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import IssueListPage from './components/issueManagement/IssueListPage';
 import UserManagement from './pages/UserManagement';
+import AssetManagement from './pages/AssetManagement';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
       <Route path="/walkthrough/:id" element={<ProtectedRoute><WalkthroughViewer /></ProtectedRoute>} />
       <Route path="/issues" element={<ProtectedRoute><IssueListPage /></ProtectedRoute>} />
       <Route path="/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
+      <Route path="/assets" element={<ProtectedRoute><AssetManagement /></ProtectedRoute>} />
     </Routes>
   );
 }

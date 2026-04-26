@@ -498,6 +498,42 @@
       "updated_at": "2026-04-26T08:53:52.110Z"
     }
   ],
+  "assets": [
+    {
+      "id": "083b074d-e9f1-49aa-850f-a61eb460cb9c",
+      "name": "FAN",
+      "type": "Other",
+      "brand": "ss",
+      "model": "aa",
+      "serial_number": "ss",
+      "scene_id": null,
+      "yaw": null,
+      "pitch": null,
+      "floor": null,
+      "room": null,
+      "status": "active",
+      "walkthrough_id": null,
+      "created_at": "2026-04-26T14:50:42.404Z",
+      "updated_at": "2026-04-26T14:50:42.405Z"
+    },
+    {
+      "id": "edf6a51d-5938-48d4-ae8f-bb68343619bd",
+      "name": "Table",
+      "type": "Other",
+      "brand": "ss",
+      "model": "ss",
+      "serial_number": "sss",
+      "scene_id": "14928d8f-ae50-4d3f-8556-12cf6df811bc",
+      "yaw": -2.7747385866302348,
+      "pitch": -0.4089696861941723,
+      "floor": null,
+      "room": null,
+      "status": "active",
+      "walkthrough_id": "1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4",
+      "created_at": "2026-04-26T16:04:10.642Z",
+      "updated_at": "2026-04-26T16:04:10.642Z"
+    }
+  ],
   "versions": [],
   "walkthrough_members": [],
   "comments": [],

@@ -15,7 +15,7 @@ router.get('/walkthroughs/:walkthroughId/scenes', (req, res) => {
     
     // Add image URLs to each scene
     const scenesWithUrls = scenes.map(scene => {
-      const imageUrl = getFileUrl(scene.image_path);
+      const imageUrl = getFileUrl(scene.image_path) || scene.image_path;
       const thumbnailUrl = scene.thumbnail_path ? getFileUrl(scene.thumbnail_path) : null;
       const nadirImageUrl = scene.nadir_image_path ? getFileUrl(scene.nadir_image_path) : null;
       console.log(`Scene ${scene.id}: image_path=${scene.image_path}, image_url=${imageUrl}, nadir=${scene.nadir_image_path}`);

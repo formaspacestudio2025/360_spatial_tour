@@ -5,7 +5,9 @@ import { walkthroughApi } from '@/api/walkthroughs';
 import { scenesApi } from '@/api/scenes';
 import { hotspotsApi } from '@/api/hotspots';
 import { issuesApi } from '@/api/issuesApi';
+import { assetsApi } from '@/api/assetsApi';
 import { Issue } from '@/types/issue';
+import { Asset } from '@/types';
 import { aiApi, AITag } from '@/api/ai';
 import Viewer360 from '@/components/viewer/Viewer360';
 import SceneList from '@/components/viewer/SceneList';
@@ -17,16 +19,17 @@ import { AITagFilter } from '@/components/ai/AITagFilter';
 import { SceneGraphEditor } from '@/components/graph/SceneGraphEditor';
 import Sidebar from '@/components/layout/Sidebar';
 import IssueFormModal from '@/components/viewer/IssueFormModal';
+import AssetFormModal from '@/components/viewer/AssetFormModal';
 import { useViewerStore } from '@/stores/viewerStore';
 import { useHotspotStore } from '@/stores/hotspotStore';
 import { useAITagStore } from '@/stores/aiTagStore';
 import { canEdit } from '@/stores/authStore';
 import { useAuthStore } from '@/stores/authStore';
 import { Scene } from '@/types';
-import { ArrowLeft, Upload, Image, Navigation2, BrainCircuit, GitGraph, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Upload, Image, Navigation2, BrainCircuit, GitGraph, AlertCircle, Box } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-type SidebarTab = 'scenes' | 'hotspots' | 'ai' | 'graph' | 'issues';
+type SidebarTab = 'scenes' | 'hotspots' | 'ai' | 'graph' | 'issues' | 'assets';
 
 function WalkthroughViewer() {
   const { id } = useParams<{ id: string }>();
@@ -43,6 +46,11 @@ function WalkthroughViewer() {
   const queryClient = useQueryClient();
   const [issues, setIssues] = useState<Issue[]>([]);
   const [isPlacingIssue, setIsPlacingIssue] = useState(false);
+  const [isPlacingAsset, setIsPlacingAsset] = useState(false);
+  const [pendingAssetCoord, setPendingAssetCoord] = useState<{ yaw: number; pitch: number } | null>(null);
+  const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
+  const [assetMarkers, setAssetMarkers] = useState<Asset[]>([]);
+  const [showAssetModal, setShowAssetModal] = useState(false);
   const [pendingIssueCoord, setPendingIssueCoord] = useState<{ yaw: number; pitch: number } | null>(null);
   const [editingIssue, setEditingIssue] = useState<Issue | null>(null);
   const [showIssueModal, setShowIssueModal] = useState(false);
@@ -82,6 +90,24 @@ function WalkthroughViewer() {
   useEffect(() => {
     setIssues(issuesData?.data || []);
   }, [issuesData]);
+
+  // Fetch assets for walkthrough, filter by current scene
+  const { data: assetsData } = useQuery({
+    queryKey: ['assets', id],
+    queryFn: () => assetsApi.getAll(id!),
+    enabled: !!id,
+  });
+  useEffect(() => {
+    if (assetsData && currentScene) {
+      console.log('Assets data:', assetsData);
+      const sceneAssets = assetsData.filter((a: Asset) => a.scene_id === currentScene.id);
+      console.log('Filtered assets for scene', currentScene.id, ':', sceneAssets);
+      setAssetMarkers(sceneAssets);
+    } else {
+      console.log('No assets data or current scene');
+      setAssetMarkers([]);
+    }
+  }, [assetsData, currentScene]);
 
   // Filter issues that have valid spatial coordinates
   const spatialIssues = issues.filter(
@@ -157,6 +183,7 @@ function WalkthroughViewer() {
 
   const createIssueMutation = useMutation({
     mutationFn: (data: any) => issuesApi.create(data),
+
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['issues', currentScene?.id] });
       setShowIssueModal(false);
@@ -165,6 +192,11 @@ function WalkthroughViewer() {
     },
   });
 
+  const handlePlaceAsset = useCallback((yaw: number, pitch: number) => {
+    setPendingAssetCoord({ yaw, pitch });
+    setEditingAsset(null);
+    setShowAssetModal(true);
+  }, []);
   const updateIssueMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => issuesApi.update(id, data),
     onSuccess: () => {
@@ -181,6 +213,32 @@ function WalkthroughViewer() {
     },
   });
 
+  const createAssetMutation = useMutation({
+    mutationFn: (data: any) => assetsApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['assets'] });
+      setShowAssetModal(false);
+      setIsPlacingAsset(false);
+      setPendingAssetCoord(null);
+    },
+  });
+
+  const updateAssetMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => assetsApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['assets'] });
+      setShowAssetModal(false);
+      setEditingAsset(null);
+    },
+  });
+
+  const deleteAssetMutation = useMutation({
+    mutationFn: (id: string) => assetsApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['assets'] });
+    },
+  });
+
   const handleIssueSubmit = (formData: any) => {
     if (editingIssue) {
       updateIssueMutation.mutate({ id: editingIssue.id, data: formData });
@@ -191,6 +249,23 @@ function WalkthroughViewer() {
         scene_id: currentScene!.id,
         yaw: pendingIssueCoord.yaw,
         pitch: pendingIssueCoord.pitch,
+      });
+    }
+  };
+
+  const handleAssetSubmit = (formData: any) => {
+    console.log('Asset submit formData:', formData);
+    if (editingAsset) {
+      updateAssetMutation.mutate({ id: editingAsset.id, data: formData });
+    } else {
+      const sceneId = formData.scene_id || currentScene!.id;
+      console.log('Creating asset with scene_id:', sceneId, 'yaw:', formData.yaw, 'pitch:', formData.pitch);
+      createAssetMutation.mutate({
+        ...formData,
+        walkthrough_id: id!,
+        scene_id: sceneId,
+        yaw: formData.yaw,
+        pitch: formData.pitch,
       });
     }
   };
@@ -338,6 +413,17 @@ function WalkthroughViewer() {
               <AlertCircle size={14} />
               Issues
             </button>
+            <button
+              onClick={() => { setActiveTab('assets'); setViewMode('viewer'); }}
+              className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                activeTab === 'assets'
+                  ? 'text-primary-400 border-b-2 border-primary-500'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <Box size={14} />
+              Assets
+            </button>
           </div>
 
           {/* Tab content */}
@@ -440,6 +526,67 @@ function WalkthroughViewer() {
                   ))}
                 </div>
               </div>
+            ) : activeTab === 'assets' ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-white font-semibold">Assets</h3>
+                  {editorMode === 'edit' && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => { setEditingAsset(null); setPendingAssetCoord(null); setShowAssetModal(true); }}
+                        className="px-3 py-1.5 rounded-lg text-xs bg-primary-600 hover:bg-primary-700 text-white transition-colors"
+                      >
+                        Add Asset
+                      </button>
+                      <button
+                        onClick={() => setIsPlacingAsset(!isPlacingAsset)}
+                        className={`px-3 py-1.5 rounded-lg text-xs transition-colors ${
+                          isPlacingAsset
+                            ? 'bg-red-600 hover:bg-red-700 text-white'
+                            : 'bg-primary-600 hover:bg-primary-700 text-white'
+                        }`}
+                      >
+                        {isPlacingAsset ? 'Cancel' : 'Place Asset Pin'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <div className="text-gray-400 text-sm">
+                  {assetMarkers?.length === 0 ? 'No assets pinned to this scene.' : `${assetMarkers?.length || 0} asset(s) pinned.`}
+                </div>
+                <div className="space-y-2">
+                  {assetMarkers?.map(asset => (
+                    <div key={asset.id} className="p-3 bg-gray-800/50 border border-gray-700 rounded-xl hover:border-primary-500/50 transition-all group">
+                      <div className="flex items-start justify-between mb-1">
+                        <div className="text-white text-sm font-semibold truncate flex-1">{asset.name}</div>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => {
+                              setEditingAsset(asset);
+                              setShowAssetModal(true);
+                            }}
+                            className="p-1 text-gray-400 hover:text-primary-400"
+                          >
+                            <Navigation2 size={12} />
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (confirm('Delete this asset?')) {
+                                deleteAssetMutation.mutate(asset.id);
+                              }
+                            }}
+                            className="p-1 text-gray-400 hover:text-red-400"
+                          >
+                            <AlertCircle size={12} />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="text-xs text-gray-400">{asset.type}</div>
+                      {asset.brand && <div className="text-xs text-gray-500">{asset.brand} {asset.model}</div>}
+                    </div>
+                  ))}
+                </div>
+              </div>
             ) : (
               <div className="text-gray-400 text-sm text-center py-8">
                 Switch to Graph view to see navigation map
@@ -457,10 +604,13 @@ function WalkthroughViewer() {
                 hotspots={hotspots}
                 issueMarkers={spatialIssues}
                 aiTags={aiTags.filter((t) => t.scene_id === currentScene.id)}
+                assetMarkers={assetMarkers}
                 onSceneChange={handleSceneChange}
                 onPlaceHotspot={handlePlaceHotspot}
                 onPlaceIssue={handlePlaceIssue}
+                onPlaceAsset={handlePlaceAsset}
                 isPlacingIssue={isPlacingIssue && editorMode === 'edit'}
+                isPlacingAsset={isPlacingAsset && editorMode === 'edit'}
                 nadirImage={currentScene.nadir_image_url || currentScene.nadir_image_path}
                 nadirScale={currentScene.nadir_scale || 1.0}
                 nadirRotation={currentScene.nadir_rotation || 0}
@@ -509,6 +659,21 @@ function WalkthroughViewer() {
         initialData={editingIssue || undefined}
         mode={editingIssue ? 'edit' : 'create'}
         isPending={createIssueMutation.isPending || updateIssueMutation.isPending}
+      />
+
+      {/* Asset Modal */}
+      <AssetFormModal
+        isOpen={showAssetModal}
+        onClose={() => {
+          setShowAssetModal(false);
+          setEditingAsset(null);
+          setPendingAssetCoord(null);
+        }}
+        onSubmit={handleAssetSubmit}
+        initialData={editingAsset}
+        isPending={createAssetMutation.isPending || updateAssetMutation.isPending}
+        sceneId={currentScene?.id}
+        pendingCoord={pendingAssetCoord}
       />
 
       {/* Upload Modal */}
