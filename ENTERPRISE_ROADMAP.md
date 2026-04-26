@@ -418,6 +418,9 @@
 
 ## SECTION 11: SPRINT TRACKER
 
+### Current Sprint Overview
+- **Sprint 1.12** – Issue SLA Timer + Auto‑Escalation – ✅ Completed (2026‑04‑26)
+
 ### Phase 1 Status
 
 | # | Feature | Status | Priority |
@@ -434,7 +437,7 @@
 | 1.9 | Issue File Attachments (before/after photos) | ✅ Done | - |
 | 1.10 | Issue CSV Export | ✅ Done | - |
 | 1.11 | Dashboard Charts (Recharts) | ✅ Done | - |
-| 1.12 | Issue SLA Timer + Auto-Escalation | 🔴 Next | P1 |
+| 1.12 | Issue SLA Timer + Auto-Escalation | ✅ Done | P1 |
 | 1.13 | User Management UI (full CRUD) | 🔴 Planned | P2 |
 | 1.14 | Asset Registry (Basic CRUD + scene pin) | 🔴 Planned | P2 |
 | 1.15 | Inspection Mode in Viewer | 🔴 Planned | P2 |
