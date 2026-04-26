@@ -57,7 +57,7 @@
 4. **Notifications** — no alerting on assignments, SLA breaches, status changes
 5. **Report Generation** — no PDF export of any kind
 6. **Multi-Property Dashboard** — no org-level aggregation across walkthroughs
-7. **Issue SLA Escalation** — ✅ Done (SLA timer + auto-escalation with audit trail)
+7. **Issue SLA Escalation** — SLA field exists but no enforcement/alerting logic
 8. **Floor Plan Navigation** — no floor-aware scene switching; only flat hotspot linking
 9. **Work Order System** — vendors/technicians need actionable task assignments
 
@@ -79,7 +79,7 @@
 | Module | Weakness | Fix Priority |
 |---|---|---|
 | Dashboard | Only counts, no charts, no trends, no KPIs | HIGH |
-| Issue Management | No approval workflow | MEDIUM |
+| Issue Management | No SLA timer, no approval workflow | MEDIUM |
 | User Management | No UI to create/edit/delete users, assign roles | HIGH |
 | View Modes | Only view/edit/share — missing Inspection/Maintenance modes | MEDIUM |
 | Scene Settings | Limited metadata (no floor number, room type, area sqft) | MEDIUM |
@@ -243,7 +243,7 @@
 | W7–8 | Report Engine V1 | Issue PDF report, inspection report, basic asset report |
 
 **Phase 1 Exit Criteria:**
-- [X] Issues: full CRUD + comments + attachments + SLA + approval workflow
+- [ ] Issues: full CRUD + comments + attachments + SLA + approval workflow (SLA pending)
 - [X] Dashboard: charts showing trends, not just counts
 - [ ] User Management: full admin UI
 - [ ] RBAC: org/property-level permissions enforced
@@ -434,7 +434,7 @@
 | 1.9 | Issue File Attachments (before/after photos) | ✅ Done | - |
 | 1.10 | Issue CSV Export | ✅ Done | - |
 | 1.11 | Dashboard Charts (Recharts) | ✅ Done | - |
-| 1.12 | Issue SLA Timer + Auto-Escalation | ✅ Done | - |
+| 1.12 | Issue SLA Timer + Auto-Escalation | 🔴 Next | P1 |
 | 1.13 | User Management UI (full CRUD) | 🔴 Planned | P2 |
 | 1.14 | Asset Registry (Basic CRUD + scene pin) | 🔴 Planned | P2 |
 | 1.15 | Inspection Mode in Viewer | 🔴 Planned | P2 |
@@ -444,4 +444,4 @@
 
 ---
 
-*Last Updated: 2026-04-26 | Document Owner: CTO / Lead Developer*
+*Last Updated: 2026-04-25 | Document Owner: CTO / Lead Developer*
