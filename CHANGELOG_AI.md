@@ -254,7 +254,28 @@ The user reported that the Issue management feature was still not working. Addit
 ---
 
 
-## 2026-04-26
+## 2026-04-27
+
+### Issue: User Management API endpoints missing `/api` prefix
+**Issue:**
+- The frontend `usersApi.ts` incorrectly called `/users` endpoints, causing 404 errors and preventing the User Management panel from displaying users.
+
+**Fix:**
+- Updated all user API calls (`getAll`, `create`, `update`, `delete`) to use `/api/users`.
+- Verified that the backend routes are mounted at `/api/users` and that an admin user exists in the JSON DB.
+
+**Files changed:**
+- `frontend/src/api/usersApi.ts` (added `/api` prefix to all endpoints)
+
+**Risk:**
+- LOW – Only path strings changed; no functional logic altered.
+
+**How to verify:**
+1. Start backend and frontend servers.
+2. Log in as admin (`admin` / `admin123`).
+3. Navigate to User Management (`/users`).
+4. The user list should load without errors.
+
 
 ### Issue: Issue SLA Timer + Auto-Escalation (Phase 1.12)
 

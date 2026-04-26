@@ -6,17 +6,17 @@
 
 ## Frontend Structure (frontend/src/)
 - **Entry**: `main.tsx` → React + React Router + TanStack Query
-- **Pages**: `pages/Dashboard.tsx`, `pages/Login.tsx`, `pages/Register.tsx`, `pages/WalkthroughViewer.tsx`
+- **Pages**: `pages/Dashboard.tsx`, `pages/Login.tsx`, `pages/Register.tsx`, `pages/WalkthroughViewer.tsx`, `pages/UserManagement.tsx`
 - **Components**:
-  - `layout/Header.tsx` - Main nav with issue management link
+  - `layout/Header.tsx` - Main nav with issue management + user management links
   - `issueManagement/IssueListPage.tsx` - Issue list (route: `/issues`)
   - `issueManagement/CreateIssueForm.tsx` - Issue creation form
   - `issueManagement/EditIssueStatus.tsx` - Issue status editor
   - `walkthrough/` - Walkthrough CRUD components
   - `auth/ProtectedRoute.tsx` - Route guard
-- **API Layer**: `api/client.ts` (axios instance with auth interceptor), `api/walkthroughs.ts`, `api/issuesApi.ts` (empty)
+- **API Layer**: `api/client.ts` (axios instance with auth interceptor), `api/walkthroughs.ts`, `api/issuesApi.ts`, `api/usersApi.ts`
 - **State**: `stores/authStore.ts` (Zustand + persist)
-- **Types**: `types/` directory
+- **Types**: `types/index.ts` (User, UserRole, Walkthrough, Scene, Issue, etc.)
 
 ## Backend Structure (backend/src/)
 - **Entry**: `index.ts` (Express + CORS + JSON middleware)

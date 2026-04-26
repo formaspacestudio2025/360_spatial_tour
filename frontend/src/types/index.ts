@@ -15,6 +15,16 @@ export interface Walkthrough {
   scene_count?: number;
 }
 
+export type UserRole = 'admin' | 'editor' | 'viewer';
+
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  role: UserRole;
+  created_at?: string;
+}
+
 export interface Scene {
   id: string;
   walkthrough_id: string;

@@ -35,6 +35,11 @@ function Header() {
             <Link to="/issues" className="text-gray-300 hover:text-white transition-colors">
               Issue Management
             </Link>
+            {user && (user.role === 'admin' || user.role === 'manager') && (
+              <Link to="/users" className="text-gray-300 hover:text-white transition-colors">
+                User Management
+              </Link>
+            )}
           </div>
         </div>
 
