@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(taskkill //F //IM node.exe)",
+      "Bash(npm run *)",
+      "Bash(curl -i -s http://localhost:3000/api/assets)",
+      "Bash(curl *)",
+      "Bash(npm install *)",
+      "Bash(dir *)",
+      "Bash(findstr /i \"inspection\\\\|report\\\\|qrcode\")"
+    ]
+  }
+}
