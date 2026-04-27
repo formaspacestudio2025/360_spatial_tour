@@ -1,10 +1,13 @@
 import express from 'express';
 import { createAsset, getAssets, getAssetById, updateAsset, deleteAsset } from '../services/asset.service';
+import { authenticate } from '../middleware/auth';
+import { requirePermission } from '../middleware/rbac';
 
 const router = express.Router();
+router.use(authenticate);
 
 // Get all assets with optional walkthrough_id filter
-router.get('/', async (req, res) => {
+router.get('/', requirePermission('asset','read'), async (req, res) => {
   try {
     const { walkthrough_id } = req.query;
     const assets = await getAssets(walkthrough_id as string | undefined);
@@ -16,7 +19,7 @@ router.get('/', async (req, res) => {
 });
 
 // Get asset by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', requirePermission('asset','read'), async (req, res) => {
   try {
     const { id } = req.params;
     const asset = await getAssetById(id);
@@ -31,7 +34,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create a new asset
-router.post('/', async (req, res) => {
+router.post('/', requirePermission('asset','write'), async (req, res) => {
   try {
     const assetData = req.body;
     const asset = await createAsset(assetData);
@@ -43,7 +46,7 @@ router.post('/', async (req, res) => {
 });
 
 // Update an asset
-router.put('/:id', async (req, res) => {
+router.put('/:id', requirePermission('asset','write'), async (req, res) => {
   try {
     const { id } = req.params;
     const assetData = req.body;
@@ -59,7 +62,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete an asset
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requirePermission('asset','write'), async (req, res) => {
   try {
     const { id } = req.params;
     const success = await deleteAsset(id);

@@ -15,12 +15,14 @@ export async function createAsset(data: {
   room?: string;
   status?: 'active' | 'maintenance' | 'retired';
   walkthrough_id?: string;
+  org_id?: string;
+  property_id?: string;
 }): Promise<Asset> {
   const id = generateId();
   const now = new Date().toISOString();
 
-  const sql = `INSERT INTO assets (id, name, type, brand, model, serial_number, scene_id, yaw, pitch, floor, room, status, walkthrough_id, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+  const sql = `INSERT INTO assets (id, name, type, brand, model, serial_number, scene_id, yaw, pitch, floor, room, status, walkthrough_id, org_id, property_id, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   await db.prepare(sql).run(
     id,
@@ -36,6 +38,8 @@ export async function createAsset(data: {
     data.room || null,
     data.status || 'active',
     data.walkthrough_id || null,
+    data.org_id || null,
+    data.property_id || null,
     now,
     now
   );
@@ -79,7 +83,7 @@ export async function updateAsset(id: string, data: Partial<Asset>): Promise<Ass
   const sql = `UPDATE assets SET
                 name = ?, type = ?, brand = ?, model = ?, serial_number = ?,
                 scene_id = ?, yaw = ?, pitch = ?, floor = ?, room = ?,
-                status = ?, walkthrough_id = ?, updated_at = ?
+                status = ?, walkthrough_id = ?, org_id = ?, property_id = ?, updated_at = ?
                 WHERE id = ?`;
 
   await db.prepare(sql).run(
@@ -95,6 +99,8 @@ export async function updateAsset(id: string, data: Partial<Asset>): Promise<Ass
     updated.room || null,
     updated.status,
     updated.walkthrough_id || null,
+    updated.org_id || null,
+    updated.property_id || null,
     now,
     id
   );

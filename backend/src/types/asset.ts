@@ -12,6 +12,8 @@ export interface Asset {
   room?: string;
   status: 'active' | 'maintenance' | 'retired';
   walkthrough_id?: string;  // which property/walkthrough it belongs to
+  org_id?: string;         // organization that owns this asset
+  property_id?: string;     // specific property (if different from walkthrough)
   created_at: string;
   updated_at: string;
 }

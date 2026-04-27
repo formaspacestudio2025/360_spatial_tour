@@ -2,6 +2,7 @@ import db from '../config/database';
 import { generateId } from '../utils/helpers';
 
 export interface Walkthrough {
+  org_id?: string; // organization owner
   id: string;
   name: string;
   client?: string;

@@ -18,6 +18,8 @@ export interface Issue {
   description: string;
   status: 'open' | 'in-progress' | 'resolved' | 'closed';
   priority: 'low' | 'medium' | 'high' | 'critical';
+  org_id?: string;         // organization that owns this issue
+  property_id?: string;     // specific property (if different from walkthrough)
   attachments?: IssueAttachment[];
 }
 export type CreateIssueData = Omit<Issue, 'id'>;

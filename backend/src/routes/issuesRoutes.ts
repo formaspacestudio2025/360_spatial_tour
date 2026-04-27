@@ -3,12 +3,15 @@ import multer from 'multer';
 import { createIssue, getIssues, updateIssue, deleteIssue, addComment, getComments, deleteComment, addAttachment, getAttachments, deleteAttachment, checkAndEscalateSLA, getSlaStats } from '../services/issue.service';
 import { storageService } from '../services/storage.service';
 import { getFileUrl } from '../config/storage';
+import { authenticate } from '../middleware/auth';
+import { requirePermission } from '../middleware/rbac';
 
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
+router.use(authenticate);
 
 // Create a new issue
-router.post('/', async (req, res) => {
+router.post('/', requirePermission('issue','write'), async (req, res) => {
   try {
     const issueData = req.body;
     const issue = await createIssue(issueData);
@@ -20,7 +23,7 @@ router.post('/', async (req, res) => {
 });
 
 // Get all issues with optional filters
-router.get('/', async (req, res) => {
+router.get('/', requirePermission('issue','read'), async (req, res) => {
   try {
     const { scene_id, walkthrough_id } = req.query;
     let issues = await getIssues();
@@ -38,7 +41,7 @@ router.get('/', async (req, res) => {
 });
 
 // Update an issue
-router.put('/:id', async (req, res) => {
+router.put('/:id', requirePermission('issue','write'), async (req, res) => {
   try {
     const { id } = req.params;
     const issueData = req.body;
@@ -54,7 +57,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete an issue
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requirePermission('issue','write'), async (req, res) => {
   try {
     const { id } = req.params;
     const success = await deleteIssue(id);
@@ -69,7 +72,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // Get issue by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', requirePermission('issue','read'), async (req, res) => {
   try {
     const { id } = req.params;
     const issues = await getIssues();

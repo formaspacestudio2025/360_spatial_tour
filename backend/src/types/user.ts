@@ -4,6 +4,8 @@ export interface User {
   email: string;
   password_hash: string;
   role: 'admin' | 'manager' | 'editor' | 'viewer' | 'contractor' | 'client_guest';
+  org_id?: string;        // Organization the user belongs to
+  property_id?: string;   // Optional property-level scope (for property managers)
   created_at: string;
 }
 

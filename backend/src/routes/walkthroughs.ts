@@ -2,11 +2,12 @@ import { Router } from 'express';
 import { walkthroughService, CreateWalkthroughData } from '../services/walkthrough.service';
 import { AppError } from '../middleware/error';
 import { authenticate, requireRole } from '../middleware/auth';
+import { requirePermission } from '../middleware/rbac';
 
 const router = Router();
 
 // GET /api/walkthroughs - Get all walkthroughs (public)
-router.get('/', (req, res) => {
+router.get('/', authenticate, requirePermission('walkthrough','read'), (req, res) => {
   try {
     const query = {
       search: req.query.search as string | undefined,

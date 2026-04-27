@@ -191,7 +191,7 @@ export class AuthService {
    */
   private generateToken(user: User): string {
     return jwt.sign(
-      { userId: user.id, username: user.username, role: user.role },
+      { userId: user.id, username: user.username, role: user.role, org_id: (user as any).org_id, property_id: (user as any).property_id },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }
     );

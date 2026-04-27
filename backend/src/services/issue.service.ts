@@ -64,6 +64,8 @@ export async function createIssue(data: {
   description?: string;
   assigned_to?: string;
   due_date?: string;
+  org_id?: string;
+  property_id?: string;
   attachments?: IssueAttachment[];
 }): Promise<Issue> {
   const id = generateId();
@@ -78,12 +80,12 @@ export async function createIssue(data: {
 
   const priority = data.priority || data.severity;
 
-  const sql = `INSERT INTO issues (id, walkthrough_id, scene_id, yaw, pitch, floor, room, type, severity, priority, status, title, description, assigned_to, due_date, history, comments, attachments, created_at, updated_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+  const sql = `INSERT INTO issues (id, walkthrough_id, scene_id, yaw, pitch, floor, room, type, severity, priority, status, title, description, assigned_to, due_date, org_id, property_id, history, comments, attachments, created_at, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   await db.prepare(sql).run(
     id, data.walkthrough_id, data.scene_id, data.yaw, data.pitch, data.floor || null, data.room || null,
-    data.type, data.severity, priority, 'open', data.title, data.description || '', data.assigned_to || null, data.due_date || null, initialHistory, [], data.attachments || [], now, now
+    data.type, data.severity, priority, 'open', data.title, data.description || '', data.assigned_to || null, data.due_date || null, data.org_id || null, data.property_id || null, initialHistory, [], data.attachments || [], now, now
   );
 
   return {
@@ -141,12 +143,14 @@ export async function updateIssue(id: string, data: Partial<Issue>): Promise<Iss
   const sql = `UPDATE issues SET
                 walkthrough_id = ?, scene_id = ?, yaw = ?, pitch = ?,
                 floor = ?, room = ?, type = ?, severity = ?, priority = ?,
+                org_id = ?, property_id = ?,
                 status = ?, title = ?, description = ?, assigned_to = ?, due_date = ?, resolution_proof_url = ?, history = ?, comments = ?, attachments = ?, updated_at = ?
                WHERE id = ?`;
 
   await db.prepare(sql).run(
     updated.walkthrough_id, updated.scene_id, updated.yaw, updated.pitch,
     updated.floor || null, updated.room || null, updated.type, updated.severity, updated.priority || updated.severity,
+    updated.org_id || null, updated.property_id || null,
     updated.status, updated.title, updated.description || '', updated.assigned_to || null, updated.due_date || null, updated.resolution_proof_url || null, updated.history, updated.comments || [], updated.attachments || [], now,
     id
   );
