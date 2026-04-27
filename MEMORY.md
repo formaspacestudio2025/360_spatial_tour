@@ -150,3 +150,5 @@
 - Frontend: Check browser console for API requests, React Query devtools (not installed)
 - Auth: Clear localStorage if auth state corrupts
 - DB: Inspect `backend/data/db.json` directly for data issues
+
+22. RBAC Implemented (added: org/property-level permissions via `backend/src/middleware/rbac.ts`, role hierarchy `ROLE_HIERARCHY` in `backend/src/types/user.ts`, route protection with `requirePermission` middleware for assets, issues, walkthroughs).

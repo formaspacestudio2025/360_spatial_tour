@@ -397,3 +397,35 @@ The user reported that the Issue management feature was still not working. Addit
 9. Verify the attachment is removed from the list
 
 ---
+---
+## 2026-04-27
+
+### Issue: Role‑Based Access Control (RBAC) Implementation
+**Issue:**
+- No granular permission checks existed; all authenticated users could access/modify assets, issues, and walkthroughs across organizations.
+- Required org‑level and property‑level restrictions, admin bypass, and owner‑only write guards as outlined in the Enterprise Roadmap (Phase 1 Sprint 1.15+).
+
+**Fix:**
+1. Added `backend/src/middleware/rbac.ts` implementing `requirePermission(resource, action)`:
+   - Authenticated‑user check, admin bypass, org‑level and property‑level validation.
+   - Owner‑only write enforcement via `created_by` field.
+2. Defined permission constants and role hierarchy in `backend/src/types/user.ts` (`Permission` enum, `ROLE_HIERARCHY`, `hasRole`).
+3. Integrated RBAC middleware into routes:
+   - `backend/src/routes/assets.ts`
+   - `backend/src/routes/issuesRoutes.ts`
+   - `backend/src/routes/walkthroughs.ts`
+4. Updated related services and types to include `org_id` and `property_id` where needed.
+5. Added documentation in `MEMORY.md` (entry 22) describing RBAC implementation.
+
+**Risk:**
+- LOW – Adds permission checks without altering existing business logic. Admins retain full access; other roles are restricted as defined.
+- No schema migrations required; existing JSON DB fields (`org_id`, `property_id`) already present.
+
+**How to verify:**
+1. Create users with different roles (`admin`, `manager`, `editor`, `viewer`).
+2. Attempt to read/write assets, issues, and walkthroughs across orgs and properties.
+3. Confirm admin can access all resources, others are limited by org/property.
+4. Verify owners can edit their own resources; non‑owners receive 403.
+5. Run the generated RBAC test suite (Task #3) – all tests should pass.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
