@@ -29,7 +29,7 @@ import { Scene } from '@/types';
 import { ArrowLeft, Upload, Image, Navigation2, BrainCircuit, GitGraph, AlertCircle, Box } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-type SidebarTab = 'scenes' | 'hotspots' | 'ai' | 'graph' | 'issues' | 'assets';
+type SidebarTab = | scenes | hotspots | ai | graph | issues | assets | inspection;
 
 function WalkthroughViewer() {
   const { id } = useParams<{ id: string }>();

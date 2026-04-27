@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Eye, Edit3, Share2, Download, QrCode, Link as LinkIcon, Copy, Check } from 'lucide-react';
+import { Eye, Edit3, Share2, Download, QrCode, Link as LinkIcon, Copy, Check, ClipboardCheck } from 'lucide-react';
 
-export type ViewMode = 'view' | 'edit' | 'share';
+export type ViewMode = 'view' | 'edit' | 'share' | 'inspection';
 
 interface ViewModeToolbarProps {
   currentMode: ViewMode;
@@ -29,7 +29,7 @@ export function ViewModeToolbar({ currentMode, onModeChange, walkthroughId, canE
   };
 
   const handleCopyEmbed = async () => {
-    const embedCode = `<iframe src="${embedUrl}" width="100%" height="600" frameborder="0"></iframe>`;
+    const embedCode = `<iframe src="${embedUrl}" width="100%" height="600"></iframe>`;
     try {
       await navigator.clipboard.writeText(embedCode);
       setCopied(true);
@@ -91,6 +91,19 @@ export function ViewModeToolbar({ currentMode, onModeChange, walkthroughId, canE
         >
           <Share2 size={12} />
           <span>Share</span>
+        </button>
+
+        {/* Inspection Mode */}
+        <button
+          onClick={() => handleModeChange('inspection')}
+          className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${
+            currentMode === 'inspection'
+              ? 'bg-red-600 text-white shadow-lg'
+              : 'text-gray-400 hover:text-white hover:bg-gray-700'
+          }`}
+        >
+          <ClipboardCheck size={12} />
+          <span>Inspection</span>
         </button>
       </div>
 
