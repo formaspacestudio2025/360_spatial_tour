@@ -113,4 +113,18 @@ export const issuesApi = {
     const response = await apiClient.get<{ success: boolean; data: { total_with_sla: number; overdue: number; critical_overdue: number; avg_resolution_days: number } }>('/api/issues/sla/stats');
     return response.data;
   },
+
+  // Upload resolution proof image
+  uploadResolution: async (issueId: string, file: File) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    const response = await apiClient.post<{ success: boolean; data: Issue }>(
+      `/api/issues/${issueId}/resolution`,
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }
+    );
+    return response.data;
+  },
 };

@@ -1,6 +1,6 @@
 import express from 'express';
 import multer from 'multer';
-import { createIssue, getIssues, updateIssue, deleteIssue, addComment, getComments, deleteComment, addAttachment, getAttachments, deleteAttachment, checkAndEscalateSLA, getSlaStats } from '../services/issue.service';
+import { createIssue, getIssues, updateIssue, deleteIssue, addComment, getComments, deleteComment, addAttachment, getAttachments, deleteAttachment, checkAndEscalateSLA, getSlaStats, resolveIssue } from '../services/issue.service';
 import { generateId } from '../utils/generateId';
 import { storageService } from '../services/storage.service';
 import { getFileUrl } from '../config/storage';
@@ -225,6 +225,29 @@ router.delete('/:id/attachments/:attachmentId', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Attachment not found' });
     }
     res.json({ success: true, message: 'Attachment deleted' });
+  } catch (error: unknown) {
+    const err = error as { statusCode?: number; message?: string };
+    res.status(err.statusCode || 500).json({ success: false, message: err.message });
+  }
+});
+
+// Resolve issue with proof image
+router.post('/:id/resolution', requirePermission('issue','write'), upload.single('image'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No image file uploaded' });
+    }
+    // Save file to storage
+    const issue = await getIssues(); // Just to fetch issue for walkthrough_id (could be optimized)
+    const existing = (await getIssues()).find(i => i.id === id);
+    if (!existing) {
+      return res.status(404).json({ success: false, message: 'Issue not found' });
+    }
+    const filePath = await storageService.saveFile(existing.walkthrough_id, req.file, 'issues');
+    const fileUrl = getFileUrl(filePath);
+    const updated = await resolveIssue(id, fileUrl);
+    res.json({ success: true, data: updated });
   } catch (error: unknown) {
     const err = error as { statusCode?: number; message?: string };
     res.status(err.statusCode || 500).json({ success: false, message: err.message });

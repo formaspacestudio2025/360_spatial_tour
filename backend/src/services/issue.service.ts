@@ -150,16 +150,46 @@ export async function updateIssue(id: string, data: Partial<Issue>): Promise<Iss
                 walkthrough_id = ?, scene_id = ?, yaw = ?, pitch = ?,
                 floor = ?, room = ?, type = ?, severity = ?, priority = ?,
                 org_id = ?, property_id = ?,
-                status = ?, title = ?, description = ?, assigned_to = ?, due_date = ?, resolution_proof_url = ?, history = ?, comments = ?, attachments = ?, updated_at = ?
+                status = ?, title = ?, description = ?, assigned_to = ?, due_date = ?, resolution_proof_url = ?, resolution_image_url = ?, resolved_at = ?, history = ?, comments = ?, attachments = ?, updated_at = ?
                WHERE id = ?`;
 
   await db.prepare(sql).run(
     updated.walkthrough_id, updated.scene_id, updated.yaw, updated.pitch,
     updated.floor || null, updated.room || null, updated.type, updated.severity, updated.priority || updated.severity,
     updated.org_id || null, updated.property_id || null,
-    updated.status, updated.title, updated.description || '', updated.assigned_to || null, updated.due_date || null, updated.resolution_proof_url || null, updated.history, updated.comments || [], updated.attachments || [], now,
+    updated.status, updated.title, updated.description || '', updated.assigned_to || null, updated.due_date || null,
+    updated.resolution_proof_url || null, updated.resolution_image_url || null, updated.resolved_at || null,
+    updated.history, updated.comments || [], updated.attachments || [], now,
     id
   );
+
+  return updated;
+}
+
+// ==================== RESOLUTION PROOF ====================
+
+/**
+ * Upload resolution proof image and mark issue as resolved.
+ */
+export async function resolveIssue(
+  id: string,
+  resolutionImageUrl: string
+): Promise<Issue | null> {
+  const now = new Date().toISOString();
+  const existing = await db.prepare('SELECT * FROM issues WHERE id = ?').get(id);
+  if (!existing) return null;
+
+  const updated = {
+    ...existing,
+    resolution_image_url: resolutionImageUrl,
+    resolved_at: now,
+    status: 'resolved' as const,
+    updated_at: now,
+  };
+
+  await db.prepare(
+    `UPDATE issues SET resolution_image_url = ?, resolved_at = ?, status = ?, updated_at = ? WHERE id = ?`
+  ).run(resolutionImageUrl, now, 'resolved', now, id);
 
   return updated;
 }

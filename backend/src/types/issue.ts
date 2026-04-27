@@ -7,6 +7,8 @@ export interface IssueAttachment {
 }
 
 export interface Issue {
+  resolution_image_url?: string;
+  resolved_at?: string;
   id: string;
   walkthrough_id: string;
   scene_id: string;

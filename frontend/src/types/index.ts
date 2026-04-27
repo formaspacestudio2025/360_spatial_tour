@@ -95,6 +95,8 @@ export interface Issue {
   assigned_to?: string;
   created_by?: string;
   due_date?: string;
+  resolution_image_url?: string;
+  resolved_at?: string;
   created_at: string;
   updated_at: string;
 }
