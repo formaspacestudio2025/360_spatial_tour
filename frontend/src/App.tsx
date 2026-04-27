@@ -7,6 +7,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import IssueListPage from './components/issueManagement/IssueListPage';
 import UserManagement from './pages/UserManagement';
 import AssetManagement from './pages/AssetManagement';
+import PermissionMatrix from './pages/PermissionMatrix';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
       <Route path="/issues" element={<ProtectedRoute><IssueListPage /></ProtectedRoute>} />
       <Route path="/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
       <Route path="/assets" element={<ProtectedRoute><AssetManagement /></ProtectedRoute>} />
+      <Route path="/permission-matrix" element={<ProtectedRoute><PermissionMatrix /></ProtectedRoute>} />
     </Routes>
   );
 }

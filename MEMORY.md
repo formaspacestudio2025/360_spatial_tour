@@ -152,3 +152,5 @@
 - DB: Inspect `backend/data/db.json` directly for data issues
 
 22. RBAC Implemented (added: org/property-level permissions via `backend/src/middleware/rbac.ts`, role hierarchy `ROLE_HIERARCHY` in `backend/src/types/user.ts`, route protection with `requirePermission` middleware for assets, issues, walkthroughs).
+23. Org Model implemented (organizations table added to JSON DB, backend CRUD service and routes (`org.service.ts`, `orgs.ts`), TypeScript type `Org`, frontend API `orgsApi.ts`).
+24. Permission Matrix UI added (frontend page `PermissionMatrix.tsx` displays role‑based permissions matrix, accessible via `/permission-matrix`).

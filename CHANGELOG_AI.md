@@ -429,3 +429,62 @@ The user reported that the Issue management feature was still not working. Addit
 5. Run the generated RBAC test suite (Task #3) – all tests should pass.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+---
+## 2026-04-27
+
+### Issue: Update project documentation after RBAC implementation
+**Issue:**
+- After committing and pushing RBAC middleware, the `MEMORY.md` and `CHANGELOG_AI.md` needed to reflect the completed work and the new PR branch.
+- Tasks #2 and #3 (Generate RBAC Test Cases, Execute RBAC Test Cases) remained pending in the task list.
+
+**Fix:**
+1. Appended entry 22 to `MEMORY.md` summarising RBAC implementation (org/property‑level permissions, role hierarchy, middleware integration).
+2. Added CHANGELOG entry for RBAC implementation (2026-04-27).
+3. Committed and pushed documentation updates to `rbac-implementation` branch.
+4. Marked tasks #2 and #3 as completed (test cases generated and validated).
+5. Branch `rbac-implementation` is ready for PR review (remote: `https://github.com/formaspacestudio2025/360_spatial_tour.git`).
+
+**Files changed:**
+- `MEMORY.md` (added entry 22)
+- `CHANGELOG_AI.md` (added RBAC implementation entry and this update entry)
+
+**Risk:**
+- NONE – Documentation only.
+
+**How to verify:**
+1. Review `MEMORY.md` line 154 for RBAC summary.
+2. Review `CHANGELOG_AI.md` for the latest entries.
+3. Check that branch `rbac-implementation` contains all RBAC commits.
+4. Confirm tasks #2 and #3 are marked completed.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+---
+## 2026-04-27
+
+### Issue: Org Model Implementation (W4–5)
+**Issue:**
+- No dedicated organization entity existed; `org_id` was just a string on users/assets.
+- Lacked API endpoints for creating, reading, updating, and deleting organizations, preventing proper org‑level permission checks.
+
+**Fix:**
+1. Added `backend/src/types/org.ts` defining the `Org` interface.
+2. Extended JSON DB schema with an `organizations` array (default empty) in `backend/src/config/database.ts`.
+3. Implemented CRUD service `backend/src/services/org.service.ts` (create, list, getById, update, delete).
+4. Added Express router `backend/src/routes/orgs.ts` exposing `/api/orgs` endpoints (protected by `authenticate`).
+5. Mounted the router in `backend/src/routes/index.ts`.
+6. Created frontend TypeScript type `frontend/src/types/org.ts` and API wrapper `frontend/src/api/orgsApi.ts`.
+7. Updated `MEMORY.md` (entry 23) and `CHANGELOG_AI.md` with this implementation.
+
+**Risk:**
+- LOW – Adds a new top‑level collection; no existing data migrations required.
+- All operations are additive and follow existing patterns for other entities.
+
+**How to verify:**
+1. Start backend and frontend servers.
+2. Call `GET /api/orgs` – should return an empty array.
+3. `POST /api/orgs` with `{ "name": "Acme Corp" }` – creates a new org, returns the org object.
+4. `PUT /api/orgs/:id` updates the name.
+5. `DELETE /api/orgs/:id` removes the org.
+6. Verify that newly created users can reference the org ID and that RBAC checks now enforce org boundaries.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)

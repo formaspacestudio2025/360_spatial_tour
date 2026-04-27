@@ -23,6 +23,7 @@ interface Database {
   comments: any[];
   hotspot_media: any[];  // NEW: Hotspot media attachments
   hotspot_links: any[];  // NEW: Hotspot links
+  organizations: any[]; // NEW: Organization model
 }
 
 // Load or create database
@@ -38,7 +39,8 @@ let db: Database = {
   walkthrough_members: [],
   comments: [],
   hotspot_media: [],  // NEW
-  hotspot_links: []   // NEW
+  hotspot_links: [],  // NEW
+  organizations: []   // NEW: Organization model
 };
 
 if (fs.existsSync(DB_PATH)) {
