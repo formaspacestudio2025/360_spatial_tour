@@ -201,24 +201,24 @@
       "target_yaw": null,
       "target_pitch": null,
       "label": "",
-      "icon_type": "navigation",
+      "icon_type": "room",
       "icon_color": "#10b981",
-      "title": "",
+      "title": "Bedroom",
       "description": "",
       "media_type": null,
       "media_url": null,
       "custom_icon_url": null,
       "is_locked": 0,
-      "metadata": "{\"iconSize\":1,\"customIconUrl\":\"\",\"mediaType\":\"\",\"mediaUrl\":\"\",\"transitionStyle\":\"zoom-fade\"}",
+      "metadata": "{\"iconSize\":2,\"customIconUrl\":\"\",\"mediaType\":\"\",\"mediaUrl\":\"\",\"transitionStyle\":\"zoom-fade\"}",
       "created_at": "2026-04-21T11:54:10.305Z",
-      "updated_at": "2026-04-26T08:57:59.203Z",
-      "animation_type": "pulse-ring",
+      "updated_at": "2026-04-27T10:18:57.375Z",
+      "animation_type": "ping",
       "animation_speed": 1,
       "animation_intensity": 0.5,
-      "icon_size": 1,
+      "icon_size": 2,
       "opacity": 1,
       "label_position": "top",
-      "hover_scale": 1.2,
+      "hover_scale": 2,
       "visible_distance": 0,
       "always_visible": 1,
       "background_color": "#06b6d4"
@@ -283,7 +283,7 @@
       "always_visible": 1,
       "background_color": null,
       "created_at": "2026-04-24T19:07:10.311Z",
-      "updated_at": "2026-04-26T08:57:14.635Z"
+      "updated_at": "2026-04-27T11:20:27.428Z"
     },
     {
       "id": "663af7b9-166d-4b02-9d82-a3841b1144c3",
@@ -496,26 +496,40 @@
       "attachments": [],
       "created_at": "2026-04-25T13:59:51.601Z",
       "updated_at": "2026-04-26T08:53:52.110Z"
+    },
+    {
+      "id": "ddfa5fd1-e0e9-4b41-a485-640f54db3600",
+      "walkthrough_id": "1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4",
+      "scene_id": "14928d8f-ae50-4d3f-8556-12cf6df811bc",
+      "yaw": 0.09542462700773835,
+      "pitch": 0.010539621016879974,
+      "floor": null,
+      "room": null,
+      "type": "damage",
+      "severity": "medium",
+      "priority": "medium",
+      "status": "open",
+      "title": "Damage TV",
+      "description": "ssss",
+      "assigned_to": "sajid",
+      "due_date": "2026-01-06",
+      "org_id": null,
+      "property_id": null,
+      "history": [
+        {
+          "id": "6b321aa8-0504-48f2-b88e-275439a69064",
+          "action": "created",
+          "timestamp": "2026-04-27T10:49:02.267Z",
+          "details": "Issue created"
+        }
+      ],
+      "comments": [],
+      "attachments": [],
+      "created_at": "2026-04-27T10:49:02.268Z",
+      "updated_at": "2026-04-27T10:49:02.268Z"
     }
   ],
   "assets": [
-    {
-      "id": "083b074d-e9f1-49aa-850f-a61eb460cb9c",
-      "name": "FAN",
-      "type": "Other",
-      "brand": "ss",
-      "model": "aa",
-      "serial_number": "ss",
-      "scene_id": null,
-      "yaw": null,
-      "pitch": null,
-      "floor": null,
-      "room": null,
-      "status": "active",
-      "walkthrough_id": null,
-      "created_at": "2026-04-26T14:50:42.404Z",
-      "updated_at": "2026-04-26T14:50:42.405Z"
-    },
     {
       "id": "edf6a51d-5938-48d4-ae8f-bb68343619bd",
       "name": "Table",
@@ -532,6 +546,23 @@
       "walkthrough_id": "1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4",
       "created_at": "2026-04-26T16:04:10.642Z",
       "updated_at": "2026-04-26T16:04:10.642Z"
+    },
+    {
+      "id": "083b074d-e9f1-49aa-850f-a61eb460cb9c",
+      "name": "FAN",
+      "type": "Other",
+      "brand": "ss",
+      "model": "aa",
+      "serial_number": "ss",
+      "scene_id": null,
+      "yaw": null,
+      "pitch": null,
+      "floor": null,
+      "room": null,
+      "status": "active",
+      "walkthrough_id": null,
+      "created_at": "2026-04-26T14:50:42.404Z",
+      "updated_at": "2026-04-26T14:50:42.405Z"
     }
   ],
   "versions": [],

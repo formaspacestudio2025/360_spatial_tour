@@ -1,6 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import { createIssue, getIssues, updateIssue, deleteIssue, addComment, getComments, deleteComment, addAttachment, getAttachments, deleteAttachment, checkAndEscalateSLA, getSlaStats } from '../services/issue.service';
+import { generateId } from '../utils/generateId';
 import { storageService } from '../services/storage.service';
 import { getFileUrl } from '../config/storage';
 import { authenticate } from '../middleware/auth';
@@ -179,7 +180,8 @@ router.post('/:id/attachments', upload.single('file'), async (req, res) => {
     }
 
     const { id } = req.params;
-    const issue = await getIssues().find(i => i.id === id);
+    const issues = await getIssues();
+    const issue = issues.find((i: any) => i.id === id);
     if (!issue) {
       return res.status(404).json({ success: false, message: 'Issue not found' });
     }
@@ -189,8 +191,7 @@ router.post('/:id/attachments', upload.single('file'), async (req, res) => {
     const fileUrl = getFileUrl(filePath);
 
     const attachment = await addAttachment(id, {
-      id: '', // Will be generated
-      issue_id: id,
+      id: generateId(),
       file_url: fileUrl,
       file_type: req.file.mimetype,
       created_at: new Date().toISOString(),

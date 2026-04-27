@@ -5,7 +5,13 @@ export interface IssueHistory {
   id: string;
   action: string;
   user_id?: string;
+  user_name?: string;
+  issue_id?: string;
+  field?: string;
+  old_value?: string;
+  new_value?: string;
   timestamp: string;
+  created_at?: string;
   details?: string;
 }
 
