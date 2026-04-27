@@ -15,15 +15,12 @@ export interface Walkthrough {
   scene_count?: number;
 }
 
-export type UserRole = 'admin' | 'editor' | 'viewer';
+export type { UserRole } from './user';
+export { Permission, ROLE_HIERARCHY, hasRole } from './user';
+export type { User } from './user';
 
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-  role: UserRole;
-  created_at?: string;
-}
+// Re-export enterprise types
+export type { Org } from './org';
 
 export interface Scene {
   id: string;
