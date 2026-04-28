@@ -508,6 +508,23 @@ const IssueListPage: React.FC = () => {
                     Created: {new Date(issue.created_at).toLocaleDateString()}
                   </span>
                 </div>
+
+                {/* Resolution proof for resolved issues */}
+                {issue.status === 'resolved' && issue.resolution_image_url && (
+                  <div className="mt-3 border-t border-gray-800 pt-3">
+                    <p className="text-xs text-gray-400 mb-1">Resolution Proof:</p>
+                    <img
+                      src={issue.resolution_image_url}
+                      alt="Resolution proof"
+                      className="max-w-[200px] rounded-lg border border-gray-700"
+                    />
+                    {issue.resolved_at && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Resolved at: {new Date(issue.resolved_at).toLocaleString()}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             ))
           )}
