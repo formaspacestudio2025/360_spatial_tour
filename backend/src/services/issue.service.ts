@@ -49,6 +49,8 @@ export interface Issue {
   assigned_to?: string;
   due_date?: string;
   resolution_proof_url?: string;
+  resolution_image_url?: string;
+  resolved_at?: string;
   history?: IssueHistory[];
   comments?: IssueComment[];
   attachments?: IssueAttachment[];

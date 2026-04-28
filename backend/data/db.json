@@ -507,8 +507,8 @@
       "room": null,
       "type": "damage",
       "severity": "medium",
-      "priority": "medium",
-      "status": "open",
+      "priority": "critical",
+      "status": "pending_approval",
       "title": "Damage TV",
       "description": "ssss",
       "assigned_to": "sajid",
@@ -521,12 +521,38 @@
           "action": "created",
           "timestamp": "2026-04-27T10:49:02.267Z",
           "details": "Issue created"
+        },
+        {
+          "id": "13c529af-7e0d-4682-b4d8-f860433a7800",
+          "issue_id": "ddfa5fd1-e0e9-4b41-a485-640f54db3600",
+          "action": "sla_escalated",
+          "field": "status",
+          "old_value": "open",
+          "new_value": "pending_approval",
+          "user_id": "system",
+          "user_name": "SLA Auto-Escalation",
+          "timestamp": "2026-04-27T21:45:46.060Z",
+          "details": "Auto-escalated after 111 days overdue",
+          "created_at": "2026-04-27T21:45:46.060Z"
+        },
+        {
+          "id": "d15fcff1-38b2-4e6f-8e43-698824eb1daf",
+          "issue_id": "ddfa5fd1-e0e9-4b41-a485-640f54db3600",
+          "action": "sla_priority_escalated",
+          "field": "priority",
+          "old_value": "medium",
+          "new_value": "critical",
+          "user_id": "system",
+          "user_name": "SLA Auto-Escalation",
+          "timestamp": "2026-04-27T21:45:46.060Z",
+          "details": "Priority escalated after 111 days overdue",
+          "created_at": "2026-04-27T21:45:46.060Z"
         }
       ],
       "comments": [],
       "attachments": [],
       "created_at": "2026-04-27T10:49:02.268Z",
-      "updated_at": "2026-04-27T10:49:02.268Z"
+      "updated_at": "2026-04-27T21:45:46.070Z"
     }
   ],
   "assets": [
@@ -584,5 +610,6 @@
       "updated_at": "2026-04-21T21:36:20.449Z"
     }
   ],
-  "hotspot_links": []
+  "hotspot_links": [],
+  "organizations": []
 }

@@ -112,3 +112,54 @@ export async function deleteAsset(id: string): Promise<boolean> {
   const result = await db.prepare('DELETE FROM assets WHERE id = ?').run(id);
   return result.changes > 0;
 }
+
+export async function updateAssetSceneMapping(id: string, mapping: {
+  scene_id?: string;
+  yaw?: number;
+  pitch?: number;
+  floor?: number;
+  room?: string;
+}): Promise<Asset | null> {
+  const existing = await db.prepare('SELECT * FROM assets WHERE id = ?').get(id);
+  if (!existing) return null;
+
+  // Ensure org_id and property_id from existing asset are preserved
+  const mappingData = {
+    scene_id: mapping.scene_id || existing.scene_id,
+    yaw: mapping.yaw,
+    pitch: mapping.pitch,
+    floor: mapping.floor,
+    room: mapping.room || existing.room,
+    org_id: existing.org_id,
+    property_id: existing.property_id
+  };
+
+  const now = new Date().toISOString();
+  const updated = { ...existing, ...mappingData, updated_at: now };
+
+  const sql = `UPDATE assets SET
+                scene_id = ?, yaw = ?, pitch = ?, floor = ?, room = ?, updated_at = ?
+                WHERE id = ?`;
+
+  await db.prepare(sql).run(
+    updated.scene_id,
+    updated.yaw,
+    updated.pitch,
+    updated.floor,
+    updated.room,
+    now,
+    id
+  );
+
+  return updated;
+}
+
+export async function getAssetsByScene(scene_id: string): Promise<Asset[]> {
+  const stmt = db.prepare('SELECT * FROM assets WHERE scene_id = ?');
+  const assets = await stmt.all(scene_id);
+
+  // Sort by created_at descending
+  assets.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+  return assets;
+}
