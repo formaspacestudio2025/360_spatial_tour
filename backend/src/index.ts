@@ -15,6 +15,7 @@ import hotspotMediaRoutes from './routes/hotspot-media';
 import hotspotLinkRoutes from './routes/hotspot-links';
 import userRoutes from './routes/users';
 import assetsRoutes from './routes/assets';
+import issuesRoutes from './routes/issuesRoutes';
 import apiRoutes from './routes';
 
 // Load environment variables
@@ -55,6 +56,7 @@ app.use('/api', hotspotLinkRoutes);
 app.use('/api', aiRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/assets', assetsRoutes);
+app.use('/api/issues', issuesRoutes);
 app.use('/api', apiRoutes);
 
 // Error handling

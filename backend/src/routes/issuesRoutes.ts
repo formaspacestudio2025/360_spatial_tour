@@ -238,9 +238,8 @@ router.post('/:id/resolution', requirePermission('issue','write'), upload.single
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'No image file uploaded' });
     }
-    // Save file to storage
-    const issue = await getIssues(); // Just to fetch issue for walkthrough_id (could be optimized)
-    const existing = (await getIssues()).find(i => i.id === id);
+    // Get the issue to fetch walkthrough_id
+    const existing = await db.prepare('SELECT * FROM issues WHERE id = ?').get(id);
     if (!existing) {
       return res.status(404).json({ success: false, message: 'Issue not found' });
     }

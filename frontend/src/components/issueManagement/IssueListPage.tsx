@@ -4,7 +4,8 @@ import { issuesApi } from '@/api/issuesApi';
 import { walkthroughApi } from '@/api/walkthroughs';
 import { Issue, IssueAttachment } from '../../types/issue';
 import { Link } from 'react-router-dom';
-import { AlertCircle, Search, ArrowLeft, MapPin, Building2, Tag, Calendar, User, ExternalLink, Download, Paperclip, Image, FileText, Trash2, Upload } from 'lucide-react';
+import { AlertCircle, Search, ArrowLeft, MapPin, Building2, Tag, Calendar, User, ExternalLink, Download, Paperclip, Image, FileText, Trash2, Upload, Edit } from 'lucide-react';
+import EditIssueStatus from './EditIssueStatus';
 
 // Status badge colors
 const statusColors: Record<string, string> = {
@@ -134,6 +135,7 @@ const IssueListPage: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterSeverity, setFilterSeverity] = useState<string>('all');
   const [selectedWalkthrough, setSelectedWalkthrough] = useState<string>('all');
+  const [editingIssueId, setEditingIssueId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -424,6 +426,17 @@ const IssueListPage: React.FC = () => {
                   {expandedIssueId === issue.id ? 'Hide Attachments' : 'Show Attachments'}
                 </button>
 
+                {/* Edit Status button */}
+                {editingIssueId !== issue.id && issue.status !== 'resolved' && (
+                  <button
+                    onClick={() => setEditingIssueId(issue.id)}
+                    className="mt-2 text-sm text-blue-400 hover:underline flex items-center gap-1 ml-4"
+                  >
+                    <Edit size={14} />
+                    Edit Status
+                  </button>
+                )}
+
                 {/* Attachment panel */}
                 {expandedIssueId === issue.id && (
                   <div className="mt-3 border-t border-gray-800 pt-3">
@@ -472,6 +485,22 @@ const IssueListPage: React.FC = () => {
                         )}
                       </ul>
                     )}
+                  </div>
+                )}
+
+                {/* Edit Status Component */}
+                {editingIssueId === issue.id && (
+                  <div className="mt-3 border-t border-gray-800 pt-3">
+                    <EditIssueStatus
+                      issueId={issue.id}
+                      currentStatus={issue.status}
+                      resolutionImageUrl={issue.resolution_image_url}
+                      resolvedAt={issue.resolved_at}
+                      onStatusChange={() => {
+                        setEditingIssueId(null);
+                        queryClient.invalidateQueries({ queryKey: ['issues'] });
+                      }}
+                    />
                   </div>
                 )}
 

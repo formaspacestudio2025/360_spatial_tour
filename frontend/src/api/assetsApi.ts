@@ -53,4 +53,12 @@ export const assetsApi = {
   delete: (id: string) =>
     api.delete<{ success: boolean; message: string }>(`/api/assets/${id}`)
       .then(r => r.data),
+
+  mapToScene: (id: string, data: { scene_id?: string; yaw?: number; pitch?: number; floor?: number; room?: string }) =>
+    api.put<{ success: boolean; data: Asset }>(`/api/assets/${id}/map-to-scene`, data)
+      .then(r => r.data.data),
+
+  getByScene: (scene_id: string) =>
+    api.get<{ success: boolean; data: Asset[] }>(`/api/scenes/${scene_id}/assets`)
+      .then(r => r.data.data),
 };

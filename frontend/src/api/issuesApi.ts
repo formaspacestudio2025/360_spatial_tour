@@ -120,10 +120,7 @@ export const issuesApi = {
     formData.append('image', file);
     const response = await apiClient.post<{ success: boolean; data: Issue }>(
       `/api/issues/${issueId}/resolution`,
-      formData,
-      {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      }
+      formData
     );
     return response.data;
   },
