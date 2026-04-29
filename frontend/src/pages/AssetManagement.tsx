@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { assetsApi } from '@/api/assetsApi';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, Plus, Pencil, Trash2, Box, Map, QrCode, Calendar, X } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Plus, Pencil, Trash2, Box, Map, QrCode, Calendar, X, Navigation2 } from 'lucide-react';
 import { Asset, AssetType } from '@/types';
 import QRModal from '@/components/assets/QRModal';
 import LifecycleTab from '@/components/assets/LifecycleTab';
 
 const AssetManagement: React.FC = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const [formData, setFormData] = useState({
@@ -286,6 +287,13 @@ const AssetManagement: React.FC = () => {
                         title="Map to Scene"
                       >
                         <Map size={14} />
+                      </button>
+                      <button
+                        onClick={() => { if (asset.scene_id && asset.walkthrough_id) { navigate(`/walkthrough/${asset.walkthrough_id}?scene=${asset.scene_id}`); } else { alert('Asset not mapped to a scene'); } }}
+                        className="p-2 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 rounded-lg transition-colors"
+                        title="Jump to Scene"
+                      >
+                        <Navigation2 size={14} />
                       </button>
                       <button
                         onClick={() => startEdit(asset)}

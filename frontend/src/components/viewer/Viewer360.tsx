@@ -24,7 +24,7 @@ interface Viewer360Props {
   aiTags?: AITag[];
   issueMarkers?: Issue[];
   assetMarkers?: Asset[];
-  onSceneChange?: (sceneId: string, orientation?: { yaw: number; pitch: number }) => void;
+  onSceneChange?: (sceneId: string, orientation?: { yaw: number; pitch: number }, transitionStyle?: string) => void;
   onPlaceHotspot?: (yaw: number, pitch: number) => void;
   onPlaceIssue?: (yaw: number, pitch: number) => void;
   isPlacingIssue?: boolean;
@@ -36,6 +36,7 @@ interface Viewer360Props {
   transitionStyle?: string;
       isPlacingAsset?: boolean;
       onPlaceAsset?: (yaw: number, pitch: number) => void;
+      onAssetClick?: (asset: Asset) => void;
 }
 
 function SceneContent({
@@ -55,14 +56,14 @@ function SceneContent({
   nadirRotation,
   nadirOpacity,
   targetFov,
-  opacity,
+  onAssetClick,
 }: {
   imageUrl: string;
   hotspots?: Hotspot[];
   aiTags?: AITag[];
   issueMarkers?: Issue[];
   assetMarkers?: Asset[];
-  onSceneChange?: (sceneId: string, orientation?: { yaw: number; pitch: number }) => void;
+  onSceneChange?: (sceneId: string, orientation?: { yaw: number; pitch: number }, transitionStyle?: string) => void;
   onPlaceHotspot?: (yaw: number, pitch: number) => void;
   onPlaceIssue?: (yaw: number, pitch: number) => void;
   onPlaceAsset?: (yaw: number, pitch: number) => void;
@@ -73,7 +74,7 @@ function SceneContent({
   nadirRotation?: number;
   nadirOpacity?: number;
   targetFov: number;
-  opacity: number;
+  onAssetClick?: (asset: Asset) => void;
 }) {
   const { camera, raycaster, scene } = useThree();
   const isPlacing = useHotspotStore((s) => s.isPlacingHotspot);
@@ -173,7 +174,7 @@ function SceneContent({
         <IssueMarker key={issue.id} issue={issue} />
       ))}
       {assetMarkers?.map((asset) => (
-        <AssetMarker key={asset.id} asset={asset} />
+        <AssetMarker key={asset.id} asset={asset} onClick={onAssetClick} />
       ))}
       {/* NEW: Nadir Patch */}
       {nadirImage && (
@@ -205,7 +206,8 @@ function Viewer360({
   nadirRotation,
   nadirOpacity,
   initialOrientation,
-  transitionStyle = 'zoom-fade'
+  transitionStyle = 'zoom-fade',
+  onAssetClick,
 }: Viewer360Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<any>(null);
