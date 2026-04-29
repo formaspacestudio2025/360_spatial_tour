@@ -40,7 +40,7 @@ function WalkthroughViewer() {
   const [viewMode, setViewMode] = useState<'viewer' | 'graph'>('viewer');
   const [editorMode, setEditorMode] = useState<ViewMode>('view'); // NEW: View/Edit/Share mode
   const [aiTags, setAiTags] = useState<AITag[]>([]);
-  const { setCurrentScene: setViewerScene } = useViewerStore();
+  const setViewerScene = useViewerStore((s) => s.setCurrentScene);
   const { setHotspots, setPendingHotspot, hotspots } = useHotspotStore();
   const { setTags: setAITags } = useAITagStore();
   const queryClient = useQueryClient();

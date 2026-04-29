@@ -2,7 +2,10 @@ import { useViewerStore } from '@/stores/viewerStore';
 import { Maximize, Grid, Eye, EyeOff } from 'lucide-react';
 
 function NavigationControls() {
-  const { showHotspots, showGrid, toggleHotspots, toggleGrid } = useViewerStore();
+  const showHotspots = useViewerStore((s) => s.showHotspots);
+  const showGrid = useViewerStore((s) => s.showGrid);
+  const toggleHotspots = useViewerStore((s) => s.toggleHotspots);
+  const toggleGrid = useViewerStore((s) => s.toggleGrid);
 
   return (
     <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 flex gap-2">
