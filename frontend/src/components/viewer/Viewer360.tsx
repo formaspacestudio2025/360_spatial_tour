@@ -8,6 +8,7 @@ import HotspotMarker from './HotspotMarker';
 import IssueMarker from './IssueMarker';
 import AssetMarker from './AssetMarker';
 import NadirPatch from './NadirPatch';
+import MarkerCluster from './MarkerCluster';
 import { AITagMarker } from '../ai/AITagMarker';
 import { useHotspotStore } from '@/stores/hotspotStore';
 import { useAITagStore } from '@/stores/aiTagStore';
@@ -154,26 +155,77 @@ function SceneContent({
   return (
     <group onClick={handleClick}>
       <Sphere360 imageUrl={imageUrl} opacity={opacity} />
-      {hotspots?.map((hotspot) => (
-        <HotspotMarker
-          key={hotspot.id}
-          hotspot={hotspot}
-          onNavigate={(id, orientation, transitionStyle) => {
-            if (onSceneChange) {
-              onSceneChange(id, orientation, transitionStyle);
-            }
-          }}
+
+      {/* Clustered Hotspots */}
+      {hotspots && hotspots.length > 0 && (
+        <MarkerCluster
+          markers={hotspots.map(h => ({
+            id: h.id,
+            position: [
+              Math.sin(h.yaw) * 500,
+              Math.sin(h.pitch) * 500,
+              Math.cos(h.yaw) * 500
+            ],
+            ...h
+          }))}
+          currentFov={persCamera.fov}
+          renderMarker={(marker) => (
+            <HotspotMarker
+              key={marker.id}
+              hotspot={marker}
+              onNavigate={(id, orientation, transitionStyle) => {
+                if (onSceneChange) {
+                  onSceneChange(id, orientation, transitionStyle);
+                }
+              }}
+            />
+          )}
         />
-      ))}
+      )}
+
+      {/* Clustered Issue Markers */}
+      {issueMarkers && issueMarkers.length > 0 && (
+        <MarkerCluster
+          markers={issueMarkers.filter(i => typeof i.yaw === 'number' && typeof i.pitch === 'number').map(i => ({
+            id: i.id,
+            position: [
+              Math.sin(i.yaw) * 500,
+              Math.sin(i.pitch) * 500,
+              Math.cos(i.yaw) * 500
+            ],
+            ...i
+          }))}
+          currentFov={persCamera.fov}
+          renderMarker={(marker) => (
+            <IssueMarker key={marker.id} issue={marker} />
+          )}
+        />
+      )}
+
+      {/* Clustered Asset Markers */}
+      {assetMarkers && assetMarkers.length > 0 && (
+        <MarkerCluster
+          markers={assetMarkers.filter(a => typeof a.yaw === 'number' && typeof a.pitch === 'number').map(a => ({
+            id: a.id,
+            position: [
+              Math.sin(a.yaw) * 500,
+              Math.sin(a.pitch) * 500,
+              Math.cos(a.yaw) * 500
+            ],
+            ...a
+          }))}
+          currentFov={persCamera.fov}
+          renderMarker={(marker) => (
+            <AssetMarker key={marker.id} asset={marker} onClick={onAssetClick} />
+          )}
+        />
+      )}
+
+      {/* AI Tags (not clustered for now) */}
       {showTags && filteredTags.map((tag) => (
         <AITagMarker key={tag.id} tag={tag} />
       ))}
-      {issueMarkers?.map((issue) => (
-        <IssueMarker key={issue.id} issue={issue} />
-      ))}
-      {assetMarkers?.map((asset) => (
-        <AssetMarker key={asset.id} asset={asset} onClick={onAssetClick} />
-      ))}
+
       {/* NEW: Nadir Patch */}
       {nadirImage && (
         <NadirPatch

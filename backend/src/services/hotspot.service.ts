@@ -18,6 +18,7 @@ export interface Hotspot {
   media_url?: string;         // Media URL
   custom_icon_url?: string;   // Custom icon
   is_locked?: boolean;        // Lock hotspot
+  required_role?: string;     // NEW: Minimum role required to access this hotspot
   metadata?: any;             // Extended properties
   // NEW: Animation & Style fields
   animation_type?: string;
@@ -49,6 +50,7 @@ export interface CreateHotspotData {
   media_url?: string;
   custom_icon_url?: string;
   is_locked?: boolean;
+  required_role?: string;     // NEW: Minimum role required to access this hotspot
   metadata?: any;
   // NEW: Animation & Style fields
   animation_type?: string;
@@ -104,6 +106,7 @@ export class HotspotService {
       data.media_url || null,
       data.custom_icon_url || null,
       data.is_locked ? 1 : 0,
+      data.required_role || null,
       data.metadata ? JSON.stringify(data.metadata) : null,
       data.animation_type || 'pulse-ring',
       data.animation_speed || 1.0,
@@ -149,6 +152,7 @@ export class HotspotService {
       media_url: row.media_url,
       custom_icon_url: row.custom_icon_url,
       is_locked: row.is_locked === 1,
+      required_role: row.required_role,
       metadata: row.metadata ? JSON.parse(row.metadata) : null,
       // NEW: Animation & Style fields
       animation_type: row.animation_type || 'pulse-ring',
@@ -195,6 +199,7 @@ export class HotspotService {
       media_url: row.media_url,
       custom_icon_url: row.custom_icon_url,
       is_locked: row.is_locked === 1,
+      required_role: row.required_role,
       metadata: row.metadata ? JSON.parse(row.metadata) : null,
       // NEW: Animation & Style fields
       animation_type: row.animation_type || 'pulse-ring',
@@ -278,6 +283,10 @@ export class HotspotService {
     if (data.is_locked !== undefined) {
       fields.push('is_locked = ?');
       values.push(data.is_locked ? 1 : 0);
+    }
+    if (data.required_role !== undefined) {
+      fields.push('required_role = ?');
+      values.push(data.required_role);
     }
     if (data.metadata !== undefined) {
       fields.push('metadata = ?');

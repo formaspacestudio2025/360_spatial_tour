@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { walkthroughApi } from '@/api/walkthroughs';
 import { scenesApi } from '@/api/scenes';
-import { hotspotsApi } from '@/api/hotspots';
+import { hotspotsApi, HotspotCategory } from '@/api/hotspots';
 import { issuesApi } from '@/api/issuesApi';
 import { assetsApi } from '@/api/assetsApi';
 import { Issue } from '@/types/issue';
@@ -11,6 +11,11 @@ import { Asset } from '@/types';
 import { aiApi, AITag } from '@/api/ai';
 import Viewer360 from '@/components/viewer/Viewer360';
 import SceneList from '@/components/viewer/SceneList';
+import FloorSelector from '@/components/viewer/FloorSelector';
+import Breadcrumbs from '@/components/viewer/Breadcrumbs';
+import Minimap from '@/components/viewer/Minimap';
+import TourControls from '@/components/viewer/TourControls';
+import HotspotFilters from '@/components/viewer/HotspotFilters';
 import HotspotEditor from '@/components/viewer/HotspotEditor';
 import BulkUpload from '@/components/viewer/BulkUpload';
 import { ViewModeToolbar, ViewMode } from '@/components/viewer/ViewModeToolbar';
@@ -20,16 +25,19 @@ import { SceneGraphEditor } from '@/components/graph/SceneGraphEditor';
 import Sidebar from '@/components/layout/Sidebar';
 import IssueFormModal from '@/components/viewer/IssueFormModal';
 import AssetFormModal from '@/components/viewer/AssetFormModal';
+import InspectionSidebar from '@/components/viewer/InspectionSidebar';
+import MaintenanceOverlay from '@/components/viewer/MaintenanceOverlay';
+import EmergencyOverlay from '@/components/viewer/EmergencyOverlay';
 import { useViewerStore } from '@/stores/viewerStore';
 import { useHotspotStore } from '@/stores/hotspotStore';
 import { useAITagStore } from '@/stores/aiTagStore';
 import { canEdit } from '@/stores/authStore';
 import { useAuthStore } from '@/stores/authStore';
 import { Scene } from '@/types';
-import { ArrowLeft, Upload, Image, Navigation2, BrainCircuit, GitGraph, AlertCircle, Box } from 'lucide-react';
+import { ArrowLeft, Upload, Image, Navigation2, BrainCircuit, GitGraph, AlertCircle, Box, MapPin, Play, Shield, Wrench, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-type SidebarTab = 'scenes' | 'hotspots' | 'ai' | 'graph' | 'issues' | 'assets';
+type SidebarTab = 'scenes' | 'hotspots' | 'ai' | 'graph' | 'issues' | 'assets' | 'minimap' | 'tour';
 
 function WalkthroughViewer() {
   const { id } = useParams<{ id: string }>();
@@ -57,6 +65,13 @@ function WalkthroughViewer() {
   const [showIssueModal, setShowIssueModal] = useState(false);
   const [targetOrientation, setTargetOrientation] = useState<{ yaw: number; pitch: number } | null>(null);
   const [transitionStyle, setTransitionStyle] = useState<string>('zoom-fade');
+  const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
+  const [startSceneId, setStartSceneId] = useState<string | null>(null);
+  const [navigationHistory, setNavigationHistory] = useState<Scene[]>([]);
+  const [isInspectionMode, setIsInspectionMode] = useState(false);
+  const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
+  const [isEmergencyMode, setIsEmergencyMode] = useState(false);
+  const [selectedHotspotCategories, setSelectedHotspotCategories] = useState<HotspotCategory[]>([]);
 
   const { data: walkthroughData } = useQuery({
     queryKey: ['walkthrough', id],
@@ -81,6 +96,37 @@ function WalkthroughViewer() {
 
   const scenes = scenesData?.data || [];
   const walkthrough = walkthroughData?.data;
+
+  // Filter scenes by selected floor
+  const filteredScenes = useMemo(() => {
+    if (selectedFloor === null) {
+      return scenes;
+    }
+    return scenes.filter(scene => scene.floor === selectedFloor);
+  }, [scenes, selectedFloor]);
+
+  // Convert hotspots to navigation edges for breadcrumbs
+  const navigationEdges = useMemo(() => {
+    return hotspots.map(hotspot => ({
+      id: hotspot.id,
+      from_scene_id: hotspot.from_scene_id,
+      to_scene_id: hotspot.to_scene_id,
+      hotspot_yaw: hotspot.yaw,
+      hotspot_pitch: hotspot.pitch,
+      label: hotspot.label,
+      created_at: hotspot.created_at
+    }));
+  }, [hotspots]);
+
+  // Filter hotspots by selected categories
+  const filteredHotspots = useMemo(() => {
+    if (selectedHotspotCategories.length === 0) {
+      return hotspots;
+    }
+    return hotspots.filter(hotspot =>
+      selectedHotspotCategories.includes(hotspot.category || 'navigation')
+    );
+  }, [hotspots, selectedHotspotCategories]);
 
   // Initialize scene from URL query param if present
   useEffect(() => {
@@ -167,7 +213,32 @@ function WalkthroughViewer() {
     setCurrentScene(scene);
     setViewerScene(scene);
     setPendingHotspot(null);
-  }, [setViewerScene, setPendingHotspot]);
+    // Update selected floor to match the new scene's floor
+    setSelectedFloor(scene.floor);
+
+    // Set start scene if not set
+    if (!startSceneId) {
+      setStartSceneId(scene.id);
+    }
+
+    // Update navigation history
+    setNavigationHistory(prev => {
+      // Remove any future history if we're going back
+      const existingIndex = prev.findIndex(s => s.id === scene.id);
+      if (existingIndex !== -1) {
+        return prev.slice(0, existingIndex + 1);
+      }
+      // Add to history
+      return [...prev, scene];
+    });
+  }, [setViewerScene, setPendingHotspot, startSceneId]);
+
+  const handleBack = useCallback(() => {
+    if (navigationHistory.length > 1) {
+      const previousScene = navigationHistory[navigationHistory.length - 2];
+      handleSceneSelect(previousScene);
+    }
+  }, [navigationHistory, handleSceneSelect]);
 
   const handlePlaceHotspot = useCallback((yaw: number, pitch: number) => {
     setPendingHotspot({ yaw, pitch });
@@ -366,7 +437,49 @@ function WalkthroughViewer() {
             currentMode={editorMode}
             onModeChange={setEditorMode}
           />
-          
+
+          {/* Inspection Mode Toggle */}
+          <button
+            onClick={() => setIsInspectionMode(!isInspectionMode)}
+            className={`px-3 py-1.5 rounded-lg transition-colors text-sm flex items-center gap-2 ${
+              isInspectionMode
+                ? 'bg-red-600 hover:bg-red-700 text-white'
+                : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+            }`}
+            title="Toggle Inspection Mode"
+          >
+            <Shield size={14} />
+            {isInspectionMode ? 'Exit Inspection' : 'Inspect'}
+          </button>
+
+          {/* Maintenance Mode Toggle */}
+          <button
+            onClick={() => setIsMaintenanceMode(!isMaintenanceMode)}
+            className={`px-3 py-1.5 rounded-lg transition-colors text-sm flex items-center gap-2 ${
+              isMaintenanceMode
+                ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+            }`}
+            title="Toggle Maintenance Mode"
+          >
+            <Wrench size={14} />
+            {isMaintenanceMode ? 'Exit Maintenance' : 'Maintain'}
+          </button>
+
+          {/* Emergency Mode Toggle */}
+          <button
+            onClick={() => setIsEmergencyMode(!isEmergencyMode)}
+            className={`px-3 py-1.5 rounded-lg transition-colors text-sm flex items-center gap-2 ${
+              isEmergencyMode
+                ? 'bg-red-600 hover:bg-red-700 text-white'
+                : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+            }`}
+            title="Toggle Emergency Mode"
+          >
+            <AlertTriangle size={14} />
+            {isEmergencyMode ? 'Exit Emergency' : 'Emergency'}
+          </button>
+
           {canManage && (
             <button
               onClick={() => setShowUpload(true)}
@@ -455,31 +568,84 @@ function WalkthroughViewer() {
               <Box size={14} />
               Assets
             </button>
+            <button
+              onClick={() => { setActiveTab('minimap'); setViewMode('viewer'); }}
+              className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                activeTab === 'minimap'
+                  ? 'text-primary-400 border-b-2 border-primary-500'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <MapPin size={14} />
+              Map
+            </button>
+            <button
+              onClick={() => { setActiveTab('tour'); setViewMode('viewer'); }}
+              className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                activeTab === 'tour'
+                  ? 'text-primary-400 border-b-2 border-primary-500'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <Play size={14} />
+              Tour
+            </button>
           </div>
 
           {/* Tab content */}
           <div className="p-4 h-[calc(100%-49px)] overflow-y-auto">
             {activeTab === 'scenes' ? (
-              <SceneList
-                scenes={scenes}
-                currentSceneId={currentScene.id}
-                onSceneSelect={handleSceneSelect}
-                walkthroughId={id!}
-              />
-            ) : activeTab === 'hotspots' ? (
-              editorMode === 'edit' ? (
-                <HotspotEditor
+              <div className="space-y-4">
+                <Breadcrumbs
+                  scenes={scenes}
+                  currentScene={currentScene}
+                  navigationEdges={navigationEdges}
+                  startSceneId={startSceneId || undefined}
+                  onSceneSelect={handleSceneSelect}
+                  onBack={navigationHistory.length > 1 ? handleBack : undefined}
+                  showSuggestions={true}
+                  maxSuggestions={3}
+                />
+                <FloorSelector
                   scenes={scenes}
                   currentSceneId={currentScene.id}
+                  onFloorSelect={setSelectedFloor}
+                  onSceneSelect={handleSceneSelect}
                 />
-              ) : (
-                <div className="text-center py-8 text-gray-500 text-sm">
-                  <p>Switch to Edit mode to manage hotspots</p>
-                  <button
-                    onClick={() => setEditorMode('edit')}
-                    className="mt-3 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs transition-colors"
-                  >
-                    Enter Edit Mode
+                <SceneList
+                  scenes={filteredScenes}
+                  currentSceneId={currentScene.id}
+                  onSceneSelect={handleSceneSelect}
+                  walkthroughId={id!}
+                />
+              </div>
+            ) : activeTab === 'hotspots' ? (
+              <div className="space-y-4">
+                <HotspotFilters
+                  hotspots={hotspots}
+                  selectedCategories={selectedHotspotCategories}
+                  onCategoryToggle={(category) => {
+                    setSelectedHotspotCategories(prev =>
+                      prev.includes(category)
+                        ? prev.filter(c => c !== category)
+                        : [...prev, category]
+                    );
+                  }}
+                  onClearAll={() => setSelectedHotspotCategories([])}
+                />
+                {editorMode === 'edit' ? (
+                  <HotspotEditor
+                    scenes={scenes}
+                    currentSceneId={currentScene.id}
+                  />
+                ) : (
+                  <div className="text-center py-8 text-gray-500 text-sm">
+                    <p>Switch to Edit mode to manage hotspots</p>
+                    <button
+                      onClick={() => setEditorMode('edit')}
+                      className="mt-3 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs transition-colors"
+                    >
+                      Enter Edit Mode
                   </button>
                 </div>
               )
@@ -618,6 +784,27 @@ function WalkthroughViewer() {
                   ))}
                 </div>
               </div>
+            ) : activeTab === 'minimap' ? (
+              <Minimap
+                scenes={scenes}
+                currentScene={currentScene}
+                currentFloor={selectedFloor ?? undefined}
+                onSceneSelect={handleSceneSelect}
+                showAllFloors={false}
+              />
+            ) : activeTab === 'tour' ? (
+              <TourControls
+                scenes={scenes}
+                currentScene={currentScene}
+                onSceneSelect={(scene, orientation) => {
+                  handleSceneSelect(scene);
+                  if (orientation) {
+                    setTargetOrientation(orientation);
+                  }
+                }}
+                autoAdvance={true}
+                showNarration={true}
+              />
             ) : (
               <div className="text-gray-400 text-sm text-center py-8">
                 Switch to Graph view to see navigation map
@@ -632,7 +819,7 @@ function WalkthroughViewer() {
             currentScene.image_url ? (
               <Viewer360
                 imageUrl={currentScene.image_url}
-                hotspots={hotspots}
+                hotspots={filteredHotspots}
                 issueMarkers={spatialIssues}
                 aiTags={aiTags.filter((t) => t.scene_id === currentScene.id)}
                 assetMarkers={assetMarkers}
@@ -713,6 +900,40 @@ function WalkthroughViewer() {
         walkthroughId={id!}
         isOpen={showUpload}
         onClose={() => setShowUpload(false)}
+      />
+
+      {/* Inspection Sidebar */}
+      <InspectionSidebar
+        isOpen={isInspectionMode}
+        onClose={() => setIsInspectionMode(false)}
+        onComplete={(results) => {
+          console.log('Inspection completed:', results);
+          setIsInspectionMode(false);
+        }}
+        inspectorName={user?.username}
+      />
+
+      {/* Maintenance Overlay */}
+      <MaintenanceOverlay
+        isOpen={isMaintenanceMode}
+        onClose={() => setIsMaintenanceMode(false)}
+        assets={assetMarkers}
+        onCreateWorkOrder={(assetId, data) => {
+          console.log('Create work order for asset:', assetId, data);
+        }}
+        onUpdateWorkOrder={(workOrderId, data) => {
+          console.log('Update work order:', workOrderId, data);
+        }}
+      />
+
+      {/* Emergency Overlay */}
+      <EmergencyOverlay
+        isOpen={isEmergencyMode}
+        onClose={() => setIsEmergencyMode(false)}
+        currentLocation={currentScene.room_name ? `Floor ${currentScene.floor} - ${currentScene.room_name}` : `Floor ${currentScene.floor}`}
+        onReportEmergency={(type, description) => {
+          console.log('Emergency reported:', type, description);
+        }}
       />
     </div>
   );
