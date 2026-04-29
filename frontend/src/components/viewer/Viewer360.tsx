@@ -8,6 +8,7 @@ import HotspotMarker from './HotspotMarker';
 import IssueMarker from './IssueMarker';
 import AssetMarker from './AssetMarker';
 import NadirPatch from './NadirPatch';
+import MarkerCluster from './MarkerCluster';
 import { AITagMarker } from '../ai/AITagMarker';
 import { useHotspotStore } from '@/stores/hotspotStore';
 import { useAITagStore } from '@/stores/aiTagStore';
@@ -34,9 +35,9 @@ interface Viewer360Props {
   nadirOpacity?: number; // NEW: Nadir image opacity 0-1 (default 1.0)
   initialOrientation?: { yaw: number; pitch: number } | null;
   transitionStyle?: string;
-      isPlacingAsset?: boolean;
-      onPlaceAsset?: (yaw: number, pitch: number) => void;
-      onAssetClick?: (asset: Asset) => void;
+  isPlacingAsset?: boolean;
+  onPlaceAsset?: (yaw: number, pitch: number) => void;
+  onAssetClick?: (asset: Asset) => void;
 }
 
 function SceneContent({
@@ -56,6 +57,7 @@ function SceneContent({
   nadirRotation,
   nadirOpacity,
   targetFov,
+  opacity,
   onAssetClick,
 }: {
   imageUrl: string;
@@ -74,6 +76,7 @@ function SceneContent({
   nadirRotation?: number;
   nadirOpacity?: number;
   targetFov: number;
+  opacity?: number;
   onAssetClick?: (asset: Asset) => void;
 }) {
   const { camera, raycaster, scene } = useThree();
@@ -113,9 +116,9 @@ function SceneContent({
     // Update camera rotation in store for other components to use
     // Using direct store access to avoid re-renders
     const rotation = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ');
-    useViewerStore.getState().setCameraRotation({ 
-      yaw: -rotation.y, 
-      pitch: rotation.x 
+    useViewerStore.getState().setCameraRotation({
+      yaw: -rotation.y,
+      pitch: rotation.x
     });
   });
 
@@ -123,7 +126,7 @@ function SceneContent({
     (e: ThreeEvent<MouseEvent>) => {
       const placingHotspot = isPlacing && onPlaceHotspot;
       const placingIssue = (isPlacingIssue ?? false) && onPlaceIssue;
-    const placingAsset = (isPlacingAsset ?? false) && onPlaceAsset;
+      const placingAsset = (isPlacingAsset ?? false) && onPlaceAsset;
       if (!placingHotspot && !placingIssue && !placingAsset) return;
       e.stopPropagation();
 
@@ -156,26 +159,74 @@ function SceneContent({
   return (
     <group onClick={handleClick}>
       <Sphere360 imageUrl={imageUrl} opacity={opacity} />
-      {hotspots?.map((hotspot) => (
-        <HotspotMarker
-          key={hotspot.id}
-          hotspot={hotspot}
-          onNavigate={(id, orientation, transitionStyle) => {
-            if (onSceneChange) {
-              onSceneChange(id, orientation, transitionStyle);
-            }
-          }}
+
+      {/* Clustered Hotspots */}
+      {hotspots && hotspots.length > 0 && (
+        <MarkerCluster
+          markers={hotspots.map(h => ({
+            position: [
+              Math.sin(h.yaw) * 500,
+              Math.sin(h.pitch) * 500,
+              Math.cos(h.yaw) * 500
+            ],
+            ...h
+          }))}
+          currentFov={persCamera.fov}
+          renderMarker={(marker) => (
+            <HotspotMarker
+              key={marker.id}
+              hotspot={marker as unknown as Hotspot}
+              onNavigate={(id, orientation, transitionStyle) => {
+                if (onSceneChange) {
+                  onSceneChange(id, orientation, transitionStyle);
+                }
+              }}
+            />
+          )}
         />
-      ))}
+      )}
+
+      {/* Clustered Issue Markers */}
+      {issueMarkers && issueMarkers.length > 0 && (
+        <MarkerCluster
+          markers={issueMarkers.filter(i => typeof i.yaw === 'number' && typeof i.pitch === 'number').map(i => ({
+            position: [
+              Math.sin(i.yaw) * 500,
+              Math.sin(i.pitch) * 500,
+              Math.cos(i.yaw) * 500
+            ],
+            ...i
+          }))}
+          currentFov={persCamera.fov}
+          renderMarker={(marker) => (
+            <IssueMarker key={marker.id} issue={marker as unknown as Issue} />
+          )}
+        />
+      )}
+
+      {/* Clustered Asset Markers */}
+      {assetMarkers && assetMarkers.length > 0 && (
+        <MarkerCluster
+          markers={assetMarkers.filter(a => typeof a.yaw === 'number' && typeof a.pitch === 'number').map(a => ({
+            position: [
+              Math.sin(a.yaw || 0) * 500,
+              Math.sin(a.pitch || 0) * 500,
+              Math.cos(a.yaw || 0) * 500
+            ],
+            ...a
+          }))}
+          currentFov={persCamera.fov}
+          renderMarker={(marker) => (
+            <AssetMarker key={marker.id} asset={marker as unknown as Asset} onClick={onAssetClick} />
+          )}
+        />
+      )}
+
+      {/* AI Tags (not clustered for now) */}
       {showTags && filteredTags.map((tag) => (
         <AITagMarker key={tag.id} tag={tag} />
       ))}
-      {issueMarkers?.map((issue) => (
-        <IssueMarker key={issue.id} issue={issue} />
-      ))}
-      {assetMarkers?.map((asset) => (
-        <AssetMarker key={asset.id} asset={asset} onClick={onAssetClick} />
-      ))}
+
       {/* NEW: Nadir Patch */}
       {nadirImage && (
         <NadirPatch
@@ -225,25 +276,25 @@ function Viewer360({
   useEffect(() => {
     if (imageUrl !== currentImage) {
       console.log('Loading new scene:', imageUrl, 'with transition:', transitionStyle);
-      
+
       const isInstant = transitionStyle === 'instant';
       const isZoom = transitionStyle === 'zoom-fade';
       const isPan = transitionStyle === 'pan-slide';
-      
+
       if (!isInstant) {
         setOpacity(0);
       }
-      
+
       if (isZoom) {
         setTargetFov(40);
       } else if (isPan) {
         // Pan slightly by moving the controls later, for now just fade
       }
-      
+
       setIsLoading(true);
-      
+
       const delay = isInstant ? 0 : 150;
-      
+
       const timer = setTimeout(() => {
         setCurrentImage(imageUrl);
         // Fade in after image loads
@@ -257,7 +308,7 @@ function Viewer360({
             controlsRef.current.setAzimuthalAngle(-initialOrientation.yaw + panOffset);
             controlsRef.current.setPolarAngle(Math.PI / 2 - initialOrientation.pitch);
             controlsRef.current.update();
-            
+
             // If pan-slide, smoothly animate the pan after loading
             if (isPan) {
               setTimeout(() => {
@@ -349,9 +400,8 @@ function Viewer360({
         {aiTags && aiTags.length > 0 && (
           <button
             onClick={toggleVisibility}
-            className={`p-2 backdrop-blur-sm rounded-lg transition-colors ${
-              showTags ? 'bg-blue-600/50 text-white hover:bg-blue-600/70' : 'bg-black/50 text-gray-400 hover:bg-black/70'
-            }`}
+            className={`p-2 backdrop-blur-sm rounded-lg transition-colors ${showTags ? 'bg-blue-600/50 text-white hover:bg-blue-600/70' : 'bg-black/50 text-gray-400 hover:bg-black/70'
+              }`}
             title={showTags ? 'Hide AI tags' : 'Show AI tags'}
           >
             {showTags ? <Eye size={18} /> : <EyeOff size={18} />}
@@ -395,6 +445,7 @@ function Viewer360({
               nadirOpacity={nadirOpacity}
               targetFov={targetFov}
               opacity={opacity}
+              onAssetClick={onAssetClick}
             />
           </group>
         </Suspense>
