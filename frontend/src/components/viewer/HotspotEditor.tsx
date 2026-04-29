@@ -177,8 +177,8 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
       description,
       icon_type: iconType,
       icon_color: iconColor,
-      target_yaw: targetYaw,
-      target_pitch: targetPitch,
+      target_yaw: targetYaw ?? undefined,
+      target_pitch: targetPitch ?? undefined,
       metadata: { iconSize, customIconUrl, mediaType, mediaUrl, transitionStyle },
       is_locked: isLocked,
       // NEW: Animation & Style fields
@@ -335,8 +335,8 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
       pitch: hotspot.pitch,
       label: `${hotspot.label || 'Hotspot'} (Copy)`,
       to_scene_id: hotspot.to_scene_id,
-      target_yaw: hotspot.target_yaw,
-      target_pitch: hotspot.target_pitch,
+      target_yaw: hotspot.target_yaw ?? undefined,
+      target_pitch: hotspot.target_pitch ?? undefined,
       icon_type: hotspot.icon_type,
       icon_color: hotspot.icon_color,
       title: hotspot.title,
@@ -536,7 +536,7 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
                 </button>
               </div>
 
-              {/* Target Scene *//}
+              {/* Target Scene */}
               <div>
                 <label className="block text-xs text-gray-400 mb-1">Target Scene *</label>
                 <select
