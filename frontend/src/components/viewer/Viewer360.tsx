@@ -24,7 +24,7 @@ interface Viewer360Props {
   aiTags?: AITag[];
   issueMarkers?: Issue[];
   assetMarkers?: Asset[];
-  onSceneChange?: (sceneId: string, orientation?: { yaw: number; pitch: number }) => void;
+  onSceneChange?: (sceneId: string, orientation?: { yaw: number; pitch: number }, transitionStyle?: string) => void;
   onPlaceHotspot?: (yaw: number, pitch: number) => void;
   onPlaceIssue?: (yaw: number, pitch: number) => void;
   isPlacingIssue?: boolean;
@@ -34,8 +34,9 @@ interface Viewer360Props {
   nadirOpacity?: number; // NEW: Nadir image opacity 0-1 (default 1.0)
   initialOrientation?: { yaw: number; pitch: number } | null;
   transitionStyle?: string;
-      isPlacingAsset?: boolean;
-      onPlaceAsset?: (yaw: number, pitch: number) => void;
+  isPlacingAsset?: boolean;
+  onPlaceAsset?: (yaw: number, pitch: number) => void;
+  onAssetClick?: (asset: Asset) => void;
 }
 
 function SceneContent({
@@ -55,14 +56,14 @@ function SceneContent({
   nadirRotation,
   nadirOpacity,
   targetFov,
-  opacity,
+  onAssetClick,
 }: {
   imageUrl: string;
   hotspots?: Hotspot[];
   aiTags?: AITag[];
   issueMarkers?: Issue[];
   assetMarkers?: Asset[];
-  onSceneChange?: (sceneId: string, orientation?: { yaw: number; pitch: number }) => void;
+  onSceneChange?: (sceneId: string, orientation?: { yaw: number; pitch: number }, transitionStyle?: string) => void;
   onPlaceHotspot?: (yaw: number, pitch: number) => void;
   onPlaceIssue?: (yaw: number, pitch: number) => void;
   onPlaceAsset?: (yaw: number, pitch: number) => void;
@@ -73,7 +74,6 @@ function SceneContent({
   nadirRotation?: number;
   nadirOpacity?: number;
   targetFov: number;
-  opacity: number;
 }) {
   const { camera, raycaster, scene } = useThree();
   const isPlacing = useHotspotStore((s) => s.isPlacingHotspot);
@@ -112,9 +112,9 @@ function SceneContent({
     // Update camera rotation in store for other components to use
     // Using direct store access to avoid re-renders
     const rotation = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ');
-    useViewerStore.getState().setCameraRotation({ 
-      yaw: -rotation.y, 
-      pitch: rotation.x 
+    useViewerStore.getState().setCameraRotation({
+      yaw: -rotation.y,
+      pitch: rotation.x
     });
   });
 
@@ -122,7 +122,7 @@ function SceneContent({
     (e: ThreeEvent<MouseEvent>) => {
       const placingHotspot = isPlacing && onPlaceHotspot;
       const placingIssue = (isPlacingIssue ?? false) && onPlaceIssue;
-    const placingAsset = (isPlacingAsset ?? false) && onPlaceAsset;
+      const placingAsset = (isPlacingAsset ?? false) && onPlaceAsset;
       if (!placingHotspot && !placingIssue && !placingAsset) return;
       e.stopPropagation();
 
@@ -173,7 +173,7 @@ function SceneContent({
         <IssueMarker key={issue.id} issue={issue} />
       ))}
       {assetMarkers?.map((asset) => (
-        <AssetMarker key={asset.id} asset={asset} />
+        <AssetMarker key={asset.id} asset={asset} onClick={onAssetClick} />
       ))}
       {/* NEW: Nadir Patch */}
       {nadirImage && (
@@ -205,7 +205,8 @@ function Viewer360({
   nadirRotation,
   nadirOpacity,
   initialOrientation,
-  transitionStyle = 'zoom-fade'
+  transitionStyle = 'zoom-fade',
+  onAssetClick,
 }: Viewer360Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<any>(null);
@@ -223,25 +224,25 @@ function Viewer360({
   useEffect(() => {
     if (imageUrl !== currentImage) {
       console.log('Loading new scene:', imageUrl, 'with transition:', transitionStyle);
-      
+
       const isInstant = transitionStyle === 'instant';
       const isZoom = transitionStyle === 'zoom-fade';
       const isPan = transitionStyle === 'pan-slide';
-      
+
       if (!isInstant) {
         setOpacity(0);
       }
-      
+
       if (isZoom) {
         setTargetFov(40);
       } else if (isPan) {
         // Pan slightly by moving the controls later, for now just fade
       }
-      
+
       setIsLoading(true);
-      
+
       const delay = isInstant ? 0 : 150;
-      
+
       const timer = setTimeout(() => {
         setCurrentImage(imageUrl);
         // Fade in after image loads
@@ -255,7 +256,7 @@ function Viewer360({
             controlsRef.current.setAzimuthalAngle(-initialOrientation.yaw + panOffset);
             controlsRef.current.setPolarAngle(Math.PI / 2 - initialOrientation.pitch);
             controlsRef.current.update();
-            
+
             // If pan-slide, smoothly animate the pan after loading
             if (isPan) {
               setTimeout(() => {
@@ -347,9 +348,8 @@ function Viewer360({
         {aiTags && aiTags.length > 0 && (
           <button
             onClick={toggleVisibility}
-            className={`p-2 backdrop-blur-sm rounded-lg transition-colors ${
-              showTags ? 'bg-blue-600/50 text-white hover:bg-blue-600/70' : 'bg-black/50 text-gray-400 hover:bg-black/70'
-            }`}
+            className={`p-2 backdrop-blur-sm rounded-lg transition-colors ${showTags ? 'bg-blue-600/50 text-white hover:bg-blue-600/70' : 'bg-black/50 text-gray-400 hover:bg-black/70'
+              }`}
             title={showTags ? 'Hide AI tags' : 'Show AI tags'}
           >
             {showTags ? <Eye size={18} /> : <EyeOff size={18} />}

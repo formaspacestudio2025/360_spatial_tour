@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { walkthroughApi } from '@/api/walkthroughs';
 import { scenesApi } from '@/api/scenes';
@@ -33,6 +33,7 @@ type SidebarTab = 'scenes' | 'hotspots' | 'ai' | 'graph' | 'issues' | 'assets';
 
 function WalkthroughViewer() {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const { user } = useAuthStore();
   const [currentScene, setCurrentScene] = useState<Scene | null>(null);
   const [activeTab, setActiveTab] = useState<SidebarTab>('scenes');
@@ -80,6 +81,21 @@ function WalkthroughViewer() {
 
   const scenes = scenesData?.data || [];
   const walkthrough = walkthroughData?.data;
+
+  // Initialize scene from URL query param if present
+  useEffect(() => {
+    if (scenes && location.search) {
+      const params = new URLSearchParams(location.search);
+      const sceneId = params.get('scene');
+      if (sceneId) {
+        const scene = scenes.find((s) => s.id === sceneId);
+        if (scene) {
+          setCurrentScene(scene);
+          setViewerScene(scene);
+        }
+      }
+    }
+  }, [scenes, location.search]);
 
   // Fetch issues for current scene
   const { data: issuesData } = useQuery({
@@ -197,6 +213,21 @@ function WalkthroughViewer() {
     setEditingAsset(null);
     setShowAssetModal(true);
   }, []);
+
+  const handleAssetClick = useCallback((asset: Asset) => {
+    if (!asset.scene_id) return;
+    if (asset.scene_id !== currentScene?.id) {
+      // Jump to the scene where the asset is located
+      handleSceneChange(asset.scene_id, { yaw: asset.yaw ?? 0, pitch: asset.pitch ?? 0 });
+    } else {
+      // Already in same scene, focus camera on asset if coordinates exist
+      if (asset.yaw != null && asset.pitch != null) {
+        setTargetOrientation({ yaw: asset.yaw, pitch: asset.pitch });
+      }
+      alert(`Asset: ${asset.name}\nType: ${asset.type}\nStatus: ${asset.status}`);
+    }
+  }, [currentScene, handleSceneChange]);
+
   const updateIssueMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => issuesApi.update(id, data),
     onSuccess: () => {
@@ -609,6 +640,7 @@ function WalkthroughViewer() {
                 onPlaceHotspot={handlePlaceHotspot}
                 onPlaceIssue={handlePlaceIssue}
                 onPlaceAsset={handlePlaceAsset}
+                onAssetClick={handleAssetClick}
                 isPlacingIssue={isPlacingIssue && editorMode === 'edit'}
                 isPlacingAsset={isPlacingAsset && editorMode === 'edit'}
                 nadirImage={currentScene.nadir_image_url || currentScene.nadir_image_path}
