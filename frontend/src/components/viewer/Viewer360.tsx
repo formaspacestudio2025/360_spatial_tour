@@ -56,7 +56,6 @@ function SceneContent({
   nadirRotation,
   nadirOpacity,
   targetFov,
-  onAssetClick,
 }: {
   imageUrl: string;
   hotspots?: Hotspot[];
