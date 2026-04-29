@@ -31,7 +31,7 @@ function Minimap({
     : scenes.filter(s => s.floor === (currentFloor ?? currentScene.floor));
 
   // Calculate scene positions for minimap
-  const scenePositions = useCallback(() => {
+  const scenePositions = useCallback((): Array<{ scene: Scene; x: number; z: number }> => {
     if (filteredScenes.length === 0) return [];
 
     // Find min/max positions for normalization
@@ -184,15 +184,15 @@ function Minimap({
     let closestScene: Scene | null = null;
     let minDistance = Infinity;
 
-    positions.forEach(({ scene, x: sceneX, z: sceneZ }) => {
+    for (const { scene, x: sceneX, z: sceneZ } of positions) {
       const distance = Math.sqrt(Math.pow(x - sceneX, 2) + Math.pow(z - sceneZ, 2));
       if (distance < minDistance && distance < 0.15) { // Click threshold
         minDistance = distance;
         closestScene = scene;
       }
-    });
+    }
 
-    if (closestScene && closestScene.id !== currentScene.id) {
+    if (closestScene && closestScene.id && closestScene.id !== currentScene.id) {
       onSceneSelect(closestScene);
     }
   }, [scenePositions, currentScene, onSceneSelect]);
@@ -211,13 +211,13 @@ function Minimap({
     let closestScene: Scene | null = null;
     let minDistance = Infinity;
 
-    positions.forEach(({ scene, x: sceneX, z: sceneZ }) => {
+    for (const { scene, x: sceneX, z: sceneZ } of positions) {
       const distance = Math.sqrt(Math.pow(x - sceneX, 2) + Math.pow(z - sceneZ, 2));
       if (distance < minDistance && distance < 0.15) {
         minDistance = distance;
         closestScene = scene;
       }
-    });
+    }
 
     setHoveredScene(closestScene);
   }, [scenePositions]);
@@ -246,8 +246,6 @@ function Minimap({
       {/* Canvas */}
       <div
         className={`relative ${isExpanded ? 'h-64' : 'h-32'}`}
-        onMouseMove={handleCanvasHover}
-        onMouseLeave={handleMouseLeave}
       >
         <canvas
           ref={canvasRef}
@@ -255,6 +253,8 @@ function Minimap({
           height={isExpanded ? 256 : 128}
           className="w-full h-full cursor-pointer"
           onClick={handleCanvasClick}
+          onMouseMove={handleCanvasHover}
+          onMouseLeave={handleMouseLeave}
         />
 
         {/* Legend */}

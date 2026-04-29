@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { Group } from '@react-three/fiber';
+import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Text } from '@react-three/drei';
 
@@ -151,7 +151,7 @@ function MarkerCluster({
   ), []);
 
   return (
-    <Group>
+    <group>
       {shouldCluster ? (
         // Show clusters
         clusters.map(cluster => {
@@ -160,7 +160,7 @@ function MarkerCluster({
           if (isExpanded) {
             // Show individual markers when expanded
             return (
-              <Group key={cluster.id}>
+              <group key={cluster.id}>
                 {cluster.markers.map(marker => (
                   <group
                     key={marker.id}
@@ -174,7 +174,7 @@ function MarkerCluster({
                     {renderMarker(marker)}
                   </group>
                 ))}
-              </Group>
+              </group>
             );
           }
 
@@ -204,7 +204,7 @@ function MarkerCluster({
           </group>
         ))
       )}
-    </Group>
+    </group>
   );
 }
 

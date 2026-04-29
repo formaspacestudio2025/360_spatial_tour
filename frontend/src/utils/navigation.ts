@@ -43,7 +43,8 @@ export function findNearestScene(
  */
 export function findConnectedScenes(
   currentSceneId: string,
-  navigationEdges: NavigationEdge[]
+  navigationEdges: NavigationEdge[],
+  scenes: Scene[]
 ): Scene[] {
   const connectedSceneIds = new Set<string>();
 
@@ -55,7 +56,9 @@ export function findConnectedScenes(
     }
   });
 
-  return Array.from(connectedSceneIds);
+  return Array.from(connectedSceneIds)
+    .map(id => scenes.find(s => s.id === id))
+    .filter((s): s is Scene => s !== undefined);
 }
 
 /**
@@ -133,9 +136,7 @@ export function getSuggestedScenes(
   const suggestions: Scene[] = [];
 
   // Add connected scenes first
-  const connectedScenes = findConnectedScenes(currentScene.id, navigationEdges)
-    .map(id => allScenes.find(s => s.id === id))
-    .filter((s): s is Scene => s !== undefined);
+  const connectedScenes = findConnectedScenes(currentScene.id, navigationEdges, allScenes);
 
   suggestions.push(...connectedScenes);
 

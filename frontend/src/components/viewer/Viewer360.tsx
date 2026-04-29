@@ -57,6 +57,8 @@ function SceneContent({
   nadirRotation,
   nadirOpacity,
   targetFov,
+  opacity,
+  onAssetClick,
 }: {
   imageUrl: string;
   hotspots?: Hotspot[];
@@ -74,6 +76,8 @@ function SceneContent({
   nadirRotation?: number;
   nadirOpacity?: number;
   targetFov: number;
+  opacity?: number;
+  onAssetClick?: (asset: Asset) => void;
 }) {
   const { camera, raycaster, scene } = useThree();
   const isPlacing = useHotspotStore((s) => s.isPlacingHotspot);
@@ -160,7 +164,6 @@ function SceneContent({
       {hotspots && hotspots.length > 0 && (
         <MarkerCluster
           markers={hotspots.map(h => ({
-            id: h.id,
             position: [
               Math.sin(h.yaw) * 500,
               Math.sin(h.pitch) * 500,
@@ -172,7 +175,7 @@ function SceneContent({
           renderMarker={(marker) => (
             <HotspotMarker
               key={marker.id}
-              hotspot={marker}
+              hotspot={marker as unknown as Hotspot}
               onNavigate={(id, orientation, transitionStyle) => {
                 if (onSceneChange) {
                   onSceneChange(id, orientation, transitionStyle);
@@ -187,7 +190,6 @@ function SceneContent({
       {issueMarkers && issueMarkers.length > 0 && (
         <MarkerCluster
           markers={issueMarkers.filter(i => typeof i.yaw === 'number' && typeof i.pitch === 'number').map(i => ({
-            id: i.id,
             position: [
               Math.sin(i.yaw) * 500,
               Math.sin(i.pitch) * 500,
@@ -197,7 +199,7 @@ function SceneContent({
           }))}
           currentFov={persCamera.fov}
           renderMarker={(marker) => (
-            <IssueMarker key={marker.id} issue={marker} />
+            <IssueMarker key={marker.id} issue={marker as unknown as Issue} />
           )}
         />
       )}
@@ -206,17 +208,16 @@ function SceneContent({
       {assetMarkers && assetMarkers.length > 0 && (
         <MarkerCluster
           markers={assetMarkers.filter(a => typeof a.yaw === 'number' && typeof a.pitch === 'number').map(a => ({
-            id: a.id,
             position: [
-              Math.sin(a.yaw) * 500,
-              Math.sin(a.pitch) * 500,
-              Math.cos(a.yaw) * 500
+              Math.sin(a.yaw || 0) * 500,
+              Math.sin(a.pitch || 0) * 500,
+              Math.cos(a.yaw || 0) * 500
             ],
             ...a
           }))}
           currentFov={persCamera.fov}
           renderMarker={(marker) => (
-            <AssetMarker key={marker.id} asset={marker} onClick={onAssetClick} />
+            <AssetMarker key={marker.id} asset={marker as unknown as Asset} onClick={onAssetClick} />
           )}
         />
       )}
@@ -444,6 +445,7 @@ function Viewer360({
               nadirOpacity={nadirOpacity}
               targetFov={targetFov}
               opacity={opacity}
+              onAssetClick={onAssetClick}
             />
           </group>
         </Suspense>

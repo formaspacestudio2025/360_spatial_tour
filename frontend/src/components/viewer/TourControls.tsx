@@ -39,8 +39,8 @@ function TourControls({
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [speed, setSpeed] = useState(1); // Playback speed multiplier
 
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const progressRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Use provided tour steps or create default tour from all scenes
   const steps = tourSteps || scenes.map(scene => ({
@@ -48,6 +48,7 @@ function TourControls({
     scene,
     narration: scene.room_name || `Scene ${scene.id.slice(0, 8)}`,
     duration: 5, // Default 5 seconds per scene
+    orientation: undefined,
   }));
 
   // Find current step index

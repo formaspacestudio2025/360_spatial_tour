@@ -648,7 +648,8 @@ function WalkthroughViewer() {
                       Enter Edit Mode
                   </button>
                 </div>
-              )
+              )}
+            </div>
             ) : activeTab === 'ai' ? (
               <div className="space-y-6">
                 <AIProcessingPanel
