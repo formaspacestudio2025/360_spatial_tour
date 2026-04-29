@@ -92,10 +92,67 @@ class AuthService {
         return stmt.get(email);
     }
     /**
+     * Get all users (without password hashes)
+     */
+    getAllUsers() {
+        const stmt = database_1.default.prepare('SELECT id, username, email, role, created_at FROM users');
+        return stmt.all();
+    }
+    /**
+     * Update user by ID
+     */
+    updateUser(id, data) {
+        const user = this.getUserById(id);
+        if (!user)
+            return undefined;
+        const updates = [];
+        const params = [];
+        if (data.username !== undefined) {
+            // check uniqueness
+            const existing = this.getUserByUsername(data.username);
+            if (existing && existing.id !== id) {
+                throw new Error('Username already taken');
+            }
+            updates.push('username = ?');
+            params.push(data.username);
+        }
+        if (data.email !== undefined) {
+            const existing = this.getUserByEmail(data.email);
+            if (existing && existing.id !== id) {
+                throw new Error('Email already registered');
+            }
+            updates.push('email = ?');
+            params.push(data.email);
+        }
+        if (data.role !== undefined) {
+            updates.push('role = ?');
+            params.push(data.role);
+        }
+        if (data.password !== undefined) {
+            updates.push('password_hash = ?');
+            params.push(bcryptjs_1.default.hashSync(data.password, 10));
+        }
+        if (updates.length === 0)
+            return user;
+        params.push(id);
+        const sql = `UPDATE users SET ${updates.join(', ')} WHERE id = ?`;
+        const stmt = database_1.default.prepare(sql);
+        stmt.run(...params);
+        return this.getUserById(id);
+    }
+    /**
+     * Delete user by ID
+     */
+    deleteUser(id) {
+        const stmt = database_1.default.prepare('DELETE FROM users WHERE id = ?');
+        const result = stmt.run(id);
+        return result.changes > 0;
+    }
+    /**
      * Generate JWT token
      */
     generateToken(user) {
-        return jsonwebtoken_1.default.sign({ userId: user.id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+        return jsonwebtoken_1.default.sign({ userId: user.id, username: user.username, role: user.role, org_id: user.org_id, property_id: user.property_id }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
     }
     /**
      * Remove sensitive fields from user object

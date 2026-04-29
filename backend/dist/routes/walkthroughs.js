@@ -4,9 +4,10 @@ const express_1 = require("express");
 const walkthrough_service_1 = require("../services/walkthrough.service");
 const error_1 = require("../middleware/error");
 const auth_1 = require("../middleware/auth");
+const rbac_1 = require("../middleware/rbac");
 const router = (0, express_1.Router)();
 // GET /api/walkthroughs - Get all walkthroughs (public)
-router.get('/', (req, res) => {
+router.get('/', auth_1.authenticate, (0, rbac_1.requirePermission)('walkthrough', 'read'), (req, res) => {
     try {
         const query = {
             search: req.query.search,

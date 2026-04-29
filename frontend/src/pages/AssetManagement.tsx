@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { assetsApi } from '@/api/assetsApi';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Plus, Pencil, Trash2, Box } from 'lucide-react';
+import { ArrowLeft, Plus, Pencil, Trash2, Box, Map, QrCode, Calendar, X } from 'lucide-react';
 import { Asset, AssetType } from '@/types';
+import QRModal from '@/components/assets/QRModal';
+import LifecycleTab from '@/components/assets/LifecycleTab';
 
 const AssetManagement: React.FC = () => {
   const queryClient = useQueryClient();
@@ -17,12 +19,41 @@ const AssetManagement: React.FC = () => {
     serial_number: '',
     status: 'active' as Asset['status'],
     walkthrough_id: '',
+    purchase_date: '',
+    warranty_date: '',
   });
 
-  const { data: assets = [], isLoading, error } = useQuery({
-    queryKey: ['assets'],
-    queryFn: () => assetsApi.getAll(),
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+
+  // Mapping modal state
+  const [showMapModal, setShowMapModal] = useState(false);
+  const [mappingAsset, setMappingAsset] = useState<Asset | null>(null);
+  const [mapData, setMapData] = useState({
+    scene_id: '',
+    yaw: '',
+    pitch: '',
+    floor: '',
+    room: '',
   });
+
+  // QR modal state
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [qrAsset, setQrAsset] = useState<Asset | null>(null);
+
+  // Lifecycle modal state
+  const [showLifecycleModal, setShowLifecycleModal] = useState(false);
+  const [lifecycleAsset, setLifecycleAsset] = useState<Asset | null>(null);
+
+  const { data: assetsResponse, isLoading, error } = useQuery({
+    queryKey: ['assets', page, limit],
+    queryFn: () => assetsApi.getAll(undefined, page, limit),
+  });
+
+  const assets = assetsResponse?.assets || [];
+  const total = assetsResponse?.total || 0;
+  const totalPages = Math.ceil(total / limit);
 
   const createMutation = useMutation({
     mutationFn: (data: any) => assetsApi.create(data),
@@ -50,6 +81,16 @@ const AssetManagement: React.FC = () => {
     },
   });
 
+  const mapMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
+      assetsApi.mapToScene(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['assets'] });
+      setShowMapModal(false);
+      setMappingAsset(null);
+    },
+  });
+
   const resetForm = () => {
     setFormData({
       name: '',
@@ -59,6 +100,8 @@ const AssetManagement: React.FC = () => {
       serial_number: '',
       status: 'active',
       walkthrough_id: '',
+      purchase_date: '',
+      warranty_date: '',
     });
   };
 
@@ -81,8 +124,52 @@ const AssetManagement: React.FC = () => {
       serial_number: asset.serial_number || '',
       status: asset.status,
       walkthrough_id: asset.walkthrough_id || '',
+      purchase_date: asset.purchase_date || '',
+      warranty_date: asset.warranty_date || '',
     });
     setShowForm(true);
+  };
+
+  const startMap = (asset: Asset) => {
+    setMappingAsset(asset);
+    setMapData({
+      scene_id: asset.scene_id || '',
+      yaw: asset.yaw?.toString() || '',
+      pitch: asset.pitch?.toString() || '',
+      floor: asset.floor?.toString() || '',
+      room: asset.room || '',
+    });
+    setShowMapModal(true);
+  };
+
+  const handleMapSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mappingAsset) return;
+
+    const yawNum = mapData.yaw ? parseFloat(mapData.yaw) : undefined;
+    const pitchNum = mapData.pitch ? parseFloat(mapData.pitch) : undefined;
+    const floorNum = mapData.floor ? parseInt(mapData.floor) : undefined;
+
+    // Validate yaw/pitch ranges
+    if (yawNum !== undefined && (yawNum < 0 || yawNum > 360)) {
+      alert('Yaw must be between 0 and 360 degrees');
+      return;
+    }
+    if (pitchNum !== undefined && (pitchNum < -90 || pitchNum > 90)) {
+      alert('Pitch must be between -90 and 90 degrees');
+      return;
+    }
+
+    mapMutation.mutate({
+      id: mappingAsset.id,
+      data: {
+        scene_id: mapData.scene_id || undefined,
+        yaw: yawNum,
+        pitch: pitchNum,
+        floor: floorNum,
+        room: mapData.room || undefined,
+      },
+    });
   };
 
   const typeColors: Record<string, string> = {
@@ -175,9 +262,31 @@ const AssetManagement: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-300">
                     {asset.room ? `${asset.room}, Floor ${asset.floor || '?'}` : (asset.floor ? `Floor ${asset.floor}` : '-')}
+                    {asset.scene_id && <span className="ml-2 text-xs text-blue-400">(mapped)</span>}
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => { setLifecycleAsset(asset); setShowLifecycleModal(true); }}
+                        className="p-2 text-green-400 hover:text-green-300 hover:bg-green-500/10 rounded-lg transition-colors"
+                        title="Lifecycle"
+                      >
+                        <Calendar size={14} />
+                      </button>
+                      <button
+                        onClick={() => { setQrAsset(asset); setShowQRModal(true); }}
+                        className="p-2 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 rounded-lg transition-colors"
+                        title="QR Code"
+                      >
+                        <QrCode size={14} />
+                      </button>
+                      <button
+                        onClick={() => startMap(asset)}
+                        className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded-lg transition-colors"
+                        title="Map to Scene"
+                      >
+                        <Map size={14} />
+                      </button>
                       <button
                         onClick={() => startEdit(asset)}
                         className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
@@ -205,6 +314,31 @@ const AssetManagement: React.FC = () => {
               )}
             </tbody>
           </table>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="px-6 py-4 border-t border-gray-800 flex items-center justify-between">
+              <span className="text-sm text-gray-400">
+                Page {page} of {totalPages} ({total} total)
+              </span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                  className="px-3 py-1 bg-gray-800 text-white rounded hover:bg-gray-700 disabled:opacity-50 text-sm"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                  className="px-3 py-1 bg-gray-800 text-white rounded hover:bg-gray-700 disabled:opacity-50 text-sm"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </main>
 
@@ -280,6 +414,26 @@ const AssetManagement: React.FC = () => {
                   <option value="retired">Retired</option>
                 </select>
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Purchase Date</label>
+                  <input
+                    type="date"
+                    value={formData.purchase_date}
+                    onChange={(e) => setFormData({ ...formData, purchase_date: e.target.value })}
+                    className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Warranty Date</label>
+                  <input
+                    type="date"
+                    value={formData.warranty_date}
+                    onChange={(e) => setFormData({ ...formData, warranty_date: e.target.value })}
+                    className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                  />
+                </div>
+              </div>
               <div className="flex gap-3 pt-2">
                 <button
                   type="submit"
@@ -297,6 +451,114 @@ const AssetManagement: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Map to Scene Modal */}
+      {showMapModal && mappingAsset && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Map "{mappingAsset.name}" to Scene</h2>
+            <form onSubmit={handleMapSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Scene ID</label>
+                <input
+                  type="text"
+                  value={mapData.scene_id}
+                  onChange={(e) => setMapData({ ...mapData, scene_id: e.target.value })}
+                  className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                  placeholder="e.g., scene_001"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Yaw (0-360)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="360"
+                    value={mapData.yaw}
+                    onChange={(e) => setMapData({ ...mapData, yaw: e.target.value })}
+                    className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Pitch (-90 to 90)</label>
+                  <input
+                    type="number"
+                    min="-90"
+                    max="90"
+                    value={mapData.pitch}
+                    onChange={(e) => setMapData({ ...mapData, pitch: e.target.value })}
+                    className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Floor</label>
+                  <input
+                    type="number"
+                    value={mapData.floor}
+                    onChange={(e) => setMapData({ ...mapData, floor: e.target.value })}
+                    className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Room</label>
+                  <input
+                    type="text"
+                    value={mapData.room}
+                    onChange={(e) => setMapData({ ...mapData, room: e.target.value })}
+                    className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="submit"
+                  disabled={mapMutation.isPending}
+                  className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-500 disabled:opacity-50 text-sm"
+                >
+                  {mapMutation.isPending ? 'Saving...' : 'Save Mapping'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowMapModal(false); setMappingAsset(null); }}
+                  className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* QR Code Modal */}
+      {showQRModal && qrAsset && (
+        <QRModal
+          assetId={qrAsset.id}
+          assetName={qrAsset.name}
+          onClose={() => { setShowQRModal(false); setQrAsset(null); }}
+        />
+      )}
+
+      {/* Lifecycle Modal */}
+      {showLifecycleModal && lifecycleAsset && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">Asset Lifecycle</h2>
+              <button
+                onClick={() => { setShowLifecycleModal(false); setLifecycleAsset(null); }}
+                className="p-1 text-gray-400 hover:text-white transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <LifecycleTab asset={lifecycleAsset} />
           </div>
         </div>
       )}

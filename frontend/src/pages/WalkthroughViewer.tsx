@@ -29,7 +29,7 @@ import { Scene } from '@/types';
 import { ArrowLeft, Upload, Image, Navigation2, BrainCircuit, GitGraph, AlertCircle, Box } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-type SidebarTab = | scenes | hotspots | ai | graph | issues | assets | inspection;
+type SidebarTab = 'scenes' | 'hotspots' | 'ai' | 'graph' | 'issues' | 'assets';
 
 function WalkthroughViewer() {
   const { id } = useParams<{ id: string }>();
@@ -98,9 +98,9 @@ function WalkthroughViewer() {
     enabled: !!id,
   });
   useEffect(() => {
-    if (assetsData && currentScene) {
+    if (assetsData?.assets && currentScene) {
       console.log('Assets data:', assetsData);
-      const sceneAssets = assetsData.filter((a: Asset) => a.scene_id === currentScene.id);
+      const sceneAssets = assetsData.assets.filter((a: Asset) => a.scene_id === currentScene.id);
       console.log('Filtered assets for scene', currentScene.id, ':', sceneAssets);
       setAssetMarkers(sceneAssets);
     } else {

@@ -7,7 +7,17 @@
       "Bash(npm install *)",
       "Bash(npm test *)",
       "Bash(npx jest *)",
-      "Bash(npx vitest *)"
+      "Bash(npx vitest *)",
+      "Bash(git checkout *)",
+      "Bash(npm --version)",
+      "WebFetch(domain:pypi.org)",
+      "Bash(ps -p 90129 -o comm=)",
+      "Bash(PORT=3001 node dist/index.js)",
+      "Bash(PORT=8080 node *)"
     ]
+  },
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true
   }
 }

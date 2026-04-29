@@ -148,7 +148,11 @@ function SceneContent({
         <HotspotMarker
           key={hotspot.id}
           hotspot={hotspot}
-          onNavigate={(id, orientation) => onSceneChange && onSceneChange(id, orientation)}
+          onNavigate={(id, orientation, transitionStyle) => {
+            if (onSceneChange) {
+              onSceneChange(id, orientation, transitionStyle);
+            }
+          }}
         />
       ))}
       {showTags && filteredTags.map((tag) => (

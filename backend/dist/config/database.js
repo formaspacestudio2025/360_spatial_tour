@@ -19,11 +19,13 @@ let db = {
     navigation_edges: [],
     ai_tags: [],
     issues: [],
+    assets: [],
     versions: [],
     walkthrough_members: [],
     comments: [],
     hotspot_media: [], // NEW
-    hotspot_links: [] // NEW
+    hotspot_links: [], // NEW
+    organizations: [] // NEW: Organization model
 };
 if (fs_1.default.existsSync(DB_PATH)) {
     const loaded = JSON.parse(fs_1.default.readFileSync(DB_PATH, 'utf-8'));

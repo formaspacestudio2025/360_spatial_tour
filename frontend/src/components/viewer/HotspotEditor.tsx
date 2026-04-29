@@ -107,6 +107,8 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [targetSceneId, setTargetSceneId] = useState('');
+  const [targetYaw, setTargetYaw] = useState<number | null>(null);
+  const [targetPitch, setTargetPitch] = useState<number | null>(null);
   const [iconType, setIconType] = useState('navigation');
   const [iconColor, setIconColor] = useState('#10b981');
   const [iconSize, setIconSize] = useState(1.0);
@@ -118,7 +120,7 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
   const [showMediaPanel, setShowMediaPanel] = useState(false);
   const [showMediaManager, setShowMediaManager] = useState(false);
   const [expandedHotspot, setExpandedHotspot] = useState<string | null>(null);
-  
+
   // NEW: Animation & Style state
   const [animationType, setAnimationType] = useState('pulse-ring');
   const [animationSpeed, setAnimationSpeed] = useState(1.0);
@@ -175,6 +177,8 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
       description,
       icon_type: iconType,
       icon_color: iconColor,
+      target_yaw: targetYaw,
+      target_pitch: targetPitch,
       metadata: { iconSize, customIconUrl, mediaType, mediaUrl, transitionStyle },
       is_locked: isLocked,
       // NEW: Animation & Style fields
@@ -208,6 +212,8 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
     setTitle('');
     setDescription('');
     setTargetSceneId('');
+    setTargetYaw(null);
+    setTargetPitch(null);
     setIconType('navigation');
     setIconColor('#10b981');
     setIconSize(1.0);
@@ -217,7 +223,7 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
     setMediaUrl('');
     setSelectedHotspot(null);
     setShowMediaPanel(false);
-    
+
     // NEW: Reset animation & style fields
     setAnimationType('pulse-ring');
     setAnimationSpeed(1.0);
@@ -255,6 +261,8 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
     setTitle(hotspot.title || '');
     setDescription(hotspot.description || '');
     setTargetSceneId(hotspot.to_scene_id || '');
+    setTargetYaw(hotspot.target_yaw !== undefined ? hotspot.target_yaw : null);
+    setTargetPitch(hotspot.target_pitch !== undefined ? hotspot.target_pitch : null);
     setIconType(hotspot.icon_type || 'navigation');
     setIconColor(hotspot.icon_color || '#10b981');
     setIconSize(hotspot.metadata?.iconSize || 1.0);
@@ -295,6 +303,8 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
       pitch: pendingHotspot.pitch,
       label: label || undefined,
       to_scene_id: targetSceneId,
+      target_yaw: targetYaw !== null ? targetYaw : undefined,
+      target_pitch: targetPitch !== null ? targetPitch : undefined,
       icon_type: iconType,
       icon_color: iconColor,
       title: title || undefined,
@@ -325,6 +335,8 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
       pitch: hotspot.pitch,
       label: `${hotspot.label || 'Hotspot'} (Copy)`,
       to_scene_id: hotspot.to_scene_id,
+      target_yaw: hotspot.target_yaw,
+      target_pitch: hotspot.target_pitch,
       icon_type: hotspot.icon_type,
       icon_color: hotspot.icon_color,
       title: hotspot.title,
@@ -524,7 +536,7 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
                 </button>
               </div>
 
-              {/* Target Scene */}
+              {/* Target Scene *//}
               <div>
                 <label className="block text-xs text-gray-400 mb-1">Target Scene *</label>
                 <select
@@ -538,6 +550,67 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
                       {scene.room_name || `Scene ${scene.id.slice(0, 6)}`}
                     </option>
                   ))}
+                </select>
+              </div>
+
+              {/* Target View (Advanced) */}
+              {canManage && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div className="text-center">
+                    <label className="block text-xs text-gray-400 mb-1">Target Yaw</label>
+                    <input
+                      type="range"
+                      min="-180"
+                      max="180"
+                      step="1"
+                      value={(targetYaw ?? 0) * (180 / Math.PI)}
+                      onChange={(e) => {
+                        const value = parseFloat(e.target.value);
+                        setTargetYaw(value / (180 / Math.PI));
+                        setTargetPitch(targetPitch);
+                      }}
+                      className="w-full slider slider-primary"
+                    />
+                    <div className="mt-1 text-xs text-white">
+                      {targetYaw ?? 0 >= 0 ? '+' : ''}
+                      { (targetYaw ?? 0).toFixed(1) }
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <label className="block text-xs text-gray-400 mb-1">Target Pitch</label>
+                    <input
+                      type="range"
+                      min="-90"
+                      max="90"
+                      step="1"
+                      value={(targetPitch ?? 0) * (180 / Math.PI)}
+                      onChange={(e) => {
+                        const value = parseFloat(e.target.value);
+                        setTargetPitch(value / (180 / Math.PI));
+                        setTargetYaw(targetYaw);
+                      }}
+                      className="w-full slider slider-primary"
+                    />
+                    <div className="mt-1 text-xs text-white">
+                      {targetPitch ?? 0 >= 0 ? '+' : ''}
+                      { (targetPitch ?? 0).toFixed(1) }
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Transition Style */}
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Scene Transition Style</label>
+                <select
+                  value={transitionStyle}
+                  onChange={(e) => setTransitionStyle(e.target.value)}
+                  className="w-full px-2.5 py-1.5 bg-gray-900 border border-gray-700 rounded-md text-white text-xs focus:outline-none focus:border-primary-500"
+                >
+                  <option value="zoom-fade">Zoom & Fade (Enterprise)</option>
+                  <option value="fade">Crossfade</option>
+                  <option value="pan-slide">Pan & Slide</option>
+                  <option value="instant">Instant Cut</option>
                 </select>
               </div>
 

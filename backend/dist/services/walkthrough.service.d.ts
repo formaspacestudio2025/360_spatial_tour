@@ -1,4 +1,5 @@
 export interface Walkthrough {
+    org_id?: string;
     id: string;
     name: string;
     client?: string;

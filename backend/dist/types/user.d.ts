@@ -4,6 +4,8 @@ export interface User {
     email: string;
     password_hash: string;
     role: 'admin' | 'manager' | 'editor' | 'viewer' | 'contractor' | 'client_guest';
+    org_id?: string;
+    property_id?: string;
     created_at: string;
 }
 export type UserRole = User['role'];

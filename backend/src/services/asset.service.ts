@@ -2,6 +2,54 @@ import db from '../config/database';
 import { generateId } from '../utils/generateId';
 import { Asset } from '../types/asset';
 
+export interface AssetLifecycle {
+  ageYears: number | null;
+  ageMonths: number | null;
+  warrantyExpired: boolean;
+  warrantyDaysRemaining: number | null;
+  warrantyStatus: 'active' | 'expiring_soon' | 'expired' | 'not_set';
+}
+
+export function calculateLifecycle(asset: Asset): AssetLifecycle {
+  const now = new Date();
+  let ageYears: number | null = null;
+  let ageMonths: number | null = null;
+  let warrantyExpired = false;
+  let warrantyDaysRemaining: number | null = null;
+  let warrantyStatus: 'active' | 'expiring_soon' | 'expired' | 'not_set' = 'not_set';
+
+  if (asset.purchase_date) {
+    const purchase = new Date(asset.purchase_date);
+    const diffTime = now.getTime() - purchase.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    ageYears = Math.floor(diffDays / 365);
+    ageMonths = Math.floor((diffDays % 365) / 30);
+  }
+
+  if (asset.warranty_date) {
+    const warranty = new Date(asset.warranty_date);
+    const diffTime = warranty.getTime() - now.getTime();
+    warrantyDaysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    warrantyExpired = warrantyDaysRemaining < 0;
+
+    if (warrantyExpired) {
+      warrantyStatus = 'expired';
+    } else if (warrantyDaysRemaining <= 30) {
+      warrantyStatus = 'expiring_soon';
+    } else {
+      warrantyStatus = 'active';
+    }
+  }
+
+  return {
+    ageYears,
+    ageMonths,
+    warrantyExpired,
+    warrantyDaysRemaining,
+    warrantyStatus,
+  };
+}
+
 export async function createAsset(data: {
   name: string;
   type: string;
@@ -17,12 +65,14 @@ export async function createAsset(data: {
   walkthrough_id?: string;
   org_id?: string;
   property_id?: string;
+  purchase_date?: string;
+  warranty_date?: string;
 }): Promise<Asset> {
   const id = generateId();
   const now = new Date().toISOString();
 
-  const sql = `INSERT INTO assets (id, name, type, brand, model, serial_number, scene_id, yaw, pitch, floor, room, status, walkthrough_id, org_id, property_id, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+  const sql = `INSERT INTO assets (id, name, type, brand, model, serial_number, scene_id, yaw, pitch, floor, room, status, walkthrough_id, org_id, property_id, purchase_date, warranty_date, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   await db.prepare(sql).run(
     id,
@@ -40,6 +90,8 @@ export async function createAsset(data: {
     data.walkthrough_id || null,
     data.org_id || null,
     data.property_id || null,
+    data.purchase_date || null,
+    data.warranty_date || null,
     now,
     now
   );
@@ -53,19 +105,24 @@ export async function createAsset(data: {
   } as Asset;
 }
 
-export async function getAssets(walkthrough_id?: string): Promise<Asset[]> {
-  let sql = 'SELECT * FROM assets';
-  const stmt = db.prepare(sql);
-  let assets = await stmt.all();
+export async function getAssets(walkthrough_id?: string, page: number = 1, limit: number = 10): Promise<{assets: Asset[]; total: number; page: number; limit: number}> {
+  // Base query – fetch all assets (will filter in memory for simplicity)
+  const stmt = db.prepare('SELECT * FROM assets');
+  let assets: Asset[] = await stmt.all();
 
+  // Optional walkthrough filter
   if (walkthrough_id) {
     assets = assets.filter((a: any) => a.walkthrough_id === walkthrough_id);
   }
 
-  // Sort by created_at descending
+  // Sort newest first
   assets.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-  return assets;
+  const total = assets.length;
+  const start = (page - 1) * limit;
+  const paged = assets.slice(start, start + limit);
+
+  return { assets: paged, total, page, limit };
 }
 
 export async function getAssetById(id: string): Promise<Asset | null> {
@@ -83,7 +140,7 @@ export async function updateAsset(id: string, data: Partial<Asset>): Promise<Ass
   const sql = `UPDATE assets SET
                 name = ?, type = ?, brand = ?, model = ?, serial_number = ?,
                 scene_id = ?, yaw = ?, pitch = ?, floor = ?, room = ?,
-                status = ?, walkthrough_id = ?, org_id = ?, property_id = ?, updated_at = ?
+                status = ?, walkthrough_id = ?, org_id = ?, property_id = ?, purchase_date = ?, warranty_date = ?, updated_at = ?
                 WHERE id = ?`;
 
   await db.prepare(sql).run(
@@ -101,6 +158,8 @@ export async function updateAsset(id: string, data: Partial<Asset>): Promise<Ass
     updated.walkthrough_id || null,
     updated.org_id || null,
     updated.property_id || null,
+    updated.purchase_date || null,
+    updated.warranty_date || null,
     now,
     id
   );

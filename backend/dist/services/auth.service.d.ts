@@ -47,6 +47,23 @@ export declare class AuthService {
      */
     getUserByEmail(email: string): User | undefined;
     /**
+     * Get all users (without password hashes)
+     */
+    getAllUsers(): Omit<User, 'password_hash'>[];
+    /**
+     * Update user by ID
+     */
+    updateUser(id: string, data: {
+        username?: string;
+        email?: string;
+        role?: UserRole;
+        password?: string;
+    }): User | undefined;
+    /**
+     * Delete user by ID
+     */
+    deleteUser(id: string): boolean;
+    /**
      * Generate JWT token
      */
     private generateToken;

@@ -4,8 +4,7 @@ import { issuesApi } from '@/api/issuesApi';
 import { walkthroughApi } from '@/api/walkthroughs';
 import { Issue, IssueAttachment } from '../../types/issue';
 import { Link } from 'react-router-dom';
-import { AlertCircle, Search, ArrowLeft, MapPin, Building2, Tag, Calendar, User, ExternalLink, Download, Paperclip, Image, FileText, Trash2, Upload, Edit } from 'lucide-react';
-import EditIssueStatus from './EditIssueStatus';
+import { AlertCircle, Search, ArrowLeft, MapPin, Building2, Tag, Calendar, User, ExternalLink, Download, Paperclip, Image, FileText, Trash2, Upload } from 'lucide-react';
 
 // Status badge colors
 const statusColors: Record<string, string> = {
@@ -135,7 +134,6 @@ const IssueListPage: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterSeverity, setFilterSeverity] = useState<string>('all');
   const [selectedWalkthrough, setSelectedWalkthrough] = useState<string>('all');
-  const [editingIssueId, setEditingIssueId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -426,17 +424,6 @@ const IssueListPage: React.FC = () => {
                   {expandedIssueId === issue.id ? 'Hide Attachments' : 'Show Attachments'}
                 </button>
 
-                {/* Edit Status button */}
-                {editingIssueId !== issue.id && issue.status !== 'resolved' && (
-                  <button
-                    onClick={() => setEditingIssueId(issue.id)}
-                    className="mt-2 text-sm text-blue-400 hover:underline flex items-center gap-1 ml-4"
-                  >
-                    <Edit size={14} />
-                    Edit Status
-                  </button>
-                )}
-
                 {/* Attachment panel */}
                 {expandedIssueId === issue.id && (
                   <div className="mt-3 border-t border-gray-800 pt-3">
@@ -488,22 +475,6 @@ const IssueListPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* Edit Status Component */}
-                {editingIssueId === issue.id && (
-                  <div className="mt-3 border-t border-gray-800 pt-3">
-                    <EditIssueStatus
-                      issueId={issue.id}
-                      currentStatus={issue.status}
-                      resolutionImageUrl={issue.resolution_image_url}
-                      resolvedAt={issue.resolved_at}
-                      onStatusChange={() => {
-                        setEditingIssueId(null);
-                        queryClient.invalidateQueries({ queryKey: ['issues'] });
-                      }}
-                    />
-                  </div>
-                )}
-
                 <div className="flex items-center gap-4 text-xs text-gray-500 flex-wrap mt-3">
                   {walkthroughs[issue.walkthrough_id] && (
                     <span className="flex items-center gap-1">
@@ -537,23 +508,6 @@ const IssueListPage: React.FC = () => {
                     Created: {new Date(issue.created_at).toLocaleDateString()}
                   </span>
                 </div>
-
-                {/* Resolution proof for resolved issues */}
-                {issue.status === 'resolved' && issue.resolution_image_url && (
-                  <div className="mt-3 border-t border-gray-800 pt-3">
-                    <p className="text-xs text-gray-400 mb-1">Resolution Proof:</p>
-                    <img
-                      src={issue.resolution_image_url}
-                      alt="Resolution proof"
-                      className="max-w-[200px] rounded-lg border border-gray-700"
-                    />
-                    {issue.resolved_at && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        Resolved at: {new Date(issue.resolved_at).toLocaleString()}
-                      </p>
-                    )}
-                  </div>
-                )}
               </div>
             ))
           )}

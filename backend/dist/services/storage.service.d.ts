@@ -3,7 +3,7 @@ export declare class StorageService {
     /**
      * Save uploaded file to storage
      */
-    saveFile(walkthroughId: string, file: Express.Multer.File, subfolder?: 'scenes' | 'thumbnails' | 'exports'): Promise<string>;
+    saveFile(walkthroughId: string, file: Express.Multer.File, subfolder?: 'scenes' | 'thumbnails' | 'exports' | 'issues'): Promise<string>;
     /**
      * Generate thumbnail from 360 image
      */

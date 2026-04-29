@@ -1,5 +1,6 @@
 import express from 'express';
 import { createAsset, getAssets, getAssetById, updateAsset, deleteAsset, updateAssetSceneMapping, getAssetsByScene } from '../services/asset.service';
+import { generateQRCodeBuffer } from '../services/qrcode.service';
 import { authenticate } from '../middleware/auth';
 import { requirePermission } from '../middleware/rbac';
 
@@ -9,9 +10,11 @@ router.use(authenticate);
 // Get all assets with optional walkthrough_id filter
 router.get('/', requirePermission('asset','read'), async (req, res) => {
   try {
-    const { walkthrough_id } = req.query;
-    const assets = await getAssets(walkthrough_id as string | undefined);
-    res.json({ success: true, data: assets });
+    const { walkthrough_id, page = '1', limit = '10' } = req.query as any;
+    const pageNum = parseInt(page, 10) || 1;
+    const limitNum = parseInt(limit, 10) || 10;
+    const result = await getAssets(walkthrough_id as string | undefined, pageNum, limitNum);
+    res.json({ success: true, data: result.assets, total: result.total, page: result.page, limit: result.limit });
   } catch (error: unknown) {
     const err = error as { statusCode?: number; message?: string };
     res.status(err.statusCode || 500).json({ success: false, message: err.message });
@@ -116,6 +119,27 @@ router.get('/scene/:scene_id/assets', requirePermission('asset','read'), async (
     const { scene_id } = req.params;
     const assets = await getAssetsByScene(scene_id);
     res.json({ success: true, data: assets });
+  } catch (error: unknown) {
+    const err = error as { statusCode?: number; message?: string };
+    res.status(err.statusCode || 500).json({ success: false, message: err.message });
+  }
+});
+
+// Get QR code for asset (returns PNG)
+router.get('/:id/qr', requirePermission('asset','read'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const asset = await getAssetById(id);
+    if (!asset) {
+      return res.status(404).json({ success: false, message: 'Asset not found' });
+    }
+    const size = req.query.size ? parseInt(req.query.size as string) : 200;
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const assetUrl = `${frontendUrl}/assets/${id}`;
+    const buffer = await generateQRCodeBuffer({ data: assetUrl, size });
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Content-Disposition', `inline; filename="asset_${id}_qr.png"`);
+    res.send(buffer);
   } catch (error: unknown) {
     const err = error as { statusCode?: number; message?: string };
     res.status(err.statusCode || 500).json({ success: false, message: err.message });
