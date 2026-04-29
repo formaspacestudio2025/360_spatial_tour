@@ -15,12 +15,15 @@ export interface Walkthrough {
   scene_count?: number;
 }
 
-export type { UserRole } from './user';
-export { Permission, ROLE_HIERARCHY, hasRole } from './user';
-export type { User } from './user';
+export type UserRole = 'admin' | 'editor' | 'viewer';
 
-// Re-export enterprise types
-export type { Org } from './org';
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  role: UserRole;
+  created_at?: string;
+}
 
 export interface Scene {
   id: string;
@@ -95,8 +98,6 @@ export interface Issue {
   assigned_to?: string;
   created_by?: string;
   due_date?: string;
-  resolution_image_url?: string;
-  resolved_at?: string;
   created_at: string;
   updated_at: string;
 }
@@ -140,6 +141,10 @@ export interface Asset {
   room?: string;
   status: 'active' | 'maintenance' | 'retired';
   walkthrough_id?: string;
+  org_id?: string;
+  property_id?: string;
+  purchase_date?: string;
+  warranty_date?: string;
   created_at: string;
   updated_at: string;
 }

@@ -14,6 +14,8 @@ export interface Asset {
   walkthrough_id?: string;  // which property/walkthrough it belongs to
   org_id?: string;         // organization that owns this asset
   property_id?: string;     // specific property (if different from walkthrough)
+  purchase_date?: string;  // ISO date string when asset was purchased
+  warranty_date?: string;  // ISO date string when warranty expires
   created_at: string;
   updated_at: string;
 }

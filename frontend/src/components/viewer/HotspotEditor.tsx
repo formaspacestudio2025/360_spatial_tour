@@ -4,6 +4,7 @@ import { hotspotsApi, Hotspot } from '@/api/hotspots';
 import { useHotspotStore } from '@/stores/hotspotStore';
 import { canEdit } from '@/stores/authStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useViewerStore } from '@/stores/viewerStore';
 import { useAutosave, SaveStatusIndicator } from '@/hooks/useAutosave';
 import { Scene } from '@/types';
 import MediaManager from './MediaManager';
@@ -107,6 +108,8 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [targetSceneId, setTargetSceneId] = useState('');
+  const [targetYaw, setTargetYaw] = useState<number | null>(null);
+  const [targetPitch, setTargetPitch] = useState<number | null>(null);
   const [iconType, setIconType] = useState('navigation');
   const [iconColor, setIconColor] = useState('#10b981');
   const [iconSize, setIconSize] = useState(1.0);
@@ -118,7 +121,7 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
   const [showMediaPanel, setShowMediaPanel] = useState(false);
   const [showMediaManager, setShowMediaManager] = useState(false);
   const [expandedHotspot, setExpandedHotspot] = useState<string | null>(null);
-  
+
   // NEW: Animation & Style state
   const [animationType, setAnimationType] = useState('pulse-ring');
   const [animationSpeed, setAnimationSpeed] = useState(1.0);
@@ -175,6 +178,8 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
       description,
       icon_type: iconType,
       icon_color: iconColor,
+      target_yaw: targetYaw,
+      target_pitch: targetPitch,
       metadata: { iconSize, customIconUrl, mediaType, mediaUrl, transitionStyle },
       is_locked: isLocked,
       // NEW: Animation & Style fields
@@ -208,6 +213,8 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
     setTitle('');
     setDescription('');
     setTargetSceneId('');
+    setTargetYaw(null);
+    setTargetPitch(null);
     setIconType('navigation');
     setIconColor('#10b981');
     setIconSize(1.0);
@@ -217,7 +224,7 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
     setMediaUrl('');
     setSelectedHotspot(null);
     setShowMediaPanel(false);
-    
+
     // NEW: Reset animation & style fields
     setAnimationType('pulse-ring');
     setAnimationSpeed(1.0);
@@ -255,6 +262,8 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
     setTitle(hotspot.title || '');
     setDescription(hotspot.description || '');
     setTargetSceneId(hotspot.to_scene_id || '');
+    setTargetYaw(hotspot.target_yaw !== undefined ? hotspot.target_yaw : null);
+    setTargetPitch(hotspot.target_pitch !== undefined ? hotspot.target_pitch : null);
     setIconType(hotspot.icon_type || 'navigation');
     setIconColor(hotspot.icon_color || '#10b981');
     setIconSize(hotspot.metadata?.iconSize || 1.0);
@@ -286,6 +295,13 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
     setTransitionStyle(hotspot.metadata?.transitionStyle || 'zoom-fade');
   };
 
+  const handleCaptureOrientation = () => {
+    const { yaw, pitch } = useViewerStore.getState().cameraRotation;
+    console.log('[HotspotEditor] Capturing orientation:', { yaw, pitch });
+    setTargetYaw(yaw);
+    setTargetPitch(pitch);
+  };
+
   const handleSaveHotspot = () => {
     if (!pendingHotspot) return;
 
@@ -295,6 +311,8 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
       pitch: pendingHotspot.pitch,
       label: label || undefined,
       to_scene_id: targetSceneId,
+      target_yaw: targetYaw !== null ? targetYaw : undefined,
+      target_pitch: targetPitch !== null ? targetPitch : undefined,
       icon_type: iconType,
       icon_color: iconColor,
       title: title || undefined,
@@ -325,6 +343,8 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
       pitch: hotspot.pitch,
       label: `${hotspot.label || 'Hotspot'} (Copy)`,
       to_scene_id: hotspot.to_scene_id,
+      target_yaw: hotspot.target_yaw,
+      target_pitch: hotspot.target_pitch,
       icon_type: hotspot.icon_type,
       icon_color: hotspot.icon_color,
       title: hotspot.title,
@@ -540,6 +560,61 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
                   ))}
                 </select>
               </div>
+
+              {/* Target View (Advanced) */}
+              {canManage && (
+                <div className="space-y-4 mt-4 bg-gray-900/50 p-3 rounded-lg border border-gray-700/50">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-gray-300">Destination Orientation</label>
+                    <button
+                      onClick={handleCaptureOrientation}
+                      className="px-2 py-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-[10px] font-medium rounded flex items-center gap-1 transition-all border border-blue-500/30"
+                      title="Set destination orientation to match current view"
+                    >
+                      <Crosshair size={10} />
+                      Capture Current View
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center">
+                      <label className="block text-[10px] text-gray-500 mb-1">Yaw (Horizontal)</label>
+                      <input
+                        type="range"
+                        min="-180"
+                        max="180"
+                        step="1"
+                        value={(targetYaw ?? 0) * (180 / Math.PI)}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value);
+                          setTargetYaw(value / (180 / Math.PI));
+                        }}
+                        className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary-500"
+                      />
+                      <div className="mt-1 text-[10px] text-gray-400">
+                        {((targetYaw ?? 0) * (180 / Math.PI)).toFixed(1)}°
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <label className="block text-[10px] text-gray-500 mb-1">Pitch (Vertical)</label>
+                      <input
+                        type="range"
+                        min="-90"
+                        max="90"
+                        step="1"
+                        value={(targetPitch ?? 0) * (180 / Math.PI)}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value);
+                          setTargetPitch(value / (180 / Math.PI));
+                        }}
+                        className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary-500"
+                      />
+                      <div className="mt-1 text-[10px] text-gray-400">
+                        {((targetPitch ?? 0) * (180 / Math.PI)).toFixed(1)}°
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Transition Style */}
               <div>
@@ -771,6 +846,61 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
                         className="w-full"
                       />
                     </div>
+
+                    {/* Target View (Advanced) */}
+                    {canManage && (
+                      <div className="space-y-4 bg-gray-900/50 p-3 rounded-lg border border-gray-700/50">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-semibold text-gray-300">Destination Orientation</label>
+                          <button
+                            onClick={handleCaptureOrientation}
+                            className="px-2 py-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-[10px] font-medium rounded flex items-center gap-1 transition-all border border-blue-500/30"
+                            title="Set destination orientation to match current view"
+                          >
+                            <Crosshair size={10} />
+                            Capture Current View
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="text-center">
+                            <label className="block text-[10px] text-gray-500 mb-1">Yaw (Horizontal)</label>
+                            <input
+                              type="range"
+                              min="-180"
+                              max="180"
+                              step="1"
+                              value={(targetYaw ?? 0) * (180 / Math.PI)}
+                              onChange={(e) => {
+                                const value = parseFloat(e.target.value);
+                                setTargetYaw(value / (180 / Math.PI));
+                              }}
+                              className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary-500"
+                            />
+                            <div className="mt-1 text-[10px] text-gray-400">
+                              {((targetYaw ?? 0) * (180 / Math.PI)).toFixed(1)}°
+                            </div>
+                          </div>
+                          <div className="text-center">
+                            <label className="block text-[10px] text-gray-500 mb-1">Pitch (Vertical)</label>
+                            <input
+                              type="range"
+                              min="-90"
+                              max="90"
+                              step="1"
+                              value={(targetPitch ?? 0) * (180 / Math.PI)}
+                              onChange={(e) => {
+                                const value = parseFloat(e.target.value);
+                                setTargetPitch(value / (180 / Math.PI));
+                              }}
+                              className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary-500"
+                            />
+                            <div className="mt-1 text-[10px] text-gray-400">
+                              {((targetPitch ?? 0) * (180 / Math.PI)).toFixed(1)}°
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Scene Transition Style */}
                     <div>
