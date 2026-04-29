@@ -488,3 +488,49 @@ The user reported that the Issue management feature was still not working. Addit
 6. Verify that newly created users can reference the org ID and that RBAC checks now enforce org boundaries.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+---
+## 2026-04-29
+
+### Issue: Unsmooth Scene Transitions & Missing Target View Capture
+**Issue:**
+- Transitions between scenes were jarring with a black loading screen.
+- No way to capture the current camera orientation as a target view for hotspots, requiring manual slider adjustments.
+- Target view controls were missing from the hotspot edit form.
+
+**Fix:**
+1. **Smooth Transitions:** Refactored `Viewer360.tsx` to use a smooth crossfade by passing `opacity` to the sphere and removing the black overlay.
+2. **Target View Capture:** Added real-time camera orientation tracking in `viewerStore.ts` and implemented a "Capture Current View" button in `HotspotEditor.tsx`.
+3. **Bug Fix:** Fixed a black screen issue where the `opacity` prop was not correctly passed to the `SceneContent` component.
+4. **Bug Fix:** Fixed a syntax error in `HotspotEditor.tsx` (malformed JSX comment).
+
+**Files changed:**
+- `frontend/src/stores/viewerStore.ts` (added cameraRotation state)
+- `frontend/src/components/viewer/Viewer360.tsx` (refactored transitions and prop passing)
+- `frontend/src/components/viewer/HotspotEditor.tsx` (added capture feature and fixed syntax)
+- `MEMORY.md` (updated documentation)
+- `CHANGELOG_AI.md` (updated documentation)
+
+**Risk:**
+- LOW - Enhancements follow existing patterns. Fixed a regression (black screen) immediately.
+
+**How to verify:**
+1. Open a walkthrough and navigate using hotspots; transitions should be smooth.
+2. Open the Hotspot Editor and use "Capture Current View" to set the destination orientation.
+
+### Issue: Performance Lag in 360 Viewer
+**Issue:**
+- The app slowed down significantly after adding real-time camera rotation tracking.
+- **Root Cause:** `WalkthroughViewer.tsx` and `NavigationControls.tsx` were using `useViewerStore()` without selectors, causing them to re-render 60 times a second during camera movement.
+
+**Fix:**
+1. Switched to specific selectors in `WalkthroughViewer.tsx` and `NavigationControls.tsx`.
+2. Added a threshold check (0.0001 radians) in `viewerStore.ts` to avoid redundant state updates.
+
+**Files changed:**
+- `frontend/src/stores/viewerStore.ts`
+- `frontend/src/pages/WalkthroughViewer.tsx`
+- `frontend/src/components/viewer/NavigationControls.tsx`
+
+**Risk:**
+- LOW - Performance optimization only.
