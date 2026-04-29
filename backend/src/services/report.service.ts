@@ -14,7 +14,7 @@ export async function generatePdf(htmlContent: string): Promise<Buffer> {
   await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
   const pdfBuffer = await page.pdf({ format: 'A4' });
   await browser.close();
-  return pdfBuffer;
+  return Buffer.from(pdfBuffer);
 }
 
 export async function generateIssueReport(issueId: string): Promise<Buffer> {

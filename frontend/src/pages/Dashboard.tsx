@@ -10,6 +10,7 @@ import SearchFilterBar from '@/components/walkthrough/SearchFilterBar';
 import StatCards from '@/components/dashboard/StatCards';
 import ActivityFeed from '@/components/dashboard/ActivityFeed';
 import DashboardCharts from '@/components/dashboard/DashboardCharts';
+import AssetWidgets from '@/components/dashboard/AssetWidgets';
 import { useAuthStore, canEdit, canDelete } from '@/stores/authStore';
 import { Box, Image, Pencil, Trash2, MapPin, Building2, AlertCircle } from 'lucide-react';
 
@@ -178,6 +179,11 @@ function Dashboard() {
           {/* Stat Cards */}
           <div className="mb-6">
             <StatCards stats={stats} isLoading={statsLoading} />
+          </div>
+
+          {/* Asset Widgets */}
+          <div className="mb-6">
+            <AssetWidgets />
           </div>
 
           {/* Enterprise Charts */}

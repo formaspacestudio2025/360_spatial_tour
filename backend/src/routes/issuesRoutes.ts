@@ -6,6 +6,7 @@ import { storageService } from '../services/storage.service';
 import { getFileUrl } from '../config/storage';
 import { authenticate } from '../middleware/auth';
 import { requirePermission } from '../middleware/rbac';
+import db from '../config/database';
 
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
@@ -192,7 +193,7 @@ router.post('/:id/attachments', upload.single('file'), async (req, res) => {
 
     const attachment = await addAttachment(id, {
       id: generateId(),
-      file_url: fileUrl,
+      file_url: fileUrl as string,
       file_type: req.file.mimetype,
       created_at: new Date().toISOString(),
     });
@@ -245,7 +246,7 @@ router.post('/:id/resolution', requirePermission('issue','write'), upload.single
     }
     const filePath = await storageService.saveFile(existing.walkthrough_id, req.file, 'issues');
     const fileUrl = getFileUrl(filePath);
-    const updated = await resolveIssue(id, fileUrl);
+    const updated = await resolveIssue(id, fileUrl as string);
     res.json({ success: true, data: updated });
   } catch (error: unknown) {
     const err = error as { statusCode?: number; message?: string };

@@ -14,7 +14,7 @@ export async function createInspection(data: {
   const inspection: Inspection = {
     id,
     walkthrough_id: data.walkthrough_id,
-    scene_id: data.scene_id || null,
+    scene_id: data.scene_id || undefined,
     title: data.title,
     status: 'in_progress',
     items: data.items.map((item, index) => ({
@@ -77,4 +77,41 @@ export async function toggleInspectionItem(inspectionId: string, itemId: string)
 
 export async function signOffInspection(inspectionId: string): Promise<Inspection | null> {
   return updateInspection(inspectionId, { status: 'signed_off', signed_off_at: new Date().toISOString() });
+}
+
+// Schedule a new inspection for an asset with auto-generated checklist
+export async function scheduleInspectionForAsset(params: {
+  asset_id: string;
+  walkthrough_id: string;
+  due_date: string; // ISO date string
+  checklist: string[]; // list of item labels
+}): Promise<Inspection> {
+  const { asset_id, walkthrough_id, due_date, checklist } = params;
+  const items: Omit<InspectionItem, 'id' | 'checked'>[] = checklist.map(label => ({
+    label,
+    checked: false,
+    created_at: new Date().toISOString(),
+  }));
+
+  // Create inspection linked to the asset
+  const inspection = await createInspection({
+    walkthrough_id,
+    title: `Inspection for asset ${asset_id}`,
+    items,
+  });
+
+  // Update with extra fields: due_date, asset_id, auto_generated
+  await updateInspection(inspection.id, {
+    asset_id,
+    due_date,
+    auto_generated: true,
+  });
+
+  // Return updated inspection
+  const updated = await getInspectionById(inspection.id);
+
+  // Trigger notification (placeholder)
+  console.log(`Notification: Inspection scheduled for asset ${asset_id}, due ${due_date}`);
+
+  return updated as Inspection;
 }

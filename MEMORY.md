@@ -154,3 +154,12 @@
 22. RBAC Implemented (added: org/property-level permissions via `backend/src/middleware/rbac.ts`, role hierarchy `ROLE_HIERARCHY` in `backend/src/types/user.ts`, route protection with `requirePermission` middleware for assets, issues, walkthroughs).
 23. Org Model implemented (organizations table added to JSON DB, backend CRUD service and routes (`org.service.ts`, `orgs.ts`), TypeScript type `Org`, frontend API `orgsApi.ts`).
 24. Permission Matrix UI added (frontend page `PermissionMatrix.tsx` displays role‑based permissions matrix, accessible via `/permission-matrix`).
+157: 25. Smooth Transitions & Target View Capture (added: real-time camera orientation tracking in `viewerStore`, "Capture Current View" button in `HotspotEditor`, and smooth crossfade transitions in `Viewer360`).
+158: 26. Black Screen Bug Fix (fixed: missing `opacity` prop in `SceneContent` component caused scene to remain invisible after refactor).
+159: 27. Performance Optimization (fixed: high-frequency camera rotation updates in `viewerStore` were causing massive re-renders of the entire `WalkthroughViewer` component. Switched to specific selectors and added meaningful change threshold).
+
+160: 28. Asset-Scene Mapping (added: `onAssetClick` prop to Viewer360/SceneContent/AssetMarker, `handleAssetClick` in WalkthroughViewer to jump to asset's scene or focus camera, "Jump to Scene" button in AssetManagement with navigation to `/walkthrough/:id?scene=:scene_id`, AssetDetail page with route `/assets/:id` showing full asset details, QR code, lifecycle tab, quick actions).
+
+161: 29. HotspotEditor.tsx bug fixes (fixed malformed JSX comment at line 539 `/* Target Scene *//}` → `/* Target Scene */}`, fixed `target_yaw` type mismatch from `number | null` to `number | undefined` in two places, fixed `onSceneChange` type in Viewer360Props to accept 3 arguments).
+
+162: 30. Asset Module 3.2 Complete (Asset markers are now clickable in 360° viewer, clicking jumps to the scene where asset is located with camera orientation, or focuses camera on asset if already in same scene. AssetManagement list has "Jump to Scene" button. AssetDetail page provides comprehensive asset view with QR code and lifecycle info).

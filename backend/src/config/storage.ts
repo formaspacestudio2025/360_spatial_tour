@@ -16,6 +16,8 @@ export const storagePaths = {
     path.join(STORAGE_BASE, 'walkthroughs', walkthroughId, 'exports'),
   issues: (walkthroughId: string) =>
     path.join(STORAGE_BASE, 'walkthroughs', walkthroughId, 'issues'),
+  documents: (assetId: string) =>
+    path.join(STORAGE_BASE, 'assets', assetId, 'documents'),
 };
 
 // Ensure storage directories exist

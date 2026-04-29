@@ -1,9 +1,13 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { assetsApi } from '@/api/assetsApi';
 import { Asset } from '@/types';
-import { ArrowLeft, Map, Calendar, QrCode, Box, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Map, Calendar, QrCode, Box, AlertCircle, FileText, Activity } from 'lucide-react';
 import QRModal from '@/components/assets/QRModal';
+import DocumentUpload from '@/components/assets/DocumentUpload';
+import HealthBadge from '@/components/assets/HealthBadge';
+import PMSchedule from '@/components/assets/PMSchedule';
+import ComplianceTags from '@/components/assets/ComplianceTags';
 import { useState } from 'react';
 import LifecycleTab from '@/components/assets/LifecycleTab';
 
@@ -12,12 +16,24 @@ const AssetDetail: React.FC = () => {
   const navigate = useNavigate();
   const [showQR, setShowQR] = useState(false);
   const [showLifecycle, setShowLifecycle] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: asset, isLoading, error } = useQuery({
     queryKey: ['asset', id],
     queryFn: () => assetsApi.getById(id!),
     enabled: !!id,
   });
+
+  const { data: documents = [], refetch: refetchDocuments } = useQuery({
+    queryKey: ['asset-documents', id],
+    queryFn: () => assetsApi.getDocuments(id!),
+    enabled: !!id,
+  });
+
+  const handleDocumentUpdate = () => {
+    refetchDocuments();
+    queryClient.invalidateQueries({ queryKey: ['asset', id] });
+  };
 
   if (isLoading) return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center">
@@ -112,6 +128,9 @@ const AssetDetail: React.FC = () => {
                 <span className={`text-xs px-3 py-1 rounded-full ${statusColors[a.status]}`}>
                   {a.status}
                 </span>
+                {a.health_score !== undefined && (
+                  <HealthBadge assetId={a.id} score={a.health_score} size="sm" />
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -205,7 +224,31 @@ const AssetDetail: React.FC = () => {
                 )}
               </div>
             </div>
-          </div>
+
+            {/* Documents */}
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <FileText size={18} />
+                Documents
+              </h3>
+              <DocumentUpload
+                assetId={a.id}
+                documents={documents}
+                onUpdate={handleDocumentUpdate}
+              />
+            </div>
+
+            {/* Preventive Maintenance Schedule */}
+            <PMSchedule assetId={a.id} />
+
+            {/* Compliance Tags */}
+            {a.compliance && a.compliance.length > 0 && (
+              <ComplianceTags assetId={a.id} compliance={a.compliance} onUpdate={() => {
+                queryClient.invalidateQueries({ queryKey: ['asset', a.id] });
+              }} />
+            )}
+
+          </div> {/* closes md:col-span-2 */}
 
           {/* Sidebar */}
           <div className="space-y-6">

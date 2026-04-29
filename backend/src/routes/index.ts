@@ -14,6 +14,8 @@ import orgsRoutes from './orgs';
 import reportsRoutes from './reports';
 import qrcodeRoutes from './qrcode';
 import inspectionsRoutes from './inspections';
+import maintenanceRoutes from './maintenance';
+import checklistsRoutes from './checklists';
 
 const router = express.Router();
 
@@ -39,5 +41,7 @@ router.use('/orgs', orgsRoutes);
 router.use('/reports', reportsRoutes);
 router.use('/qrcode', qrcodeRoutes);
 router.use('/inspections', inspectionsRoutes);
+router.use('/maintenance', maintenanceRoutes);
+router.use('/checklists', checklistsRoutes);
 
 export default router;

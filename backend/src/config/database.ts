@@ -23,6 +23,8 @@ interface Database {
   comments: any[];
   hotspot_media: any[];  // NEW: Hotspot media attachments
   hotspot_links: any[];  // NEW: Hotspot links
+  maintenance_schedules: any[]; // NEW: Preventive maintenance schedules
+  checklist_templates: any[]; // NEW: Checklist templates
   organizations: any[]; // NEW: Organization model
 }
 
@@ -40,7 +42,9 @@ let db: Database = {
   comments: [],
   hotspot_media: [],  // NEW
   hotspot_links: [],  // NEW
-  organizations: []   // NEW: Organization model
+  organizations: [],   // NEW: Organization model
+  maintenance_schedules: [], // NEW: Preventive maintenance schedules
+  checklist_templates: [], // NEW: Checklist templates
 };
 
 if (fs.existsSync(DB_PATH)) {
@@ -105,6 +109,11 @@ class Statement {
     // WHERE scene_id = ?
     if (this.sql.includes('scene_id = ?') && !this.sql.includes('from_scene_id = ?')) {
       table = table.filter((row: any) => row.scene_id === params[0]);
+    }
+
+    // WHERE asset_id = ?
+    if (this.sql.includes('asset_id = ?')) {
+      table = table.filter((row: any) => row.asset_id === params[0]);
     }
     
     // ORDER BY created_at DESC

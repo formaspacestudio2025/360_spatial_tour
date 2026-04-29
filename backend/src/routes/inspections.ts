@@ -1,5 +1,5 @@
 import express from 'express';
-import { createInspection, getInspections, getInspectionById, toggleInspectionItem, signOffInspection } from '../services/inspection.service';
+import { createInspection, getInspections, getInspectionById, toggleInspectionItem, signOffInspection, scheduleInspectionForAsset } from '../services/inspection.service';
 import { authenticate } from '../middleware/auth';
 import { requirePermission } from '../middleware/rbac';
 
@@ -59,6 +59,21 @@ router.post('/:id/signoff', requirePermission('inspection', 'write'), async (req
     const inspection = await signOffInspection(req.params.id);
     if (!inspection) return res.status(404).json({ success: false, message: 'Inspection not found' });
     res.json({ success: true, data: inspection });
+  } catch (error: unknown) {
+    const err = error as { statusCode?: number; message?: string };
+    res.status(err.statusCode || 500).json({ success: false, message: err.message });
+  }
+});
+
+// POST /api/inspections/schedule-for-asset - schedule inspection for asset
+router.post('/schedule-for-asset', requirePermission('inspection', 'write'), async (req, res) => {
+  try {
+    const { asset_id, walkthrough_id, due_date, checklist } = req.body;
+    if (!asset_id || !walkthrough_id || !due_date || !checklist) {
+      return res.status(400).json({ success: false, message: 'Missing required fields' });
+    }
+    const inspection = await scheduleInspectionForAsset({ asset_id, walkthrough_id, due_date, checklist });
+    res.status(201).json({ success: true, data: inspection });
   } catch (error: unknown) {
     const err = error as { statusCode?: number; message?: string };
     res.status(err.statusCode || 500).json({ success: false, message: err.message });

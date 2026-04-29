@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Pencil, Trash2, Box, Map, QrCode, Calendar, X, Navigation2 } from 'lucide-react';
 import { Asset, AssetType } from '@/types';
 import QRModal from '@/components/assets/QRModal';
+import HealthBadge from '@/components/assets/HealthBadge';
 import LifecycleTab from '@/components/assets/LifecycleTab';
 
 const AssetManagement: React.FC = () => {
@@ -231,6 +232,7 @@ const AssetManagement: React.FC = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Asset</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Type</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Health</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Location</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase">Actions</th>
               </tr>
@@ -260,6 +262,13 @@ const AssetManagement: React.FC = () => {
                     <span className={`text-xs px-2 py-1 rounded-full ${statusColors[asset.status]}`}>
                       {asset.status}
                     </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    {asset.health_score !== undefined ? (
+                      <HealthBadge assetId={asset.id} score={asset.health_score} size="sm" />
+                    ) : (
+                      <span className="text-xs text-gray-500">-</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-300">
                     {asset.room ? `${asset.room}, Floor ${asset.floor || '?'}` : (asset.floor ? `Floor ${asset.floor}` : '-')}

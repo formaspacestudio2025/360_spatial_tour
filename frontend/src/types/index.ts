@@ -127,7 +127,16 @@ export interface Comment {
 
 export type AssetType = 'HVAC' | 'Elevator' | 'Fire Extinguisher' | 'Lighting' | 'Plumbing' | 'Other';
 
+export interface ComplianceTag {
+  regulation: string;
+  status: 'pass' | 'fail' | 'pending';
+  note?: string;
+  checked_at?: string;
+}
+
 export interface Asset {
+  health_score?: number;
+  compliance?: ComplianceTag[];
   id: string;
   name: string;
   type: AssetType;

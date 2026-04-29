@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { dashboardService } from '../services/dashboard.service';
 import { AppError } from '../middleware/error';
+import { getAssetStats } from '../services/asset.service';
 
 const router = Router();
 
@@ -93,6 +94,16 @@ router.get('/charts/issue-trend', (req, res) => {
     ) });
   } catch (error) {
     throw new AppError('Failed to fetch issue trend', 500);
+  }
+});
+
+// GET /api/dashboard/asset-stats
+router.get('/asset-stats', async (req, res) => {
+  try {
+    const stats = await getAssetStats();
+    res.json({ success: true, data: stats });
+  } catch (error) {
+    throw new AppError('Failed to fetch asset stats', 500);
   }
 });
 

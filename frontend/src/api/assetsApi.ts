@@ -65,6 +65,7 @@ export const assetsApi = {
   delete: (id: string) =>
     api.delete<{ success: boolean; message: string }>(`/api/assets/${id}`)
       .then(r => r.data),
+
   mapToScene: (id: string, data: { scene_id?: string; yaw?: number; pitch?: number; floor?: number; room?: string; }) =>
     api.put<{ success: boolean; data: Asset }>(`/api/assets/${id}/map-to-scene`, data)
       .then(r => r.data.data),
@@ -72,4 +73,19 @@ export const assetsApi = {
   qr: (id: string, size: number = 200) =>
     api.get(`/api/assets/${id}/qr?size=${size}`, { responseType: 'blob' })
       .then(r => URL.createObjectURL(r.data)),
+
+  // Document functions
+  getDocuments: (id: string) =>
+    api.get<{ success: boolean; data: any }>(`/api/assets/${id}/documents`)
+      .then(r => r.data.data),
+
+  uploadDocument: (id: string, formData: FormData) =>
+    api.post<{ success: boolean; data: any }>(`/api/assets/${id}/documents`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+      .then(r => r.data),
+
+  deleteDocument: (id: string, filename: string) =>
+    api.delete<{ success: boolean; message: string }>(`/api/assets/${id}/documents/${filename}`)
+      .then(r => r.data),
 };

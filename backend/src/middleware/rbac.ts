@@ -7,7 +7,7 @@ import { Permission, hasRole, UserRole } from '../types/user';
  *
  * Usage: requirePermission('asset', 'read')
  */
-export function requirePermission(resource: 'asset' | 'issue' | 'walkthrough', action: 'read' | 'write') {
+export function requirePermission(resource: 'asset' | 'issue' | 'walkthrough' | 'inspection' | 'report', action: 'read' | 'write') {
   return async (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
       return res.status(401).json({ success: false, message: 'Authentication required' });

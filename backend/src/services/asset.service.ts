@@ -1,6 +1,6 @@
 import db from '../config/database';
 import { generateId } from '../utils/generateId';
-import { Asset } from '../types/asset';
+import { Asset, AssetDocument, ComplianceTag } from '../types/asset';
 
 export interface AssetLifecycle {
   ageYears: number | null;
@@ -67,12 +67,13 @@ export async function createAsset(data: {
   property_id?: string;
   purchase_date?: string;
   warranty_date?: string;
+  compliance?: ComplianceTag[];
 }): Promise<Asset> {
   const id = generateId();
   const now = new Date().toISOString();
 
-  const sql = `INSERT INTO assets (id, name, type, brand, model, serial_number, scene_id, yaw, pitch, floor, room, status, walkthrough_id, org_id, property_id, purchase_date, warranty_date, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+  const sql = `INSERT INTO assets (id, name, type, brand, model, serial_number, scene_id, yaw, pitch, floor, room, status, walkthrough_id, org_id, property_id, purchase_date, warranty_date, compliance, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   await db.prepare(sql).run(
     id,
@@ -92,6 +93,7 @@ export async function createAsset(data: {
     data.property_id || null,
     data.purchase_date || null,
     data.warranty_date || null,
+    data.compliance ? JSON.stringify(data.compliance) : null,
     now,
     now
   );
@@ -118,6 +120,11 @@ export async function getAssets(walkthrough_id?: string, page: number = 1, limit
   // Sort newest first
   assets.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
+  // Calculate health scores for all assets (for listing)
+  for (const asset of assets) {
+    asset.health_score = await calculateHealthScore(asset);
+  }
+
   const total = assets.length;
   const start = (page - 1) * limit;
   const paged = assets.slice(start, start + limit);
@@ -125,9 +132,57 @@ export async function getAssets(walkthrough_id?: string, page: number = 1, limit
   return { assets: paged, total, page, limit };
 }
 
+// Get asset statistics for dashboard
+export async function getAssetStats(): Promise<{
+  total: number;
+  byHealth: { excellent: number; good: number; fair: number; poor: number };
+  warrantyExpiringSoon: number;
+  overdueInspections: number;
+}> {
+  const stmt = db.prepare('SELECT * FROM assets');
+  const assets: Asset[] = await stmt.all();
+  const now = new Date();
+  const thirtyDaysFromNow = new Date(now.getTime() + 30 * 86400000);
+
+  let excellent = 0, good = 0, fair = 0, poor = 0;
+  let warrantyExpiringSoon = 0;
+
+  for (const asset of assets) {
+    const score = await calculateHealthScore(asset);
+    if (score >= 80) excellent++;
+    else if (score >= 60) good++;
+    else if (score >= 40) fair++;
+    else poor++;
+    if (asset.warranty_date) {
+      const warranty = new Date(asset.warranty_date);
+      if (warranty <= thirtyDaysFromNow && warranty >= now) warrantyExpiringSoon++;
+    }
+  }
+
+  // Count overdue inspections (due_date passed)
+  const inspStmt = db.prepare('SELECT * FROM inspections');
+  const inspections: any[] = inspStmt.all() || [];
+  const overdueInspections = inspections.filter((i: any) => i.due_date && new Date(i.due_date) < now).length;
+
+  return {
+    total: assets.length,
+    byHealth: { excellent, good, fair, poor },
+    warrantyExpiringSoon,
+    overdueInspections,
+  };
+}
+
 export async function getAssetById(id: string): Promise<Asset | null> {
   const stmt = db.prepare('SELECT * FROM assets WHERE id = ?');
-  return stmt.get(id) || null;
+  const asset = stmt.get(id) || null;
+  if (asset) {
+    asset.health_score = await calculateHealthScore(asset);
+    // Parse compliance JSON if stored as string
+    if (asset.compliance && typeof asset.compliance === 'string') {
+      try { asset.compliance = JSON.parse(asset.compliance); } catch {}
+    }
+  }
+  return asset;
 }
 
 export async function updateAsset(id: string, data: Partial<Asset>): Promise<Asset | null> {
@@ -140,7 +195,7 @@ export async function updateAsset(id: string, data: Partial<Asset>): Promise<Ass
   const sql = `UPDATE assets SET
                 name = ?, type = ?, brand = ?, model = ?, serial_number = ?,
                 scene_id = ?, yaw = ?, pitch = ?, floor = ?, room = ?,
-                status = ?, walkthrough_id = ?, org_id = ?, property_id = ?, purchase_date = ?, warranty_date = ?, updated_at = ?
+                status = ?, walkthrough_id = ?, org_id = ?, property_id = ?, purchase_date = ?, warranty_date = ?, compliance = ?, updated_at = ?
                 WHERE id = ?`;
 
   await db.prepare(sql).run(
@@ -160,6 +215,7 @@ export async function updateAsset(id: string, data: Partial<Asset>): Promise<Ass
     updated.property_id || null,
     updated.purchase_date || null,
     updated.warranty_date || null,
+    updated.compliance ? JSON.stringify(updated.compliance) : null,
     now,
     id
   );
@@ -170,6 +226,43 @@ export async function updateAsset(id: string, data: Partial<Asset>): Promise<Ass
 export async function deleteAsset(id: string): Promise<boolean> {
   const result = await db.prepare('DELETE FROM assets WHERE id = ?').run(id);
   return result.changes > 0;
+}
+
+export async function addAssetDocument(id: string, doc: AssetDocument): Promise<Asset | null> {
+  const asset = await getAssetById(id);
+  if (!asset) return null;
+
+  const documents = asset.documents || [];
+  documents.push(doc);
+
+  await db.prepare('UPDATE assets SET documents = ?, updated_at = ? WHERE id = ?').run(
+    JSON.stringify(documents),
+    new Date().toISOString(),
+    id
+  );
+
+  return { ...asset, documents };
+}
+
+export async function getAssetDocuments(id: string): Promise<AssetDocument[]> {
+  const asset = await getAssetById(id);
+  if (!asset) return [];
+  return asset.documents || [];
+}
+
+export async function deleteAssetDocument(id: string, filename: string): Promise<boolean> {
+  const asset = await getAssetById(id);
+  if (!asset || !asset.documents) return false;
+
+  const documents = asset.documents.filter((d: AssetDocument) => d.filename !== filename);
+
+  await db.prepare('UPDATE assets SET documents = ?, updated_at = ? WHERE id = ?').run(
+    JSON.stringify(documents),
+    new Date().toISOString(),
+    id
+  );
+
+  return true;
 }
 
 export async function updateAssetSceneMapping(id: string, mapping: {
@@ -221,4 +314,53 @@ export async function getAssetsByScene(scene_id: string): Promise<Asset[]> {
   assets.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   return assets;
+}
+
+export async function calculateHealthScore(asset: Asset): Promise<number> {
+  let score = 100;
+
+  // Factor 1: Warranty status
+  if (asset.warranty_date) {
+    const warranty = new Date(asset.warranty_date);
+    const now = new Date();
+    if (warranty < now) {
+      score -= 30; // Expired warranty
+    } else {
+      const diffTime = warranty.getTime() - now.getTime();
+      const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (daysRemaining <= 30) {
+        score -= 15; // Expiring soon
+      }
+    }
+  }
+
+  // Factor 2: Age (older = lower score)
+  if (asset.purchase_date) {
+    const purchase = new Date(asset.purchase_date);
+    const now = new Date();
+    const diffTime = now.getTime() - purchase.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const ageYears = Math.floor(diffDays / 365);
+    score -= Math.min(ageYears * 1, 20); // -1 per year, max -20
+  }
+
+  // Factor 3: Status
+  if (asset.status === 'maintenance') {
+    score -= 10;
+  } else if (asset.status === 'retired') {
+    score -= 50;
+  }
+
+  // Factor 4: Open issues in same scene
+  if (asset.scene_id) {
+    const issuesStmt = db.prepare('SELECT * FROM issues WHERE scene_id = ?');
+    const issues = await issuesStmt.all(asset.scene_id);
+    const openIssues = issues.filter((issue: any) =>
+      issue.status !== 'closed' && issue.status !== 'resolved'
+    );
+    score -= Math.min(openIssues.length * 5, 30); // -5 per open issue, max -30
+  }
+
+  // Ensure score is between 0 and 100
+  return Math.max(0, Math.min(100, score));
 }

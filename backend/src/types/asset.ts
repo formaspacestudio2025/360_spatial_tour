@@ -1,3 +1,19 @@
+export interface AssetDocument {
+  filename: string;
+  originalname: string;
+  path: string;
+  size: number;
+  uploaded_at: string;
+  mimetype: string;
+}
+
+export interface ComplianceTag {
+  regulation: string;
+  status: 'pass' | 'fail' | 'pending';
+  note?: string;
+  checked_at?: string;
+}
+
 export interface Asset {
   id: string;
   name: string;
@@ -16,6 +32,9 @@ export interface Asset {
   property_id?: string;     // specific property (if different from walkthrough)
   purchase_date?: string;  // ISO date string when asset was purchased
   warranty_date?: string;  // ISO date string when warranty expires
+  documents?: AssetDocument[]; // attached documents
+  health_score?: number; // 0-100, calculated by service
+  compliance?: ComplianceTag[]; // compliance tags
   created_at: string;
   updated_at: string;
 }

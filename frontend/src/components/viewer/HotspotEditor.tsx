@@ -4,6 +4,7 @@ import { hotspotsApi, Hotspot } from '@/api/hotspots';
 import { useHotspotStore } from '@/stores/hotspotStore';
 import { canEdit } from '@/stores/authStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useViewerStore } from '@/stores/viewerStore';
 import { useAutosave, SaveStatusIndicator } from '@/hooks/useAutosave';
 import { Scene } from '@/types';
 import MediaManager from './MediaManager';
@@ -294,6 +295,13 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
     setTransitionStyle(hotspot.metadata?.transitionStyle || 'zoom-fade');
   };
 
+  const handleCaptureOrientation = () => {
+    const { yaw, pitch } = useViewerStore.getState().cameraRotation;
+    console.log('[HotspotEditor] Capturing orientation:', { yaw, pitch });
+    setTargetYaw(yaw);
+    setTargetPitch(pitch);
+  };
+
   const handleSaveHotspot = () => {
     if (!pendingHotspot) return;
 
@@ -555,64 +563,58 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
 
               {/* Target View (Advanced) */}
               {canManage && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  <div className="text-center">
-                    <label className="block text-xs text-gray-400 mb-1">Target Yaw</label>
-                    <input
-                      type="range"
-                      min="-180"
-                      max="180"
-                      step="1"
-                      value={(targetYaw ?? 0) * (180 / Math.PI)}
-                      onChange={(e) => {
-                        const value = parseFloat(e.target.value);
-                        setTargetYaw(value / (180 / Math.PI));
-                        setTargetPitch(targetPitch);
-                      }}
-                      className="w-full slider slider-primary"
-                    />
-                    <div className="mt-1 text-xs text-white">
-                      {targetYaw ?? 0 >= 0 ? '+' : ''}
-                      { (targetYaw ?? 0).toFixed(1) }
-                    </div>
+                <div className="space-y-4 mt-4 bg-gray-900/50 p-3 rounded-lg border border-gray-700/50">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-gray-300">Destination Orientation</label>
+                    <button
+                      onClick={handleCaptureOrientation}
+                      className="px-2 py-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-[10px] font-medium rounded flex items-center gap-1 transition-all border border-blue-500/30"
+                      title="Set destination orientation to match current view"
+                    >
+                      <Crosshair size={10} />
+                      Capture Current View
+                    </button>
                   </div>
-                  <div className="text-center">
-                    <label className="block text-xs text-gray-400 mb-1">Target Pitch</label>
-                    <input
-                      type="range"
-                      min="-90"
-                      max="90"
-                      step="1"
-                      value={(targetPitch ?? 0) * (180 / Math.PI)}
-                      onChange={(e) => {
-                        const value = parseFloat(e.target.value);
-                        setTargetPitch(value / (180 / Math.PI));
-                        setTargetYaw(targetYaw);
-                      }}
-                      className="w-full slider slider-primary"
-                    />
-                    <div className="mt-1 text-xs text-white">
-                      {targetPitch ?? 0 >= 0 ? '+' : ''}
-                      { (targetPitch ?? 0).toFixed(1) }
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center">
+                      <label className="block text-[10px] text-gray-500 mb-1">Yaw (Horizontal)</label>
+                      <input
+                        type="range"
+                        min="-180"
+                        max="180"
+                        step="1"
+                        value={(targetYaw ?? 0) * (180 / Math.PI)}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value);
+                          setTargetYaw(value / (180 / Math.PI));
+                        }}
+                        className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary-500"
+                      />
+                      <div className="mt-1 text-[10px] text-gray-400">
+                        {((targetYaw ?? 0) * (180 / Math.PI)).toFixed(1)}°
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <label className="block text-[10px] text-gray-500 mb-1">Pitch (Vertical)</label>
+                      <input
+                        type="range"
+                        min="-90"
+                        max="90"
+                        step="1"
+                        value={(targetPitch ?? 0) * (180 / Math.PI)}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value);
+                          setTargetPitch(value / (180 / Math.PI));
+                        }}
+                        className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary-500"
+                      />
+                      <div className="mt-1 text-[10px] text-gray-400">
+                        {((targetPitch ?? 0) * (180 / Math.PI)).toFixed(1)}°
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
-
-              {/* Transition Style */}
-              <div>
-                <label className="block text-xs text-gray-400 mb-1">Scene Transition Style</label>
-                <select
-                  value={transitionStyle}
-                  onChange={(e) => setTransitionStyle(e.target.value)}
-                  className="w-full px-2.5 py-1.5 bg-gray-900 border border-gray-700 rounded-md text-white text-xs focus:outline-none focus:border-primary-500"
-                >
-                  <option value="zoom-fade">Zoom & Fade (Enterprise)</option>
-                  <option value="fade">Crossfade</option>
-                  <option value="pan-slide">Pan & Slide</option>
-                  <option value="instant">Instant Cut</option>
-                </select>
-              </div>
 
               {/* Transition Style */}
               <div>
@@ -844,6 +846,61 @@ function HotspotEditor({ scenes, currentSceneId }: HotspotEditorProps) {
                         className="w-full"
                       />
                     </div>
+
+                    {/* Target View (Advanced) */}
+                    {canManage && (
+                      <div className="space-y-4 bg-gray-900/50 p-3 rounded-lg border border-gray-700/50">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-semibold text-gray-300">Destination Orientation</label>
+                          <button
+                            onClick={handleCaptureOrientation}
+                            className="px-2 py-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-[10px] font-medium rounded flex items-center gap-1 transition-all border border-blue-500/30"
+                            title="Set destination orientation to match current view"
+                          >
+                            <Crosshair size={10} />
+                            Capture Current View
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="text-center">
+                            <label className="block text-[10px] text-gray-500 mb-1">Yaw (Horizontal)</label>
+                            <input
+                              type="range"
+                              min="-180"
+                              max="180"
+                              step="1"
+                              value={(targetYaw ?? 0) * (180 / Math.PI)}
+                              onChange={(e) => {
+                                const value = parseFloat(e.target.value);
+                                setTargetYaw(value / (180 / Math.PI));
+                              }}
+                              className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary-500"
+                            />
+                            <div className="mt-1 text-[10px] text-gray-400">
+                              {((targetYaw ?? 0) * (180 / Math.PI)).toFixed(1)}°
+                            </div>
+                          </div>
+                          <div className="text-center">
+                            <label className="block text-[10px] text-gray-500 mb-1">Pitch (Vertical)</label>
+                            <input
+                              type="range"
+                              min="-90"
+                              max="90"
+                              step="1"
+                              value={(targetPitch ?? 0) * (180 / Math.PI)}
+                              onChange={(e) => {
+                                const value = parseFloat(e.target.value);
+                                setTargetPitch(value / (180 / Math.PI));
+                              }}
+                              className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary-500"
+                            />
+                            <div className="mt-1 text-[10px] text-gray-400">
+                              {((targetPitch ?? 0) * (180 / Math.PI)).toFixed(1)}°
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Scene Transition Style */}
                     <div>

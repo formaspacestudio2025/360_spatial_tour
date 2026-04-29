@@ -8,6 +8,8 @@ import IssueListPage from './components/issueManagement/IssueListPage';
 import UserManagement from './pages/UserManagement';
 import AssetManagement from './pages/AssetManagement';
 import AssetDetail from './pages/AssetDetail';
+import Inspections from './pages/Inspections';
+import ChecklistBuilder from './components/assets/ChecklistBuilder';
 
 function App() {
   return (
@@ -19,7 +21,9 @@ function App() {
       <Route path="/issues" element={<ProtectedRoute><IssueListPage /></ProtectedRoute>} />
       <Route path="/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
       <Route path="/assets" element={<ProtectedRoute><AssetManagement /></ProtectedRoute>} />
-        <Route path="/assets/:id" element={<ProtectedRoute><AssetDetail /></ProtectedRoute>} />
+      <Route path="/assets/:id" element={<ProtectedRoute><AssetDetail /></ProtectedRoute>} />
+      <Route path="/inspections" element={<ProtectedRoute><Inspections /></ProtectedRoute>} />
+      <Route path="/checklists" element={<ProtectedRoute><ChecklistBuilder /></ProtectedRoute>} />
     </Routes>
   );
 }

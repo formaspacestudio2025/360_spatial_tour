@@ -11,6 +11,7 @@ import NadirPatch from './NadirPatch';
 import { AITagMarker } from '../ai/AITagMarker';
 import { useHotspotStore } from '@/stores/hotspotStore';
 import { useAITagStore } from '@/stores/aiTagStore';
+import { useViewerStore } from '@/stores/viewerStore';
 import { Hotspot } from '@/api/hotspots';
 import { AITag } from '@/api/ai';
 import { Issue } from '@/types/issue';
@@ -36,6 +37,7 @@ interface Viewer360Props {
       isPlacingAsset?: boolean;
       onPlaceAsset?: (yaw: number, pitch: number) => void;
       onAssetClick?: (asset: Asset) => void;
+      opacity?: number;
 }
 
 function SceneContent({
@@ -56,6 +58,7 @@ function SceneContent({
   nadirOpacity,
   targetFov,
   onAssetClick,
+  opacity,
 }: {
   imageUrl: string;
   hotspots?: Hotspot[];
@@ -74,6 +77,7 @@ function SceneContent({
   nadirOpacity?: number;
   targetFov: number;
   onAssetClick?: (asset: Asset) => void;
+  opacity?: number;
 }) {
   const { camera, raycaster, scene } = useThree();
   const isPlacing = useHotspotStore((s) => s.isPlacingHotspot);
@@ -108,6 +112,14 @@ function SceneContent({
       persCamera.fov = THREE.MathUtils.lerp(persCamera.fov, targetFov, delta * 8);
       persCamera.updateProjectionMatrix();
     }
+
+    // Update camera rotation in store for other components to use
+    // Using direct store access to avoid re-renders
+    const rotation = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ');
+    useViewerStore.getState().setCameraRotation({ 
+      yaw: -rotation.y, 
+      pitch: rotation.x 
+    });
   });
 
   const handleClick = useCallback(
@@ -146,7 +158,7 @@ function SceneContent({
 
   return (
     <group onClick={handleClick}>
-      <Sphere360 imageUrl={imageUrl} />
+      <Sphere360 imageUrl={imageUrl} opacity={opacity} />
       {hotspots?.map((hotspot) => (
         <HotspotMarker
           key={hotspot.id}
@@ -199,12 +211,13 @@ function Viewer360({
   initialOrientation,
   transitionStyle = 'zoom-fade',
   onAssetClick,
+  opacity: opacityProp,
 }: Viewer360Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<any>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [opacity, setOpacity] = useState(1);
+  const [opacity, setOpacity] = useState(opacityProp !== undefined ? opacityProp : 1);
   const [currentImage, setCurrentImage] = useState(imageUrl);
   const [targetFov, setTargetFov] = useState(75);
   const isPlacing = useHotspotStore((s) => s.isPlacingHotspot);
@@ -309,17 +322,12 @@ function Viewer360({
       className={`w-full h-full relative bg-black ${isPlacing || isPlacingIssue || isPlacingAsset ? 'cursor-crosshair' : 'cursor-grab'}`}
     >
       {/* Loading overlay */}
-      {(isLoading || opacity < 1) && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/80">
-          <div className="flex flex-col items-center gap-3">
+      {/* Loading overlay - only show spinner, don't hide everything with black */}
+      {isLoading && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+          <div className="flex flex-col items-center gap-3 bg-black/40 backdrop-blur-md p-6 rounded-2xl border border-white/10 shadow-2xl animate-in fade-in zoom-in duration-300">
             <Loader2 size={32} className="text-primary-500 animate-spin" />
-            <span className="text-white text-sm">Loading scene...</span>
-            <div className="w-48 bg-gray-700 rounded-full h-1.5">
-              <div
-                className="bg-primary-500 h-1.5 rounded-full transition-all duration-300"
-                style={{ width: `${opacity * 100}%` }}
-              />
-            </div>
+            <span className="text-white text-sm font-medium">Loading Scene...</span>
           </div>
         </div>
       )}
@@ -390,6 +398,7 @@ function Viewer360({
               nadirRotation={nadirRotation}
               nadirOpacity={nadirOpacity}
               targetFov={targetFov}
+              opacity={opacity}
             />
           </group>
         </Suspense>
