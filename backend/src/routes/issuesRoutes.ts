@@ -27,13 +27,16 @@ router.post('/', requirePermission('issue','write'), async (req, res) => {
 // Get all issues with optional filters
 router.get('/', requirePermission('issue','read'), async (req, res) => {
   try {
-    const { scene_id, walkthrough_id } = req.query;
+    const { scene_id, walkthrough_id, asset_id } = req.query;
     let issues = await getIssues();
     if (scene_id) {
       issues = issues.filter(issue => issue.scene_id === scene_id);
     }
     if (walkthrough_id) {
       issues = issues.filter(issue => issue.walkthrough_id === walkthrough_id);
+    }
+    if (asset_id) {
+      issues = issues.filter(issue => issue.asset_id === asset_id);
     }
     res.json({ success: true, data: issues });
   } catch (error: unknown) {
@@ -92,16 +95,17 @@ router.get('/:id', requirePermission('issue','read'), async (req, res) => {
 // CSV Export
 router.get('/export/csv', async (req, res) => {
   try {
-    const { walkthrough_id, status, priority, type } = req.query;
+    const { walkthrough_id, status, priority, type, asset_id } = req.query;
     let issues = await getIssues();
     if (walkthrough_id) issues = issues.filter(i => i.walkthrough_id === walkthrough_id);
     if (status) issues = issues.filter(i => i.status === status);
     if (priority) issues = issues.filter(i => i.priority === priority);
     if (type) issues = issues.filter(i => i.type === type);
+    if (asset_id) issues = issues.filter(i => i.asset_id === asset_id);
 
     const csvHeaders = [
       'ID', 'Title', 'Type', 'Severity', 'Priority', 'Status',
-      'Assigned To', 'Due Date', 'Scene ID', 'Created At', 'Updated At', 'Description'
+      'Assigned To', 'Due Date', 'Scene ID', 'Asset ID', 'Created At', 'Updated At', 'Description'
     ].join(',');
 
     const csvRows = issues.map(i => [
@@ -114,6 +118,7 @@ router.get('/export/csv', async (req, res) => {
       i.assigned_to || '',
       i.due_date || '',
       i.scene_id,
+      i.asset_id || '',
       i.created_at,
       i.updated_at,
       `"${(i.description || '').replace(/"/g, '""')}"`,

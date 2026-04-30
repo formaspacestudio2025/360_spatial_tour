@@ -260,8 +260,8 @@
       "to_scene_id": "d7d20ab2-49d1-4230-b46d-5e3eff15c5ee",
       "hotspot_yaw": 0.8652676240013855,
       "hotspot_pitch": -0.06170182379210803,
-      "target_yaw": 2.1553407389841794,
-      "target_pitch": -0.10054164498858438,
+      "target_yaw": 2.144626454079369,
+      "target_pitch": -0.4052490576418148,
       "label": "",
       "icon_type": "room",
       "icon_color": "#06b6d4",
@@ -283,7 +283,7 @@
       "always_visible": 1,
       "background_color": null,
       "created_at": "2026-04-24T19:07:10.311Z",
-      "updated_at": "2026-04-30T07:54:24.882Z"
+      "updated_at": "2026-04-30T19:13:21.018Z"
     },
     {
       "id": "663af7b9-166d-4b02-9d82-a3841b1144c3",
@@ -382,180 +382,150 @@
   "ai_tags": [],
   "issues": [
     {
-      "id": "28304f13-19f5-488b-92b3-5802dbc027ba",
+      "id": "90533005-e171-46da-a3d2-83a0a125a0d9",
       "walkthrough_id": "1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4",
       "scene_id": "14928d8f-ae50-4d3f-8556-12cf6df811bc",
-      "yaw": -0.0027905025340629348,
-      "pitch": -0.35687143211243494,
+      "yaw": -1.5900470701044893,
+      "pitch": -0.5731136251606503,
       "floor": null,
       "room": null,
       "type": "maintenance",
       "severity": "medium",
-      "priority": "critical",
-      "status": "pending_approval",
-      "title": "cracked wall ",
+      "priority": "medium",
+      "status": "open",
+      "title": "testiii",
       "description": "",
-      "assigned_to": "nadeemkolu22@gmail.com",
-      "due_date": "2026-04-05",
-      "history": [
-        {
-          "id": "187d0c26-09f5-4da2-acd0-6bfdf6afaee2",
-          "action": "created",
-          "timestamp": "2026-04-25T13:41:26.002Z",
-          "details": "Issue created"
-        },
-        {
-          "id": "115c2dc1-aec5-4d84-8f31-0d2c77f0b6f5",
-          "issue_id": "28304f13-19f5-488b-92b3-5802dbc027ba",
-          "action": "sla_escalated",
-          "field": "status",
-          "old_value": "open",
-          "new_value": "pending_approval",
-          "user_id": "system",
-          "user_name": "SLA Auto-Escalation",
-          "timestamp": "2026-04-26T08:53:52.114Z",
-          "details": "Auto-escalated after 21 days overdue",
-          "created_at": "2026-04-26T08:53:52.114Z"
-        },
-        {
-          "id": "a69c4308-6814-4967-a642-491ad5fe4cd5",
-          "issue_id": "28304f13-19f5-488b-92b3-5802dbc027ba",
-          "action": "sla_priority_escalated",
-          "field": "priority",
-          "old_value": "medium",
-          "new_value": "critical",
-          "user_id": "system",
-          "user_name": "SLA Auto-Escalation",
-          "timestamp": "2026-04-26T08:53:52.114Z",
-          "details": "Priority escalated after 21 days overdue",
-          "created_at": "2026-04-26T08:53:52.114Z"
-        }
-      ],
-      "comments": [],
-      "attachments": [],
-      "created_at": "2026-04-25T13:41:26.002Z",
-      "updated_at": "2026-04-26T08:53:52.114Z"
-    },
-    {
-      "id": "d4cd894f-279c-47a4-98a0-b7cedd9d3cfc",
-      "walkthrough_id": "1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4",
-      "scene_id": "14928d8f-ae50-4d3f-8556-12cf6df811bc",
-      "yaw": -0.5781998817183027,
-      "pitch": -0.8374057474356216,
-      "floor": null,
-      "room": null,
-      "type": "damage",
-      "severity": "low",
-      "priority": "critical",
-      "status": "pending_approval",
-      "title": "Floor is damaged",
-      "description": "Please replace the flooring ",
-      "assigned_to": "nadeem",
-      "due_date": "2026-04-05",
-      "history": [
-        {
-          "id": "990979a9-e224-45f2-9168-2025ba716cf8",
-          "action": "created",
-          "timestamp": "2026-04-25T13:59:51.601Z",
-          "details": "Issue created"
-        },
-        {
-          "id": "a0edbafd-c043-4a56-b2c6-4d4631b285db",
-          "action": "updated",
-          "timestamp": "2026-04-25T14:04:26.057Z",
-          "details": "Status changed to resolved"
-        },
-        {
-          "id": "b72b7539-1009-4e4d-a692-c594ec419ee6",
-          "issue_id": "d4cd894f-279c-47a4-98a0-b7cedd9d3cfc",
-          "action": "sla_escalated",
-          "field": "status",
-          "old_value": "open",
-          "new_value": "pending_approval",
-          "user_id": "system",
-          "user_name": "SLA Auto-Escalation",
-          "timestamp": "2026-04-26T08:53:52.109Z",
-          "details": "Auto-escalated after 21 days overdue",
-          "created_at": "2026-04-26T08:53:52.109Z"
-        },
-        {
-          "id": "c4d166e5-2757-42e6-9afd-561c8e696cb6",
-          "issue_id": "d4cd894f-279c-47a4-98a0-b7cedd9d3cfc",
-          "action": "sla_priority_escalated",
-          "field": "priority",
-          "old_value": "high",
-          "new_value": "critical",
-          "user_id": "system",
-          "user_name": "SLA Auto-Escalation",
-          "timestamp": "2026-04-26T08:53:52.109Z",
-          "details": "Priority escalated after 21 days overdue",
-          "created_at": "2026-04-26T08:53:52.109Z"
-        }
-      ],
-      "comments": [],
-      "attachments": [],
-      "created_at": "2026-04-25T13:59:51.601Z",
-      "updated_at": "2026-04-26T08:53:52.110Z"
-    },
-    {
-      "id": "ddfa5fd1-e0e9-4b41-a485-640f54db3600",
-      "walkthrough_id": "1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4",
-      "scene_id": "14928d8f-ae50-4d3f-8556-12cf6df811bc",
-      "yaw": 0.09542462700773835,
-      "pitch": 0.010539621016879974,
-      "floor": null,
-      "room": null,
-      "type": "damage",
-      "severity": "medium",
-      "priority": "critical",
-      "status": "pending_approval",
-      "title": "Damage TV",
-      "description": "ssss",
-      "assigned_to": "sajid",
-      "due_date": "2026-01-06",
+      "assigned_to": null,
+      "due_date": null,
       "org_id": null,
       "property_id": null,
       "history": [
         {
-          "id": "6b321aa8-0504-48f2-b88e-275439a69064",
+          "id": "adf39244-12c2-4887-b0cc-c0844b94821b",
           "action": "created",
-          "timestamp": "2026-04-27T10:49:02.267Z",
+          "timestamp": "2026-04-30T17:18:40.498Z",
           "details": "Issue created"
         },
         {
-          "id": "13c529af-7e0d-4682-b4d8-f860433a7800",
-          "issue_id": "ddfa5fd1-e0e9-4b41-a485-640f54db3600",
-          "action": "sla_escalated",
-          "field": "status",
-          "old_value": "open",
-          "new_value": "pending_approval",
-          "user_id": "system",
-          "user_name": "SLA Auto-Escalation",
-          "timestamp": "2026-04-27T21:45:46.060Z",
-          "details": "Auto-escalated after 111 days overdue",
-          "created_at": "2026-04-27T21:45:46.060Z"
+          "id": "aeab325a-6d98-4026-91fe-16d116ed8ba0",
+          "action": "updated",
+          "timestamp": "2026-04-30T19:08:32.973Z",
+          "details": "Unassigned"
         },
         {
-          "id": "d15fcff1-38b2-4e6f-8e43-698824eb1daf",
-          "issue_id": "ddfa5fd1-e0e9-4b41-a485-640f54db3600",
-          "action": "sla_priority_escalated",
-          "field": "priority",
-          "old_value": "medium",
-          "new_value": "critical",
-          "user_id": "system",
-          "user_name": "SLA Auto-Escalation",
-          "timestamp": "2026-04-27T21:45:46.060Z",
-          "details": "Priority escalated after 111 days overdue",
-          "created_at": "2026-04-27T21:45:46.060Z"
+          "id": "ea50f488-0f74-4923-82bd-8e53a2f07dde",
+          "action": "updated",
+          "timestamp": "2026-04-30T19:33:41.204Z",
+          "details": "Unassigned"
         }
       ],
       "comments": [],
       "attachments": [],
-      "created_at": "2026-04-27T10:49:02.268Z",
-      "updated_at": "2026-04-27T21:45:46.070Z"
+      "created_at": "2026-04-30T17:18:40.507Z",
+      "updated_at": "2026-04-30T19:33:41.244Z",
+      "asset_id": null,
+      "resolution_proof_url": null,
+      "resolution_image_url": null,
+      "resolved_at": null
+    },
+    {
+      "id": "52455bc1-1f87-4541-8442-28c9293b596c",
+      "walkthrough_id": "1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4",
+      "scene_id": "14928d8f-ae50-4d3f-8556-12cf6df811bc",
+      "yaw": -0.010802144815882863,
+      "pitch": -0.35297147680212576,
+      "floor": null,
+      "room": null,
+      "type": "maintenance",
+      "severity": "medium",
+      "priority": "medium",
+      "status": "open",
+      "title": "crack",
+      "description": "",
+      "assigned_to": null,
+      "due_date": null,
+      "org_id": null,
+      "property_id": null,
+      "history": [
+        {
+          "id": "d4e81ba3-f6c8-4999-aa8b-64d682cbaeb2",
+          "action": "created",
+          "timestamp": "2026-04-30T17:19:38.613Z",
+          "details": "Issue created"
+        },
+        {
+          "id": "d428e21b-b1f1-43e2-92bc-504d746dd14d",
+          "action": "updated",
+          "timestamp": "2026-04-30T19:08:26.912Z",
+          "details": "Unassigned"
+        }
+      ],
+      "comments": [],
+      "attachments": [],
+      "created_at": "2026-04-30T17:19:38.614Z",
+      "updated_at": "2026-04-30T19:08:26.959Z",
+      "asset_id": "bfabacd8-ef58-4c67-8857-e226697f89df",
+      "resolution_proof_url": null,
+      "resolution_image_url": null,
+      "resolved_at": null
+    },
+    {
+      "id": "cedf2b1c-284b-4da3-9d21-756ac673076c",
+      "walkthrough_id": "1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4",
+      "scene_id": "14928d8f-ae50-4d3f-8556-12cf6df811bc",
+      "asset_id": null,
+      "yaw": -0.504942232324631,
+      "pitch": 0.01259344050122026,
+      "floor": null,
+      "room": null,
+      "type": "maintenance",
+      "severity": "medium",
+      "priority": "medium",
+      "status": "open",
+      "title": "ggg",
+      "description": "fgfg",
+      "assigned_to": null,
+      "due_date": null,
+      "org_id": null,
+      "property_id": null,
+      "history": [
+        {
+          "id": "da5a0691-f235-4523-ba92-255776f10068",
+          "action": "created",
+          "timestamp": "2026-04-30T19:36:59.735Z",
+          "details": "Issue created"
+        }
+      ],
+      "comments": [],
+      "attachments": [],
+      "created_at": "2026-04-30T19:36:59.743Z",
+      "updated_at": "2026-04-30T19:36:59.745Z"
     }
   ],
   "assets": [
+    {
+      "id": "bfabacd8-ef58-4c67-8857-e226697f89df",
+      "name": "eee",
+      "type": "HVAC",
+      "brand": "dfdf",
+      "model": "dfdfd",
+      "serial_number": "dfd",
+      "scene_id": "14928d8f-ae50-4d3f-8556-12cf6df811bc",
+      "yaw": -2.061402355651255,
+      "pitch": -0.5506683219057119,
+      "floor": null,
+      "room": null,
+      "status": "active",
+      "walkthrough_id": "1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4",
+      "org_id": null,
+      "property_id": null,
+      "purchase_date": null,
+      "warranty_date": null,
+      "compliance": null,
+      "created_at": "2026-04-30T16:06:59.237Z",
+      "updated_at": "2026-04-30T16:06:59.238Z",
+      "health_score": 84
+    },
     {
       "id": "ab6773a8-c760-475f-893d-2ea525f9a039",
       "name": "lite",
@@ -599,7 +569,7 @@
       "warranty_date": null,
       "created_at": "2026-04-29T06:25:17.560Z",
       "updated_at": "2026-04-29T06:25:17.561Z",
-      "health_score": 85
+      "health_score": 92
     },
     {
       "id": "edf6a51d-5938-48d4-ae8f-bb68343619bd",
@@ -617,7 +587,7 @@
       "walkthrough_id": "1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4",
       "created_at": "2026-04-26T16:04:10.642Z",
       "updated_at": "2026-04-26T16:04:10.642Z",
-      "health_score": 85
+      "health_score": 92
     },
     {
       "id": "083b074d-e9f1-49aa-850f-a61eb460cb9c",
@@ -669,7 +639,30 @@
       "updated_at": "2026-04-29T20:40:26.479Z"
     }
   ],
-  "checklist_templates": [],
+  "checklist_templates": [
+    {
+      "id": "8223aa22-6647-4c8d-bc7f-c40322807120",
+      "name": "ccv",
+      "description": "xxcxvxv",
+      "asset_type": "Other",
+      "items": [
+        {
+          "label": "wwwww",
+          "id": "6aad39f7-5cb4-4052-b9a9-dff3167192cc_0"
+        },
+        {
+          "label": "sdsdsd",
+          "id": "999a584a-a855-4567-a551-2705dbf549e6_1"
+        },
+        {
+          "label": "dssds",
+          "id": "7eb37896-422b-4a30-9a79-d3a2c0e380a4_2"
+        }
+      ],
+      "created_at": "2026-04-30T09:22:01.465Z",
+      "updated_at": "2026-04-30T09:22:01.465Z"
+    }
+  ],
   "inspections": [
     {
       "id": "5c71d487-f992-42a3-b8bb-0078ea88a303",
@@ -701,7 +694,70 @@
       "asset_id": "test-asset-1",
       "due_date": "2026-05-14T21:34:00.736Z",
       "auto_generated": true
+    },
+    {
+      "id": "d910cefe-6228-425b-906f-c84748ce5726",
+      "walkthrough_id": "1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4",
+      "title": "Inspection for asset edf6a51d-5938-48d4-ae8f-bb68343619bd",
+      "status": "in_progress",
+      "items": [
+        {
+          "label": "wwwww",
+          "checked": false,
+          "created_at": "2026-04-30T17:22:10.990Z",
+          "id": "365ca167-9ef4-432e-a8ba-7378ff6a8ded_0"
+        },
+        {
+          "label": "sdsdsd",
+          "checked": false,
+          "created_at": "2026-04-30T17:22:10.991Z",
+          "id": "abbdaa2d-cc56-4b29-83e1-8ea5eadf2a43_1"
+        },
+        {
+          "label": "dssds",
+          "checked": false,
+          "created_at": "2026-04-30T17:22:10.991Z",
+          "id": "fb59dbf8-2094-4543-949c-ef4c78f7419c_2"
+        }
+      ],
+      "created_at": "2026-04-30T17:22:11.006Z",
+      "updated_at": "2026-04-30T17:22:11.037Z",
+      "asset_id": "edf6a51d-5938-48d4-ae8f-bb68343619bd",
+      "due_date": "2026-04-30T17:22:10.883Z",
+      "auto_generated": true
+    },
+    {
+      "id": "c0424ed7-207b-46cb-aaf4-a4f900405f77",
+      "walkthrough_id": "1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4",
+      "title": "Inspection for asset edf6a51d-5938-48d4-ae8f-bb68343619bd",
+      "status": "in_progress",
+      "items": [
+        {
+          "label": "wwwww",
+          "checked": false,
+          "created_at": "2026-04-30T17:40:52.105Z",
+          "id": "0d4681ec-34ca-4593-bf2b-f572587c009b_0"
+        },
+        {
+          "label": "sdsdsd",
+          "checked": false,
+          "created_at": "2026-04-30T17:40:52.105Z",
+          "id": "1d4aeda8-6d8f-44cf-b127-d36350c7ab1a_1"
+        },
+        {
+          "label": "dssds",
+          "checked": false,
+          "created_at": "2026-04-30T17:40:52.105Z",
+          "id": "5ca81409-30db-4bcb-a700-2f6e5464b162_2"
+        }
+      ],
+      "created_at": "2026-04-30T17:40:52.118Z",
+      "updated_at": "2026-04-30T17:40:52.129Z",
+      "asset_id": "edf6a51d-5938-48d4-ae8f-bb68343619bd",
+      "due_date": "2026-04-30T17:40:51.914Z",
+      "auto_generated": true
     }
   ],
-  "organizations": []
+  "organizations": [],
+  "work_orders": []
 }

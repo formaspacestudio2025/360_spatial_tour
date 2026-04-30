@@ -1,5 +1,5 @@
 import express from 'express';
-import { createInspection, getInspections, getInspectionById, toggleInspectionItem, signOffInspection, scheduleInspectionForAsset } from '../services/inspection.service';
+import { createInspection, getInspections, getInspectionById, toggleInspectionItem, signOffInspection, scheduleInspectionForAsset, updateInspection, deleteInspection } from '../services/inspection.service';
 import { authenticate } from '../middleware/auth';
 import { requirePermission } from '../middleware/rbac';
 
@@ -74,6 +74,30 @@ router.post('/schedule-for-asset', requirePermission('inspection', 'write'), asy
     }
     const inspection = await scheduleInspectionForAsset({ asset_id, walkthrough_id, due_date, checklist });
     res.status(201).json({ success: true, data: inspection });
+  } catch (error: unknown) {
+    const err = error as { statusCode?: number; message?: string };
+    res.status(err.statusCode || 500).json({ success: false, message: err.message });
+  }
+});
+
+// PUT /api/inspections/:id - update inspection
+router.put('/:id', requirePermission('inspection', 'write'), async (req, res) => {
+  try {
+    const inspection = await updateInspection(req.params.id, req.body);
+    if (!inspection) return res.status(404).json({ success: false, message: 'Inspection not found' });
+    res.json({ success: true, data: inspection });
+  } catch (error: unknown) {
+    const err = error as { statusCode?: number; message?: string };
+    res.status(err.statusCode || 500).json({ success: false, message: err.message });
+  }
+});
+
+// DELETE /api/inspections/:id - delete inspection
+router.delete('/:id', requirePermission('inspection', 'write'), async (req, res) => {
+  try {
+    const success = await deleteInspection(req.params.id);
+    if (!success) return res.status(404).json({ success: false, message: 'Inspection not found' });
+    res.json({ success: true, message: 'Inspection deleted' });
   } catch (error: unknown) {
     const err = error as { statusCode?: number; message?: string };
     res.status(err.statusCode || 500).json({ success: false, message: err.message });

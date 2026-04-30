@@ -50,6 +50,93 @@ export function calculateLifecycle(asset: Asset): AssetLifecycle {
   };
 }
 
+// Calculate straight-line depreciation for an asset
+export interface DepreciationInfo {
+  purchasePrice: number;
+  salvageValue: number;
+  usefulLifeYears: number;
+  currentAgeYears: number;
+  annualDepreciation: number;
+  accumulatedDepreciation: number;
+  currentBookValue: number;
+  depreciationRate: number; // percentage per year
+}
+
+export function calculateDepreciation(asset: Asset): DepreciationInfo | null {
+  if (!asset.purchase_date || !asset.purchase_price) {
+    return null; // Cannot calculate without purchase date and price
+  }
+
+  const purchasePrice = asset.purchase_price;
+  const salvageValue = asset.salvage_value || 0;
+  const usefulLifeYears = asset.useful_life_years || 10; // default 10 years
+  const depreciationRate = 100 / usefulLifeYears; // percentage per year
+
+  // Calculate current age
+  const purchase = new Date(asset.purchase_date);
+  const now = new Date();
+  const diffTime = now.getTime() - purchase.getTime();
+  const currentAgeYears = diffTime / (1000 * 60 * 60 * 24 * 365); // decimal years
+
+  // Straight-line depreciation
+  const totalDepreciable = purchasePrice - salvageValue;
+  const annualDepreciation = totalDepreciable / usefulLifeYears;
+  const accumulatedDepreciation = Math.min(annualDepreciation * currentAgeYears, totalDepreciable);
+  const currentBookValue = purchasePrice - accumulatedDepreciation;
+
+  return {
+    purchasePrice,
+    salvageValue,
+    usefulLifeYears,
+    currentAgeYears: Math.floor(currentAgeYears),
+    annualDepreciation,
+    accumulatedDepreciation,
+    currentBookValue: Math.max(currentBookValue, salvageValue),
+    depreciationRate,
+  };
+}
+
+// Generate annual inventory report with depreciation calculations
+export async function generateInventoryReport(walkthrough_id?: string): Promise<{
+  reportDate: string;
+  totalAssets: number;
+  totalOriginalValue: number;
+  totalCurrentValue: number;
+  totalAccumulatedDepreciation: number;
+  assets: Array<{
+    asset: Asset;
+    depreciation: DepreciationInfo | null;
+  }>;
+}> {
+  const result = await getAssets(walkthrough_id || undefined, 1, 999999);
+  const assets = result.assets;
+  const reportDate = new Date().toISOString();
+
+  let totalOriginalValue = 0;
+  let totalCurrentValue = 0;
+  let totalAccumulatedDepreciation = 0;
+
+  const assetReports = assets.map(asset => {
+    const depreciation = calculateDepreciation(asset);
+    if (depreciation) {
+      totalOriginalValue += depreciation.purchasePrice;
+      totalCurrentValue += depreciation.currentBookValue;
+      totalAccumulatedDepreciation += depreciation.accumulatedDepreciation;
+    }
+    return { asset, depreciation };
+  });
+
+  return {
+    reportDate,
+    totalAssets: assets.length,
+    totalOriginalValue,
+    totalCurrentValue,
+    totalAccumulatedDepreciation,
+    assets: assetReports,
+  };
+
+}
+
 export async function createAsset(data: {
   name: string;
   type: string;
@@ -107,7 +194,17 @@ export async function createAsset(data: {
   } as Asset;
 }
 
-export async function getAssets(walkthrough_id?: string, page: number = 1, limit: number = 10): Promise<{assets: Asset[]; total: number; page: number; limit: number}> {
+export async function getAssets(
+  walkthrough_id?: string,
+  page: number = 1,
+  limit: number = 10,
+  filters?: {
+    type?: string;
+    status?: string;
+    health_min?: number;
+    q?: string; // search query
+  }
+): Promise<{assets: Asset[]; total: number; page: number; limit: number}> {
   // Base query – fetch all assets (will filter in memory for simplicity)
   const stmt = db.prepare('SELECT * FROM assets');
   let assets: Asset[] = await stmt.all();
@@ -117,13 +214,37 @@ export async function getAssets(walkthrough_id?: string, page: number = 1, limit
     assets = assets.filter((a: any) => a.walkthrough_id === walkthrough_id);
   }
 
-  // Sort newest first
-  assets.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  // Filter by type
+  if (filters?.type) {
+    assets = assets.filter((a: any) => a.type === filters.type);
+  }
 
-  // Calculate health scores for all assets (for listing)
+  // Filter by status
+  if (filters?.status) {
+    assets = assets.filter((a: any) => a.status === filters.status);
+  }
+
+  // Calculate health scores for all assets (for listing and filtering)
   for (const asset of assets) {
     asset.health_score = await calculateHealthScore(asset);
   }
+
+  // Filter by minimum health score
+  if (filters?.health_min !== undefined) {
+    assets = assets.filter((a: any) => (a.health_score || 0) >= filters.health_min!);
+  }
+
+  // Search query (name, brand, model, serial_number)
+  if (filters?.q) {
+    const query = filters.q.toLowerCase();
+    assets = assets.filter((a: any) => {
+      const searchText = [a.name, a.brand, a.model, a.serial_number].filter(Boolean).join(' ').toLowerCase();
+      return searchText.includes(query);
+    });
+  }
+
+  // Sort newest first
+  assets.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   const total = assets.length;
   const start = (page - 1) * limit;
@@ -351,16 +472,109 @@ export async function calculateHealthScore(asset: Asset): Promise<number> {
     score -= 50;
   }
 
-  // Factor 4: Open issues in same scene
-  if (asset.scene_id) {
-    const issuesStmt = db.prepare('SELECT * FROM issues WHERE scene_id = ?');
-    const issues = await issuesStmt.all(asset.scene_id);
-    const openIssues = issues.filter((issue: any) =>
-      issue.status !== 'closed' && issue.status !== 'resolved'
-    );
-    score -= Math.min(openIssues.length * 5, 30); // -5 per open issue, max -30
-  }
+  // Factor 4: Open issues linked to this asset
+  const issuesStmt = db.prepare('SELECT * FROM issues');
+  const allIssues = await issuesStmt.all();
+  const openIssues = allIssues.filter((issue: any) => 
+    issue.asset_id === asset.id &&
+    !['closed', 'resolved', 'verified'].includes(issue.status)
+  );
+  score -= Math.min(openIssues.length * 8, 40); // -8 per open issue, max -40
 
   // Ensure score is between 0 and 100
   return Math.max(0, Math.min(100, score));
+}
+
+// Get asset context: asset + linked issues + inspections + work orders
+export async function getAssetContext(id: string): Promise<{
+  asset: Asset;
+  issues: any[];
+  inspections: any[];
+  workOrders: any[];
+} | null> {
+  const asset = await getAssetById(id);
+  if (!asset) return null;
+
+  const issues = await db.prepare('SELECT * FROM issues WHERE asset_id = ?').all(id);
+  console.log(`[DEBUG] getAssetContext for ${id} returned ${issues.length} issues.`);
+
+  // Get inspections linked to this asset
+  const inspections = await db.prepare('SELECT * FROM inspections WHERE asset_id = ?').all(id);
+
+  // Get work orders linked to this asset
+  const workOrders = await db.prepare('SELECT * FROM work_orders WHERE asset_id = ?').all(id);
+
+  return {
+    asset,
+    issues,
+    inspections,
+    workOrders,
+  };
+}
+
+export async function createWorkOrder(data: {
+  asset_id: string;
+  title: string;
+  description: string;
+  priority: string;
+  status: string;
+  due_date?: string;
+  assigned_to?: string;
+}) {
+  const id = generateId();
+  const now = new Date().toISOString();
+  
+  const sql = `INSERT INTO work_orders (id, asset_id, title, description, priority, status, due_date, assigned_to, created_at, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+               
+  await db.prepare(sql).run(
+    id,
+    data.asset_id,
+    data.title,
+    data.description,
+    data.priority,
+    data.status,
+    data.due_date || null,
+    data.assigned_to || null,
+    now,
+    now
+  );
+  
+  return { id, ...data, created_at: now, updated_at: now };
+}
+
+export async function updateWorkOrder(id: string, data: any) {
+  const existing = db.prepare('SELECT * FROM work_orders WHERE id = ?').get(id);
+  if (!existing) return null;
+  
+  const now = new Date().toISOString();
+  const updated = { ...existing, ...data, updated_at: now };
+  
+  const sql = `UPDATE work_orders SET 
+                title = ?, description = ?, priority = ?, status = ?, due_date = ?, assigned_to = ?, updated_at = ?
+               WHERE id = ?`;
+               
+  await db.prepare(sql).run(
+    updated.title,
+    updated.description,
+    updated.priority,
+    updated.status,
+    updated.due_date,
+    updated.assigned_to,
+    now,
+    id
+  );
+  
+  return updated;
+}
+
+export async function getRecentInspections(limit: number = 5) {
+  const inspections = db.prepare('SELECT * FROM inspections ORDER BY created_at DESC').all() as any[];
+  const assets = db.prepare('SELECT id, name FROM assets').all() as any[];
+  const assetMap = new Map(assets.map(a => [a.id, a.name]));
+
+  return inspections.slice(0, limit).map(i => ({
+    ...i,
+    assetName: assetMap.get(i.asset_id) || 'Unknown Asset'
+  }));
 }

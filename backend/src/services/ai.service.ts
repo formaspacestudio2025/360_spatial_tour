@@ -238,7 +238,12 @@ export class AIService {
    */
   getTagsByScene(sceneId: string): AITag[] {
     const stmt = db.prepare('SELECT * FROM ai_tags WHERE scene_id = ? ORDER BY confidence DESC');
-    return stmt.all(sceneId) as AITag[];
+    const rows = stmt.all(sceneId) as any[];
+    return rows.map(row => ({
+      ...row,
+      bounding_box: row.bounding_box ? JSON.parse(row.bounding_box) : null,
+      tags: row.tags ? JSON.parse(row.tags) : [],
+    }));
   }
 
   /**
@@ -252,7 +257,12 @@ export class AIService {
       WHERE s.walkthrough_id = ?
       ORDER BY at.confidence DESC
     `);
-    return stmt.all(walkthroughId) as AITag[];
+    const rows = stmt.all(walkthroughId) as any[];
+    return rows.map(row => ({
+      ...row,
+      bounding_box: row.bounding_box ? JSON.parse(row.bounding_box) : null,
+      tags: row.tags ? JSON.parse(row.tags) : [],
+    }));
   }
 
   /**

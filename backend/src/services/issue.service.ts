@@ -36,6 +36,7 @@ export interface Issue {
   id: string;
   walkthrough_id: string;
   scene_id: string;
+  asset_id?: string; // LINK TO ASSET
   yaw: number;
   pitch: number;
   floor?: number;
@@ -61,6 +62,7 @@ export interface Issue {
 export async function createIssue(data: {
   walkthrough_id: string;
   scene_id: string;
+  asset_id?: string;
   yaw: number;
   pitch: number;
   floor?: number;
@@ -88,11 +90,11 @@ export async function createIssue(data: {
 
   const priority = data.priority || data.severity;
 
-  const sql = `INSERT INTO issues (id, walkthrough_id, scene_id, yaw, pitch, floor, room, type, severity, priority, status, title, description, assigned_to, due_date, org_id, property_id, history, comments, attachments, created_at, updated_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+  const sql = `INSERT INTO issues (id, walkthrough_id, scene_id, asset_id, yaw, pitch, floor, room, type, severity, priority, status, title, description, assigned_to, due_date, org_id, property_id, history, comments, attachments, created_at, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   await db.prepare(sql).run(
-    id, data.walkthrough_id, data.scene_id, data.yaw, data.pitch, data.floor || null, data.room || null,
+    id, data.walkthrough_id, data.scene_id, data.asset_id || null, data.yaw, data.pitch, data.floor || null, data.room || null,
     data.type, data.severity, priority, 'open', data.title, data.description || '', data.assigned_to || null, data.due_date || null, data.org_id || null, data.property_id || null, initialHistory, [], data.attachments || [], now, now
   );
 
@@ -149,14 +151,14 @@ export async function updateIssue(id: string, data: Partial<Issue>): Promise<Iss
   const updated = { ...existing, ...data, history, updated_at: now };
 
   const sql = `UPDATE issues SET
-                walkthrough_id = ?, scene_id = ?, yaw = ?, pitch = ?,
+                walkthrough_id = ?, scene_id = ?, asset_id = ?, yaw = ?, pitch = ?,
                 floor = ?, room = ?, type = ?, severity = ?, priority = ?,
                 org_id = ?, property_id = ?,
                 status = ?, title = ?, description = ?, assigned_to = ?, due_date = ?, resolution_proof_url = ?, resolution_image_url = ?, resolved_at = ?, history = ?, comments = ?, attachments = ?, updated_at = ?
                WHERE id = ?`;
 
   await db.prepare(sql).run(
-    updated.walkthrough_id, updated.scene_id, updated.yaw, updated.pitch,
+    updated.walkthrough_id, updated.scene_id, updated.asset_id || null, updated.yaw, updated.pitch,
     updated.floor || null, updated.room || null, updated.type, updated.severity, updated.priority || updated.severity,
     updated.org_id || null, updated.property_id || null,
     updated.status, updated.title, updated.description || '', updated.assigned_to || null, updated.due_date || null,

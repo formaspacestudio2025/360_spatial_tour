@@ -104,3 +104,12 @@ export async function scheduleInspectionForAsset(params: {
   const updated = await getInspectionById(inspection.id);
   return updated as Inspection;
 }
+export async function deleteInspection(id: string): Promise<boolean> {
+  const inspections: Inspection[] = (db['inspections'] as Inspection[]) || [];
+  const index = inspections.findIndex(i => i.id === id);
+  if (index === -1) return false;
+
+  inspections.splice(index, 1);
+  save();
+  return true;
+}

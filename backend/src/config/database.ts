@@ -27,6 +27,7 @@ interface Database {
   checklist_templates: any[];
   inspections: any[];
   organizations: any[];
+  work_orders: any[];
 }
 
 // Load or create database
@@ -47,6 +48,7 @@ let db: Database = {
   checklist_templates: [],
   inspections: [],
   organizations: [],
+  work_orders: [],
 };
 
 if (fs.existsSync(DB_PATH)) {
@@ -102,6 +104,7 @@ class Statement {
     if (this.sql.includes('scene_id = ?') && !this.sql.includes('from_scene_id = ?')) {
       table = table.filter((row: any) => row.scene_id === params[0]);
     }
+    // Get issues linked to this asset (strictly by asset_id)
     if (this.sql.includes('asset_id = ?')) {
       table = table.filter((row: any) => row.asset_id === params[0]);
     }

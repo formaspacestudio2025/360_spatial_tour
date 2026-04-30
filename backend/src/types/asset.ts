@@ -31,6 +31,9 @@ export interface Asset {
   org_id?: string;         // organization that owns this asset
   property_id?: string;     // specific property (if different from walkthrough)
   purchase_date?: string;  // ISO date string when asset was purchased
+  purchase_price?: number;   // purchase price for depreciation calculation
+  useful_life_years?: number; // useful life in years for depreciation (default: 10)
+  salvage_value?: number;    // estimated salvage value (default: 0)
   warranty_date?: string;  // ISO date string when warranty expires
   documents?: AssetDocument[]; // attached documents
   health_score?: number; // 0-100, calculated by service

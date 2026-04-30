@@ -46,6 +46,7 @@ router.post('/walkthroughs/:id/scenes/:sceneId/ai/process', async (req, res, nex
       data: result,
     });
   } catch (error) {
+    console.error('[AI Route Error]:', error);
     next(error);
   }
 });
@@ -60,6 +61,7 @@ router.post('/walkthroughs/:id/ai/process-all', async (req, res, next) => {
       data: result,
     });
   } catch (error) {
+    console.error('[AI Route Error All]:', error);
     next(error);
   }
 });
