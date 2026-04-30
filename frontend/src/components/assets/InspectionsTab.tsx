@@ -12,24 +12,24 @@ const InspectionsTab: React.FC = () => {
   const [editingInspection, setEditingInspection] = useState<Inspection | null>(null);
   
   // Queries
-  const { data: inspections = [], isLoading: loadingInspections } = useQuery({
+  const { data: inspections = [], isLoading: loadingInspections, error: inspectionsError } = useQuery({
     queryKey: ['inspections'],
     queryFn: () => inspectionsApi.getAll(),
   });
 
-  const { data: assetsResponse } = useQuery({
+  const { data: assetsResponse, error: assetsError } = useQuery({
     queryKey: ['assets-all'],
     queryFn: () => assetsApi.getAll({ limit: 100 }),
   });
   const assets = assetsResponse?.assets || [];
 
-  const { data: walkthroughsResponse } = useQuery({
+  const { data: walkthroughsResponse, error: walkthroughsError } = useQuery({
     queryKey: ['walkthroughs'],
     queryFn: () => walkthroughApi.getAll(),
   });
   const walkthroughs = walkthroughsResponse?.data || [];
 
-  const { data: templates = [] } = useQuery({
+  const { data: templates = [], error: templatesError } = useQuery({
     queryKey: ['checklists'],
     queryFn: () => checklistsApi.getTemplates(),
   });
@@ -121,6 +121,15 @@ const InspectionsTab: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {(inspectionsError || assetsError || walkthroughsError || templatesError) && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
+          <h3 className="text-red-400 font-semibold mb-2">Error loading data</h3>
+          {inspectionsError && <p className="text-sm text-red-400">Failed to load inspections.</p>}
+          {assetsError && <p className="text-sm text-red-400">Failed to load assets.</p>}
+          {walkthroughsError && <p className="text-sm text-red-400">Failed to load walkthroughs.</p>}
+          {templatesError && <p className="text-sm text-red-400">Failed to load templates.</p>}
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold">Inspection Management</h2>
