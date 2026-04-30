@@ -6,6 +6,7 @@ import { scenesApi } from '@/api/scenes';
 import { hotspotsApi, HotspotCategory } from '@/api/hotspots';
 import { issuesApi } from '@/api/issuesApi';
 import { assetsApi } from '@/api/assetsApi';
+import { workOrdersApi } from '@/api/workOrdersApi';
 import { Issue } from '@/types/issue';
 import { Asset } from '@/types';
 import { aiApi, AITag } from '@/api/ai';
@@ -28,6 +29,8 @@ import AssetFormModal from '@/components/viewer/AssetFormModal';
 import InspectionSidebar from '@/components/viewer/InspectionSidebar';
 import MaintenanceOverlay from '@/components/viewer/MaintenanceOverlay';
 import EmergencyOverlay from '@/components/viewer/EmergencyOverlay';
+import AssetQuickPanel from '@/components/assets/AssetQuickPanel';
+import ChecklistPerformer from '@/components/viewer/ChecklistPerformer';
 import { useViewerStore } from '@/stores/viewerStore';
 import { useHotspotStore } from '@/stores/hotspotStore';
 import { useAITagStore } from '@/stores/aiTagStore';
@@ -60,6 +63,7 @@ function WalkthroughViewer() {
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const [assetMarkers, setAssetMarkers] = useState<Asset[]>([]);
   const [showAssetModal, setShowAssetModal] = useState(false);
+  const [selectedQuickAssetId, setSelectedQuickAssetId] = useState<string | null>(null);
   const [pendingIssueCoord, setPendingIssueCoord] = useState<{ yaw: number; pitch: number } | null>(null);
   const [editingIssue, setEditingIssue] = useState<Issue | null>(null);
   const [showIssueModal, setShowIssueModal] = useState(false);
@@ -68,9 +72,32 @@ function WalkthroughViewer() {
   const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
   const [startSceneId, setStartSceneId] = useState<string | null>(null);
   const [navigationHistory, setNavigationHistory] = useState<Scene[]>([]);
-  const [isInspectionMode, setIsInspectionMode] = useState(false);
-  const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
   const [isEmergencyMode, setIsEmergencyMode] = useState(false);
+  const [assetInteractionMode, setAssetInteractionMode] = useState<'view' | 'inspect' | 'maintain'>('view');
+
+  useEffect(() => {
+    const handleStartInspection = (e: any) => {
+      const { asset, templateId } = e.detail;
+      setPerformingInspectionAsset(asset);
+      setPerformingInspectionTemplateId(templateId || null);
+    };
+
+    const handleCreateWorkOrder = (e: any) => {
+      const { asset } = e.detail;
+      // Trigger work order creation logic
+      // For now, we can reuse the MaintenanceOverlay or a direct modal
+    };
+
+    window.addEventListener('start-inspection', handleStartInspection);
+    window.addEventListener('create-work-order', handleCreateWorkOrder);
+
+    return () => {
+      window.removeEventListener('start-inspection', handleStartInspection);
+      window.removeEventListener('create-work-order', handleCreateWorkOrder);
+    };
+  }, []);
+  const [performingInspectionAsset, setPerformingInspectionAsset] = useState<Asset | null>(null);
+const [performingInspectionTemplateId, setPerformingInspectionTemplateId] = useState<string | null>(null);
   const [selectedHotspotCategories, setSelectedHotspotCategories] = useState<HotspotCategory[]>([]);
 
   const { data: walkthroughData } = useQuery({
@@ -156,17 +183,14 @@ function WalkthroughViewer() {
   // Fetch assets for walkthrough, filter by current scene
   const { data: assetsData } = useQuery({
     queryKey: ['assets', id],
-    queryFn: () => assetsApi.getAll(id!),
+    queryFn: () => assetsApi.getAll({ walkthrough_id: id! }),
     enabled: !!id,
   });
   useEffect(() => {
     if (assetsData?.assets && currentScene) {
-      console.log('Assets data:', assetsData);
       const sceneAssets = assetsData.assets.filter((a: Asset) => a.scene_id === currentScene.id);
-      console.log('Filtered assets for scene', currentScene.id, ':', sceneAssets);
       setAssetMarkers(sceneAssets);
     } else {
-      console.log('No assets data or current scene');
       setAssetMarkers([]);
     }
   }, [assetsData, currentScene]);
@@ -179,7 +203,6 @@ function WalkthroughViewer() {
   // Update hotspot store when data changes
   useEffect(() => {
     if (hotspotsData?.data) {
-      console.log('Hotspots received:', hotspotsData.data);
       setHotspots(hotspotsData.data);
     }
   }, [hotspotsData, setHotspots]);
@@ -207,28 +230,20 @@ function WalkthroughViewer() {
   }, [scenes]);
 
   const handleSceneSelect = useCallback((scene: Scene) => {
-    console.log('Selecting scene:', scene);
-    console.log('Scene image_url:', scene.image_url);
-    console.log('Scene image_path:', scene.image_path);
     setCurrentScene(scene);
     setViewerScene(scene);
     setPendingHotspot(null);
-    // Update selected floor to match the new scene's floor
     setSelectedFloor(scene.floor);
 
-    // Set start scene if not set
     if (!startSceneId) {
       setStartSceneId(scene.id);
     }
 
-    // Update navigation history
     setNavigationHistory(prev => {
-      // Remove any future history if we're going back
       const existingIndex = prev.findIndex(s => s.id === scene.id);
       if (existingIndex !== -1) {
         return prev.slice(0, existingIndex + 1);
       }
-      // Add to history
       return [...prev, scene];
     });
   }, [setViewerScene, setPendingHotspot, startSceneId]);
@@ -248,7 +263,6 @@ function WalkthroughViewer() {
     const scene = scenes.find((s) => s.id === sceneId);
     if (scene) {
       if (orientation) {
-        console.log('[Viewer] Applying orientation:', orientation);
         setTargetOrientation(orientation);
       } else {
         setTargetOrientation(null);
@@ -270,7 +284,6 @@ function WalkthroughViewer() {
 
   const createIssueMutation = useMutation({
     mutationFn: (data: any) => issuesApi.create(data),
-
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['issues', currentScene?.id] });
       setShowIssueModal(false);
@@ -287,16 +300,17 @@ function WalkthroughViewer() {
 
   const handleAssetClick = useCallback((asset: Asset) => {
     if (!asset.scene_id) return;
+    
     if (asset.scene_id !== currentScene?.id) {
-      // Jump to the scene where the asset is located
       handleSceneChange(asset.scene_id, { yaw: asset.yaw ?? 0, pitch: asset.pitch ?? 0 });
-    } else {
-      // Already in same scene, focus camera on asset if coordinates exist
-      if (asset.yaw != null && asset.pitch != null) {
-        setTargetOrientation({ yaw: asset.yaw, pitch: asset.pitch });
-      }
-      alert(`Asset: ${asset.name}\nType: ${asset.type}\nStatus: ${asset.status}`);
+      return;
     }
+
+    if (asset.yaw != null && asset.pitch != null) {
+      setTargetOrientation({ yaw: asset.yaw, pitch: asset.pitch });
+    }
+
+    setSelectedQuickAssetId(asset.id);
   }, [currentScene, handleSceneChange]);
 
   const updateIssueMutation = useMutation({
@@ -341,6 +355,20 @@ function WalkthroughViewer() {
     },
   });
 
+  const createWorkOrderMutation = useMutation({
+    mutationFn: ({ assetId, data }: { assetId: string; data: any }) => workOrdersApi.create(assetId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['asset-context'] });
+    }
+  });
+
+  const updateWorkOrderMutation = useMutation({
+    mutationFn: ({ workOrderId, data }: { workOrderId: string; data: any }) => workOrdersApi.update(workOrderId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['asset-context'] });
+    }
+  });
+
   const handleIssueSubmit = (formData: any) => {
     if (editingIssue) {
       updateIssueMutation.mutate({ id: editingIssue.id, data: formData });
@@ -356,12 +384,10 @@ function WalkthroughViewer() {
   };
 
   const handleAssetSubmit = (formData: any) => {
-    console.log('Asset submit formData:', formData);
     if (editingAsset) {
       updateAssetMutation.mutate({ id: editingAsset.id, data: formData });
     } else {
       const sceneId = formData.scene_id || currentScene!.id;
-      console.log('Creating asset with scene_id:', sceneId, 'yaw:', formData.yaw, 'pitch:', formData.pitch);
       createAssetMutation.mutate({
         ...formData,
         walkthrough_id: id!,
@@ -372,10 +398,8 @@ function WalkthroughViewer() {
     }
   };
 
-  // Set first scene as current when scenes load
   useEffect(() => {
     if (scenes.length > 0 && !currentScene) {
-      console.log('Auto-selecting first scene:', scenes[0]);
       handleSceneSelect(scenes[0]);
     }
   }, [scenes, currentScene, handleSceneSelect]);
@@ -414,7 +438,6 @@ function WalkthroughViewer() {
 
   return (
     <div className="h-screen bg-black flex flex-col">
-      {/* Header */}
       <div className="bg-gray-900 border-b border-gray-800 px-4 py-3 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-4">
           <Link to="/" className="text-gray-400 hover:text-white transition-colors">
@@ -429,7 +452,6 @@ function WalkthroughViewer() {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* NEW: View/Edit/Share Mode Toolbar */}
           <ViewModeToolbar
             walkthroughId={id!}
             walkthroughName={walkthrough?.name || 'Walkthrough'}
@@ -438,35 +460,32 @@ function WalkthroughViewer() {
             onModeChange={setEditorMode}
           />
 
-          {/* Inspection Mode Toggle */}
           <button
-            onClick={() => setIsInspectionMode(!isInspectionMode)}
+            onClick={() => setAssetInteractionMode(prev => prev === 'inspect' ? 'view' : 'inspect')}
             className={`px-3 py-1.5 rounded-lg transition-colors text-sm flex items-center gap-2 ${
-              isInspectionMode
-                ? 'bg-red-600 hover:bg-red-700 text-white'
+              assetInteractionMode === 'inspect'
+                ? 'bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20'
                 : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
             }`}
             title="Toggle Inspection Mode"
           >
             <Shield size={14} />
-            {isInspectionMode ? 'Exit Inspection' : 'Inspect'}
+            {assetInteractionMode === 'inspect' ? 'Exit Inspection' : 'Inspect'}
           </button>
-
-          {/* Maintenance Mode Toggle */}
+ 
           <button
-            onClick={() => setIsMaintenanceMode(!isMaintenanceMode)}
+            onClick={() => setAssetInteractionMode(prev => prev === 'maintain' ? 'view' : 'maintain')}
             className={`px-3 py-1.5 rounded-lg transition-colors text-sm flex items-center gap-2 ${
-              isMaintenanceMode
-                ? 'bg-amber-600 hover:bg-amber-700 text-white'
+              assetInteractionMode === 'maintain'
+                ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-600/20'
                 : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
             }`}
             title="Toggle Maintenance Mode"
           >
             <Wrench size={14} />
-            {isMaintenanceMode ? 'Exit Maintenance' : 'Maintain'}
+            {assetInteractionMode === 'maintain' ? 'Exit Maintenance' : 'Maintain'}
           </button>
-
-          {/* Emergency Mode Toggle */}
+ 
           <button
             onClick={() => setIsEmergencyMode(!isEmergencyMode)}
             className={`px-3 py-1.5 rounded-lg transition-colors text-sm flex items-center gap-2 ${
@@ -496,103 +515,43 @@ function WalkthroughViewer() {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar */}
         <Sidebar>
-          {/* Tabs */}
           <div className="flex overflow-x-auto flex-nowrap border-b border-gray-800">
-            <button
-              onClick={() => { setActiveTab('scenes'); setViewMode('viewer'); }}
-              className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
-                activeTab === 'scenes'
-                  ? 'text-primary-400 border-b-2 border-primary-500'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
+            <button onClick={() => { setActiveTab('scenes'); setViewMode('viewer'); }} className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${activeTab === 'scenes' ? 'text-primary-400 border-b-2 border-primary-500' : 'text-gray-400 hover:text-white'}`}>
               <Image size={14} />
               Scenes
             </button>
-            <button
-              onClick={() => { setActiveTab('hotspots'); setViewMode('viewer'); }}
-              className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
-                activeTab === 'hotspots'
-                  ? 'text-primary-400 border-b-2 border-primary-500'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
+            <button onClick={() => { setActiveTab('hotspots'); setViewMode('viewer'); }} className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${activeTab === 'hotspots' ? 'text-primary-400 border-b-2 border-primary-500' : 'text-gray-400 hover:text-white'}`}>
               <Navigation2 size={14} />
               Hotspots
             </button>
-            <button
-              onClick={() => { setActiveTab('ai'); setViewMode('viewer'); }}
-              className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
-                activeTab === 'ai'
-                  ? 'text-primary-400 border-b-2 border-primary-500'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
+            <button onClick={() => { setActiveTab('ai'); setViewMode('viewer'); }} className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${activeTab === 'ai' ? 'text-primary-400 border-b-2 border-primary-500' : 'text-gray-400 hover:text-white'}`}>
               <BrainCircuit size={14} />
               AI
             </button>
-            <button
-              onClick={() => { setActiveTab('graph'); setViewMode('graph'); }}
-              className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
-                activeTab === 'graph'
-                  ? 'text-primary-400 border-b-2 border-primary-500'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
+            <button onClick={() => { setActiveTab('graph'); setViewMode('graph'); }} className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${activeTab === 'graph' ? 'text-primary-400 border-b-2 border-primary-500' : 'text-gray-400 hover:text-white'}`}>
               <GitGraph size={14} />
               Graph
             </button>
-            <button
-              onClick={() => { setActiveTab('issues'); setViewMode('viewer'); }}
-              className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
-                activeTab === 'issues'
-                  ? 'text-primary-400 border-b-2 border-primary-500'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
+            <button onClick={() => { setActiveTab('issues'); setViewMode('viewer'); }} className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${activeTab === 'issues' ? 'text-primary-400 border-b-2 border-primary-500' : 'text-gray-400 hover:text-white'}`}>
               <AlertCircle size={14} />
               Issues
             </button>
-            <button
-              onClick={() => { setActiveTab('assets'); setViewMode('viewer'); }}
-              className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
-                activeTab === 'assets'
-                  ? 'text-primary-400 border-b-2 border-primary-500'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
+            <button onClick={() => { setActiveTab('assets'); setViewMode('viewer'); }} className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${activeTab === 'assets' ? 'text-primary-400 border-b-2 border-primary-500' : 'text-gray-400 hover:text-white'}`}>
               <Box size={14} />
               Assets
             </button>
-            <button
-              onClick={() => { setActiveTab('minimap'); setViewMode('viewer'); }}
-              className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
-                activeTab === 'minimap'
-                  ? 'text-primary-400 border-b-2 border-primary-500'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
+            <button onClick={() => { setActiveTab('minimap'); setViewMode('viewer'); }} className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${activeTab === 'minimap' ? 'text-primary-400 border-b-2 border-primary-500' : 'text-gray-400 hover:text-white'}`}>
               <MapPin size={14} />
               Map
             </button>
-            <button
-              onClick={() => { setActiveTab('tour'); setViewMode('viewer'); }}
-              className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
-                activeTab === 'tour'
-                  ? 'text-primary-400 border-b-2 border-primary-500'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
+            <button onClick={() => { setActiveTab('tour'); setViewMode('viewer'); }} className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${activeTab === 'tour' ? 'text-primary-400 border-b-2 border-primary-500' : 'text-gray-400 hover:text-white'}`}>
               <Play size={14} />
               Tour
             </button>
           </div>
 
-          {/* Tab content */}
           <div className="p-4 h-[calc(100%-49px)] overflow-y-auto">
             {activeTab === 'scenes' ? (
               <div className="space-y-4">
@@ -646,10 +605,10 @@ function WalkthroughViewer() {
                       className="mt-3 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs transition-colors"
                     >
                       Enter Edit Mode
-                  </button>
-                </div>
-              )}
-            </div>
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : activeTab === 'ai' ? (
               <div className="space-y-6">
                 <AIProcessingPanel
@@ -754,12 +713,17 @@ function WalkthroughViewer() {
                 </div>
                 <div className="space-y-2">
                   {assetMarkers?.map(asset => (
-                    <div key={asset.id} className="p-3 bg-gray-800/50 border border-gray-700 rounded-xl hover:border-primary-500/50 transition-all group">
+                    <div 
+                      key={asset.id} 
+                      className="p-3 bg-gray-800/50 border border-gray-700 rounded-xl hover:border-primary-500/50 transition-all group cursor-pointer"
+                      onClick={() => handleAssetClick(asset)}
+                    >
                       <div className="flex items-start justify-between mb-1">
                         <div className="text-white text-sm font-semibold truncate flex-1">{asset.name}</div>
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setEditingAsset(asset);
                               setShowAssetModal(true);
                             }}
@@ -768,7 +732,8 @@ function WalkthroughViewer() {
                             <Navigation2 size={12} />
                           </button>
                           <button
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               if (confirm('Delete this asset?')) {
                                 deleteAssetMutation.mutate(asset.id);
                               }
@@ -879,6 +844,7 @@ function WalkthroughViewer() {
         initialData={editingIssue || undefined}
         mode={editingIssue ? 'edit' : 'create'}
         isPending={createIssueMutation.isPending || updateIssueMutation.isPending}
+        walkthroughId={id}
       />
 
       {/* Asset Modal */}
@@ -896,6 +862,27 @@ function WalkthroughViewer() {
         pendingCoord={pendingAssetCoord}
       />
 
+      {/* Asset Quick Panel */}
+      {selectedQuickAssetId && (
+        <AssetQuickPanel
+          assetId={selectedQuickAssetId}
+          mode={assetInteractionMode}
+          onClose={() => setSelectedQuickAssetId(null)}
+        />
+      )}
+
+      {/* Checklist Performer (Inspection Mode) */}
+      {performingInspectionAsset && (
+        <ChecklistPerformer
+          asset={performingInspectionAsset}
+          templateId={performingInspectionTemplateId ?? undefined}
+          onClose={() => {
+            setPerformingInspectionAsset(null);
+            setPerformingInspectionTemplateId(null);
+          }}
+        />
+      )}
+
       {/* Upload Modal */}
       <BulkUpload
         walkthroughId={id!}
@@ -903,27 +890,16 @@ function WalkthroughViewer() {
         onClose={() => setShowUpload(false)}
       />
 
-      {/* Inspection Sidebar */}
-      <InspectionSidebar
-        isOpen={isInspectionMode}
-        onClose={() => setIsInspectionMode(false)}
-        onComplete={(results) => {
-          console.log('Inspection completed:', results);
-          setIsInspectionMode(false);
-        }}
-        inspectorName={user?.username}
-      />
-
       {/* Maintenance Overlay */}
       <MaintenanceOverlay
-        isOpen={isMaintenanceMode}
-        onClose={() => setIsMaintenanceMode(false)}
+        isOpen={assetInteractionMode === 'maintain'}
+        onClose={() => setAssetInteractionMode('view')}
         assets={assetMarkers}
-        onCreateWorkOrder={(assetId, data) => {
-          console.log('Create work order for asset:', assetId, data);
+        onCreateWorkOrder={async (assetId, data) => {
+          createWorkOrderMutation.mutate({ assetId, data });
         }}
-        onUpdateWorkOrder={(workOrderId, data) => {
-          console.log('Update work order:', workOrderId, data);
+        onUpdateWorkOrder={async (workOrderId, data) => {
+          updateWorkOrderMutation.mutate({ workOrderId, data });
         }}
       />
 
