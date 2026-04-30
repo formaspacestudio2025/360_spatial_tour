@@ -24,7 +24,10 @@ const ComplianceTags: React.FC<ComplianceTagsProps> = ({ assetId, compliance, on
     // Call API to update asset compliance
     fetch(`/api/assets/${assetId}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
       body: JSON.stringify({ compliance: updated }),
     }).then(() => {
       setNewReg('');

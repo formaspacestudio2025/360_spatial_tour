@@ -71,5 +71,20 @@ router.post('/:id/signoff', (0, rbac_1.requirePermission)('inspection', 'write')
         res.status(err.statusCode || 500).json({ success: false, message: err.message });
     }
 });
+// POST /api/inspections/schedule-for-asset - schedule inspection for asset
+router.post('/schedule-for-asset', (0, rbac_1.requirePermission)('inspection', 'write'), async (req, res) => {
+    try {
+        const { asset_id, walkthrough_id, due_date, checklist } = req.body;
+        if (!asset_id || !walkthrough_id || !due_date || !checklist) {
+            return res.status(400).json({ success: false, message: 'Missing required fields' });
+        }
+        const inspection = await (0, inspection_service_1.scheduleInspectionForAsset)({ asset_id, walkthrough_id, due_date, checklist });
+        res.status(201).json({ success: true, data: inspection });
+    }
+    catch (error) {
+        const err = error;
+        res.status(err.statusCode || 500).json({ success: false, message: err.message });
+    }
+});
 exports.default = router;
 //# sourceMappingURL=inspections.js.map

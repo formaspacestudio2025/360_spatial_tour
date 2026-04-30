@@ -1,4 +1,5 @@
-import db from '../config/database';
+import database, { save } from '../config/database';
+const db = database.tables;
 import { generateId } from '../utils/generateId';
 import { ChecklistTemplate, ChecklistItemTemplate } from '../types/checklist';
 
@@ -20,13 +21,14 @@ export async function createTemplate(data: {
     created_at: now(),
     updated_at: now(),
   };
-  const table = (db as any)['checklist_templates'] as any[];
+  const table = db['checklist_templates'] as any[];
   table.push(template);
+  save();
   return template;
 }
 
 export async function getTemplates(asset_type?: string): Promise<ChecklistTemplate[]> {
-  const table = (db as any)['checklist_templates'] as any[] || [];
+  const table = db['checklist_templates'] as any[] || [];
   let templates = table as ChecklistTemplate[];
   if (asset_type) {
     templates = templates.filter(t => t.asset_type === asset_type);
@@ -35,23 +37,25 @@ export async function getTemplates(asset_type?: string): Promise<ChecklistTempla
 }
 
 export async function getTemplateById(id: string): Promise<ChecklistTemplate | null> {
-  const table = (db as any)['checklist_templates'] as any[] || [];
+  const table = db['checklist_templates'] as any[] || [];
   return (table as ChecklistTemplate[]).find(t => t.id === id) || null;
 }
 
 export async function updateTemplate(id: string, data: Partial<ChecklistTemplate>): Promise<ChecklistTemplate | null> {
-  const table = (db as any)['checklist_templates'] as any[] || [];
+  const table = db['checklist_templates'] as any[] || [];
   const idx = table.findIndex((t: any) => t.id === id);
   if (idx === -1) return null;
   table[idx] = { ...table[idx], ...data, updated_at: now() };
+  save();
   return table[idx] as ChecklistTemplate;
 }
 
 export async function deleteTemplate(id: string): Promise<boolean> {
-  const table = (db as any)['checklist_templates'] as any[] || [];
+  const table = db['checklist_templates'] as any[] || [];
   const idx = table.findIndex((t: any) => t.id === id);
   if (idx === -1) return false;
   table.splice(idx, 1);
+  save();
   return true;
 }
 

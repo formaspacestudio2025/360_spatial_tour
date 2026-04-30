@@ -6,6 +6,7 @@ import { createServer } from 'http';
 import { initializeStorage, storagePaths } from './config/storage';
 import { errorHandler, notFoundHandler } from './middleware/error';
 import apiRoutes from './routes';
+import { cronService } from './services/cron.service';
 
 // Load environment variables
 dotenv.config();
@@ -49,6 +50,9 @@ server.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
   console.log(`📁 Storage directory: ${storagePaths.base}`);
+  
+  // Start background tasks
+  cronService.start();
 });
 
 export default app;

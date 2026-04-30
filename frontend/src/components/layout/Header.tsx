@@ -36,14 +36,17 @@ function Header() {
               Issue Management
             </Link>
             {user && (user.role === 'admin' || user.role === 'manager') && (
-              <Link to="/users" className="text-gray-300 hover:text-white transition-colors">
-                User Management
-              </Link>
-            )}
-            {user && user.role === 'admin' && (
-              <Link to="/assets" className="text-gray-300 hover:text-white transition-colors">
-                Asset Management
-              </Link>
+              <>
+                <Link to="/users" className="text-gray-300 hover:text-white transition-colors">
+                  User Management
+                </Link>
+                <Link to="/assets" className="text-gray-300 hover:text-white transition-colors">
+                  Asset Management
+                </Link>
+                <Link to="/inspections" className="text-gray-300 hover:text-white transition-colors">
+                  Inspections
+                </Link>
+              </>
             )}
           </div>
         </div>

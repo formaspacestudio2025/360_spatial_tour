@@ -1,4 +1,4 @@
-import { Asset } from '../types/asset';
+import { Asset, AssetDocument, ComplianceTag } from '../types/asset';
 export interface AssetLifecycle {
     ageYears: number | null;
     ageMonths: number | null;
@@ -24,6 +24,7 @@ export declare function createAsset(data: {
     property_id?: string;
     purchase_date?: string;
     warranty_date?: string;
+    compliance?: ComplianceTag[];
 }): Promise<Asset>;
 export declare function getAssets(walkthrough_id?: string, page?: number, limit?: number): Promise<{
     assets: Asset[];
@@ -31,9 +32,23 @@ export declare function getAssets(walkthrough_id?: string, page?: number, limit?
     page: number;
     limit: number;
 }>;
+export declare function getAssetStats(): Promise<{
+    total: number;
+    byHealth: {
+        excellent: number;
+        good: number;
+        fair: number;
+        poor: number;
+    };
+    warrantyExpiringSoon: number;
+    overdueInspections: number;
+}>;
 export declare function getAssetById(id: string): Promise<Asset | null>;
 export declare function updateAsset(id: string, data: Partial<Asset>): Promise<Asset | null>;
 export declare function deleteAsset(id: string): Promise<boolean>;
+export declare function addAssetDocument(id: string, doc: AssetDocument): Promise<Asset | null>;
+export declare function getAssetDocuments(id: string): Promise<AssetDocument[]>;
+export declare function deleteAssetDocument(id: string, filename: string): Promise<boolean>;
 export declare function updateAssetSceneMapping(id: string, mapping: {
     scene_id?: string;
     yaw?: number;
@@ -42,4 +57,5 @@ export declare function updateAssetSceneMapping(id: string, mapping: {
     room?: string;
 }): Promise<Asset | null>;
 export declare function getAssetsByScene(scene_id: string): Promise<Asset[]>;
+export declare function calculateHealthScore(asset: Asset): Promise<number>;
 //# sourceMappingURL=asset.service.d.ts.map

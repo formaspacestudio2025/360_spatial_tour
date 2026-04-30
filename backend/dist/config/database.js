@@ -3,6 +3,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.db = void 0;
+exports.save = save;
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const DB_PATH = path_1.default.join(__dirname, '../../data/db.json');
@@ -23,13 +25,17 @@ let db = {
     versions: [],
     walkthrough_members: [],
     comments: [],
-    hotspot_media: [], // NEW
-    hotspot_links: [], // NEW
-    organizations: [] // NEW: Organization model
+    hotspot_media: [],
+    hotspot_links: [],
+    maintenance_schedules: [],
+    checklist_templates: [],
+    inspections: [],
+    organizations: [],
 };
+exports.db = db;
 if (fs_1.default.existsSync(DB_PATH)) {
     const loaded = JSON.parse(fs_1.default.readFileSync(DB_PATH, 'utf-8'));
-    db = { ...db, ...loaded }; // Merge with defaults to ensure all keys exist
+    exports.db = db = { ...db, ...loaded };
     console.log('✅ Database loaded from file');
 }
 else {
@@ -53,7 +59,6 @@ class Statement {
         if (!this.isSelect)
             return undefined;
         const table = db[this.table];
-        // WHERE id = ?
         if (this.sql.includes('WHERE id = ?')) {
             return table.find((row) => row.id === params[0]);
         }
@@ -63,19 +68,18 @@ class Statement {
         if (!this.isSelect)
             return [];
         let table = db[this.table];
-        // WHERE walkthrough_id = ?
         if (this.sql.includes('walkthrough_id = ?')) {
             table = table.filter((row) => row.walkthrough_id === params[0]);
         }
-        // WHERE from_scene_id = ? (for hotspots)
         if (this.sql.includes('from_scene_id = ?')) {
             table = table.filter((row) => row.from_scene_id === params[0]);
         }
-        // WHERE scene_id = ?
         if (this.sql.includes('scene_id = ?') && !this.sql.includes('from_scene_id = ?')) {
             table = table.filter((row) => row.scene_id === params[0]);
         }
-        // ORDER BY created_at DESC
+        if (this.sql.includes('asset_id = ?')) {
+            table = table.filter((row) => row.asset_id === params[0]);
+        }
         if (this.sql.includes('ORDER BY created_at DESC')) {
             table = [...table].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         }
@@ -83,7 +87,6 @@ class Statement {
     }
     run(...params) {
         const table = db[this.table];
-        // INSERT
         if (this.isInsert) {
             const valuesMatch = this.sql.match(/\(([^)]+)\)\s*VALUES/i);
             if (valuesMatch) {
@@ -99,13 +102,11 @@ class Statement {
                 return { changes: 1, lastInsertRowid: newRow.id };
             }
         }
-        // UPDATE
         if (this.isUpdate) {
-            // UPDATE table SET col1=?, col2=? WHERE id=?
             const whereMatch = this.sql.match(/WHERE id = \?$/i);
             if (whereMatch) {
                 const id = params[params.length - 1];
-                const setMatch = this.sql.match(/SET\s+(.+?)\s+WHERE/i);
+                const setMatch = this.sql.match(/SET\s+([\s\S]+?)\s+WHERE/i);
                 if (setMatch) {
                     const columns = setMatch[1].split(',').map(c => c.trim().split('=')[0].trim());
                     const row = table.find((r) => r.id === id);
@@ -120,7 +121,6 @@ class Statement {
                 }
             }
         }
-        // DELETE
         if (this.isDelete) {
             const id = params[0];
             const index = table.findIndex((r) => r.id === id);
@@ -135,16 +135,14 @@ class Statement {
 }
 // Database wrapper
 const database = {
+    get tables() { return db; },
     prepare(sql) {
-        // Extract table name from SQL
         const tableMatch = sql.match(/(?:FROM|INTO|UPDATE)\s+(\w+)/i);
         const table = tableMatch ? tableMatch[1] : '';
         return new Statement(table, sql);
     },
     run(sql, params = []) {
-        // For simple SQL like schema creation
         if (sql.includes('CREATE TABLE') || sql.includes('CREATE INDEX')) {
-            // Ignore - we don't need schema for JSON
             return;
         }
     },
@@ -160,6 +158,5 @@ const database = {
         };
     }
 };
-console.log('✅ JSON Database initialized');
 exports.default = database;
 //# sourceMappingURL=database.js.map

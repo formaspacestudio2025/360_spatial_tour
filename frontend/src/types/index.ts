@@ -134,6 +134,15 @@ export interface ComplianceTag {
   checked_at?: string;
 }
 
+export interface AssetDocument {
+  filename: string;
+  originalname: string;
+  path: string;
+  size: number;
+  uploaded_at: string;
+  mimetype: string;
+}
+
 export interface Asset {
   health_score?: number;
   compliance?: ComplianceTag[];
@@ -154,6 +163,7 @@ export interface Asset {
   property_id?: string;
   purchase_date?: string;
   warranty_date?: string;
+  documents?: AssetDocument[];
   created_at: string;
   updated_at: string;
 }

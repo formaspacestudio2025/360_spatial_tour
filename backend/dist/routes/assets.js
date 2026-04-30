@@ -8,6 +8,10 @@ const asset_service_1 = require("../services/asset.service");
 const qrcode_service_1 = require("../services/qrcode.service");
 const auth_1 = require("../middleware/auth");
 const rbac_1 = require("../middleware/rbac");
+const multer_1 = __importDefault(require("multer"));
+const path_1 = __importDefault(require("path"));
+const fs_1 = __importDefault(require("fs"));
+const storage_1 = require("../config/storage");
 const router = express_1.default.Router();
 router.use(auth_1.authenticate);
 // Get all assets with optional walkthrough_id filter
@@ -117,6 +121,97 @@ router.get('/scene/:scene_id/assets', (0, rbac_1.requirePermission)('asset', 're
         const { scene_id } = req.params;
         const assets = await (0, asset_service_1.getAssetsByScene)(scene_id);
         res.json({ success: true, data: assets });
+    }
+    catch (error) {
+        const err = error;
+        res.status(err.statusCode || 500).json({ success: false, message: err.message });
+    }
+});
+// Configure multer for document uploads
+const documentStorage = multer_1.default.diskStorage({
+    destination: async (req, file, cb) => {
+        const assetId = req.params.id;
+        const dir = storage_1.storagePaths.documents(assetId);
+        if (!fs_1.default.existsSync(dir)) {
+            fs_1.default.mkdirSync(dir, { recursive: true });
+        }
+        cb(null, dir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueName = `${Date.now()}-${Math.random().toString(36).substring(7)}${path_1.default.extname(file.originalname)}`;
+        cb(null, uniqueName);
+    },
+});
+const documentUpload = (0, multer_1.default)({
+    storage: documentStorage,
+    limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
+    fileFilter: (req, file, cb) => {
+        cb(null, true);
+    },
+});
+// Upload document for asset
+router.post('/:id/documents', (0, rbac_1.requirePermission)('asset', 'write'), documentUpload.single('document'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'No file uploaded' });
+        }
+        const doc = {
+            filename: req.file.filename,
+            originalname: req.file.originalname,
+            path: req.file.path,
+            size: req.file.size,
+            uploaded_at: new Date().toISOString(),
+            mimetype: req.file.mimetype,
+        };
+        const result = await (0, asset_service_1.addAssetDocument)(id, doc);
+        if (!result) {
+            return res.status(404).json({ success: false, message: 'Asset not found' });
+        }
+        res.status(201).json({ success: true, data: doc });
+    }
+    catch (error) {
+        const err = error;
+        res.status(err.statusCode || 500).json({ success: false, message: err.message });
+    }
+});
+// Get all documents for asset
+router.get('/:id/documents', (0, rbac_1.requirePermission)('asset', 'read'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const documents = await (0, asset_service_1.getAssetDocuments)(id);
+        res.json({ success: true, data: documents });
+    }
+    catch (error) {
+        const err = error;
+        res.status(err.statusCode || 500).json({ success: false, message: err.message });
+    }
+});
+// Download document
+router.get('/:id/documents/:filename', (0, rbac_1.requirePermission)('asset', 'read'), async (req, res) => {
+    try {
+        const { id, filename } = req.params;
+        const documents = await (0, asset_service_1.getAssetDocuments)(id);
+        const doc = documents.find((d) => d.filename === filename);
+        if (!doc) {
+            return res.status(404).json({ success: false, message: 'Document not found' });
+        }
+        res.download(doc.path, doc.originalname);
+    }
+    catch (error) {
+        const err = error;
+        res.status(err.statusCode || 500).json({ success: false, message: err.message });
+    }
+});
+// Delete document
+router.delete('/:id/documents/:filename', (0, rbac_1.requirePermission)('asset', 'write'), async (req, res) => {
+    try {
+        const { id, filename } = req.params;
+        const success = await (0, asset_service_1.deleteAssetDocument)(id, filename);
+        if (!success) {
+            return res.status(404).json({ success: false, message: 'Document not found' });
+        }
+        res.json({ success: true, message: 'Document deleted' });
     }
     catch (error) {
         const err = error;

@@ -5,9 +5,9 @@ export interface HotspotMedia {
     file_type: string;
     file_size?: number;
     file_path: string;
-    file_url?: string;
+    file_url?: string | null;
     thumbnail_path?: string;
-    thumbnail_url?: string;
+    thumbnail_url?: string | null;
     title?: string;
     description?: string;
     sort_order: number;

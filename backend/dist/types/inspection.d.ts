@@ -10,6 +10,7 @@ export interface Inspection {
     id: string;
     walkthrough_id: string;
     scene_id?: string;
+    asset_id?: string;
     title: string;
     status: 'in_progress' | 'completed' | 'signed_off';
     items: InspectionItem[];
@@ -17,6 +18,8 @@ export interface Inspection {
     inspector_name?: string;
     completed_at?: string;
     signed_off_at?: string;
+    due_date?: string;
+    auto_generated?: boolean;
     created_at: string;
     updated_at: string;
 }

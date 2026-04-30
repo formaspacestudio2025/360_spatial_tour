@@ -6,10 +6,22 @@ import {
   getScheduleById,
   updateSchedule,
   deleteSchedule,
+  generateWorkOrders,
 } from '../services/maintenance.service';
 
 const router = express.Router();
 router.use(authenticate);
+
+// POST /api/maintenance/run - manually trigger work order generation
+router.post('/run', async (req, res) => {
+  try {
+    const count = await generateWorkOrders();
+    res.json({ success: true, message: `Generated ${count} work orders`, count });
+  } catch (error: unknown) {
+    const err = error as { statusCode?: number; message?: string };
+    res.status(err.statusCode || 500).json({ success: false, message: err.message });
+  }
+});
 
 // GET /api/maintenance?asset_id=...
 router.get('/', async (req, res) => {

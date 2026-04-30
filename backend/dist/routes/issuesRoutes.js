@@ -11,6 +11,7 @@ const storage_service_1 = require("../services/storage.service");
 const storage_1 = require("../config/storage");
 const auth_1 = require("../middleware/auth");
 const rbac_1 = require("../middleware/rbac");
+const database_1 = __importDefault(require("../config/database"));
 const router = express_1.default.Router();
 const upload = (0, multer_1.default)({ dest: 'uploads/' });
 router.use(auth_1.authenticate);
@@ -236,7 +237,7 @@ router.post('/:id/resolution', (0, rbac_1.requirePermission)('issue', 'write'), 
             return res.status(400).json({ success: false, message: 'No image file uploaded' });
         }
         // Get the issue to fetch walkthrough_id
-        const existing = await db.prepare('SELECT * FROM issues WHERE id = ?').get(id);
+        const existing = await database_1.default.prepare('SELECT * FROM issues WHERE id = ?').get(id);
         if (!existing) {
             return res.status(404).json({ success: false, message: 'Issue not found' });
         }

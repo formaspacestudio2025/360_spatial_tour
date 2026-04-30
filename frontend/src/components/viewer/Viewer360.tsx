@@ -446,6 +446,7 @@ function Viewer360({
               nadirRotation={nadirRotation}
               nadirOpacity={nadirOpacity}
               targetFov={targetFov}
+              onAssetClick={onAssetClick}
               opacity={opacity}
               onAssetClick={onAssetClick}
             />

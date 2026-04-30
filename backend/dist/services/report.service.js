@@ -14,7 +14,7 @@ async function generatePdf(htmlContent) {
     await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
     const pdfBuffer = await page.pdf({ format: 'A4' });
     await browser.close();
-    return pdfBuffer;
+    return Buffer.from(pdfBuffer);
 }
 async function generateIssueReport(issueId) {
     const issue = await database_1.default.prepare('SELECT * FROM issues WHERE id = ?').get(issueId);

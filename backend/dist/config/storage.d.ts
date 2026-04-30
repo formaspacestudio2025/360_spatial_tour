@@ -5,6 +5,7 @@ export declare const storagePaths: {
     thumbnails: (walkthroughId: string) => string;
     exports: (walkthroughId: string) => string;
     issues: (walkthroughId: string) => string;
+    documents: (assetId: string) => string;
 };
 export declare function initializeStorage(): void;
 export declare function createWalkthroughStorage(walkthroughId: string): void;

@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const dashboard_service_1 = require("../services/dashboard.service");
 const error_1 = require("../middleware/error");
+const asset_service_1 = require("../services/asset.service");
 const router = (0, express_1.Router)();
 // GET /api/dashboard/stats?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&walkthroughId=xxx
 router.get('/stats', (req, res) => {
@@ -74,6 +75,16 @@ router.get('/charts/issue-trend', (req, res) => {
     }
     catch (error) {
         throw new error_1.AppError('Failed to fetch issue trend', 500);
+    }
+});
+// GET /api/dashboard/asset-stats
+router.get('/asset-stats', async (req, res) => {
+    try {
+        const stats = await (0, asset_service_1.getAssetStats)();
+        res.json({ success: true, data: stats });
+    }
+    catch (error) {
+        throw new error_1.AppError('Failed to fetch asset stats', 500);
     }
 });
 exports.default = router;

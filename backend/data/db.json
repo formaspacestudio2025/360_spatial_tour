@@ -42,8 +42,8 @@
     {
       "id": "14928d8f-ae50-4d3f-8556-12cf6df811bc",
       "walkthrough_id": "1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4",
-      "image_path": "/Users/nadeemahmad/Downloads/360_spatial_tour-rbac-implementation/360_spatial_tour/backend/storage/walkthroughs/1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4/scenes/1776705233391-0lkydv.JPG",
-      "thumbnail_path": "/Users/nadeemahmad/Downloads/360_spatial_tour-rbac-implementation/360_spatial_tour/backend/storage/walkthroughs/1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4/thumbnails/thumb-1776705233391-0lkydv.JPG",
+      "image_path": "C:/Users/H68618/Downloads/360_spatial_tour/backend/storage/walkthroughs/1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4/scenes/1776705233391-0lkydv.JPG",
+      "thumbnail_path": "C:/Users/H68618/Downloads/360_spatial_tour/backend/storage/walkthroughs/1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4/thumbnails/thumb-1776705233391-0lkydv.JPG",
       "position_x": 0,
       "position_y": 0,
       "position_z": 0,
@@ -53,7 +53,7 @@
       "metadata": null,
       "created_at": "2026-04-20T17:13:53.602Z",
       "updated_at": "2026-04-22T07:37:52.550Z",
-      "nadir_image_path": "/Users/nadeemahmad/Downloads/360_spatial_tour-rbac-implementation/360_spatial_tour/backend/storage/temp/1776724262421-z2a1n5.webp",
+      "nadir_image_path": "C:/Users/H68618/Downloads/360_spatial_tour/backend/storage/temp/1776724262421-z2a1n5.webp",
       "nadir_scale": 2,
       "nadir_rotation": 360,
       "nadir_opacity": 1
@@ -61,8 +61,8 @@
     {
       "id": "1d6712ef-21c9-41ff-8457-8229870251d6",
       "walkthrough_id": "1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4",
-      "image_path": "/Users/nadeemahmad/Downloads/360_spatial_tour-rbac-implementation/360_spatial_tour/backend/storage/walkthroughs/1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4/scenes/1776705233612-qmmflm.JPG",
-      "thumbnail_path": "/Users/nadeemahmad/Downloads/360_spatial_tour-rbac-implementation/360_spatial_tour/backend/storage/walkthroughs/1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4/thumbnails/thumb-1776705233612-qmmflm.JPG",
+      "image_path": "C:/Users/H68618/Downloads/360_spatial_tour/backend/storage/walkthroughs/1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4/scenes/1776705233612-qmmflm.JPG",
+      "thumbnail_path": "C:/Users/H68618/Downloads/360_spatial_tour/backend/storage/walkthroughs/1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4/thumbnails/thumb-1776705233612-qmmflm.JPG",
       "position_x": 0,
       "position_y": 0,
       "position_z": 0,
@@ -72,7 +72,7 @@
       "metadata": null,
       "created_at": "2026-04-20T17:13:54.025Z",
       "updated_at": "2026-04-21T08:35:40.636Z",
-      "nadir_image_path": "/Users/nadeemahmad/Downloads/360_spatial_tour-rbac-implementation/360_spatial_tour/backend/storage/temp/1776760540474-yxpnwe.webp",
+      "nadir_image_path": "C:/Users/H68618/Downloads/360_spatial_tour/backend/storage/temp/1776760540474-yxpnwe.webp",
       "nadir_scale": 2,
       "nadir_rotation": 360,
       "nadir_opacity": 1
@@ -80,8 +80,8 @@
     {
       "id": "d7d20ab2-49d1-4230-b46d-5e3eff15c5ee",
       "walkthrough_id": "1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4",
-      "image_path": "/Users/nadeemahmad/Downloads/360_spatial_tour-rbac-implementation/360_spatial_tour/backend/storage/walkthroughs/1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4/scenes/1776705234026-8cvgr.JPG",
-      "thumbnail_path": "/Users/nadeemahmad/Downloads/360_spatial_tour-rbac-implementation/360_spatial_tour/backend/storage/walkthroughs/1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4/thumbnails/thumb-1776705234026-8cvgr.JPG",
+      "image_path": "C:/Users/H68618/Downloads/360_spatial_tour/backend/storage/walkthroughs/1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4/scenes/1776705234026-8cvgr.JPG",
+      "thumbnail_path": "C:/Users/H68618/Downloads/360_spatial_tour/backend/storage/walkthroughs/1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4/thumbnails/thumb-1776705234026-8cvgr.JPG",
       "position_x": 0,
       "position_y": 0,
       "position_z": 0,
@@ -91,7 +91,7 @@
       "metadata": null,
       "created_at": "2026-04-20T17:13:54.144Z",
       "updated_at": "2026-04-21T12:05:19.766Z",
-      "nadir_image_path": "/Users/nadeemahmad/Downloads/360_spatial_tour-rbac-implementation/360_spatial_tour/backend/storage/temp/1776773119722-bcn9ps.webp",
+      "nadir_image_path": "C:/Users/H68618/Downloads/360_spatial_tour/backend/storage/temp/1776773119722-bcn9ps.webp",
       "nadir_scale": 2,
       "nadir_rotation": 360,
       "nadir_opacity": 1
@@ -99,8 +99,8 @@
     {
       "id": "fbcb7ee9-7545-4ace-b575-80704ae3fa3b",
       "walkthrough_id": "1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4",
-      "image_path": "/Users/nadeemahmad/Downloads/360_spatial_tour-rbac-implementation/360_spatial_tour/backend/storage/walkthroughs/1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4/scenes/1776705234145-upvx77.JPG",
-      "thumbnail_path": "/Users/nadeemahmad/Downloads/360_spatial_tour-rbac-implementation/360_spatial_tour/backend/storage/walkthroughs/1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4/thumbnails/thumb-1776705234145-upvx77.JPG",
+      "image_path": "C:/Users/H68618/Downloads/360_spatial_tour/backend/storage/walkthroughs/1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4/scenes/1776705234145-upvx77.JPG",
+      "thumbnail_path": "C:/Users/H68618/Downloads/360_spatial_tour/backend/storage/walkthroughs/1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4/thumbnails/thumb-1776705234145-upvx77.JPG",
       "position_x": 0,
       "position_y": 0,
       "position_z": 0,
@@ -110,7 +110,7 @@
       "metadata": null,
       "created_at": "2026-04-20T17:13:54.265Z",
       "updated_at": "2026-04-21T12:06:04.232Z",
-      "nadir_image_path": "/Users/nadeemahmad/Downloads/360_spatial_tour-rbac-implementation/360_spatial_tour/backend/storage/temp/1776773164167-5wm31.webp",
+      "nadir_image_path": "C:/Users/H68618/Downloads/360_spatial_tour/backend/storage/temp/1776773164167-5wm31.webp",
       "nadir_scale": 2,
       "nadir_rotation": 360,
       "nadir_opacity": 1
@@ -118,8 +118,8 @@
     {
       "id": "0d44ce95-2206-4d23-9d2d-545af075a954",
       "walkthrough_id": "1c814eec-ba4b-4413-994d-188ea5799a24",
-      "image_path": "/Users/nadeemahmad/Downloads/360_spatial_tour-rbac-implementation/360_spatial_tour/backend/storage/walkthroughs/1c814eec-ba4b-4413-994d-188ea5799a24/scenes/1776708093758-2ipxz.JPG",
-      "thumbnail_path": "/Users/nadeemahmad/Downloads/360_spatial_tour-rbac-implementation/360_spatial_tour/backend/storage/walkthroughs/1c814eec-ba4b-4413-994d-188ea5799a24/thumbnails/thumb-1776708093758-2ipxz.JPG",
+      "image_path": "C:/Users/H68618/Downloads/360_spatial_tour/backend/storage/walkthroughs/1c814eec-ba4b-4413-994d-188ea5799a24/scenes/1776708093758-2ipxz.JPG",
+      "thumbnail_path": "C:/Users/H68618/Downloads/360_spatial_tour/backend/storage/walkthroughs/1c814eec-ba4b-4413-994d-188ea5799a24/thumbnails/thumb-1776708093758-2ipxz.JPG",
       "position_x": 0,
       "position_y": 0,
       "position_z": 0,
@@ -138,8 +138,8 @@
       "to_scene_id": "d7d20ab2-49d1-4230-b46d-5e3eff15c5ee",
       "hotspot_yaw": 3.093174831849685,
       "hotspot_pitch": -0.08967414748047087,
-      "target_yaw": null,
-      "target_pitch": null,
+      "target_yaw": 2.3598090711262745,
+      "target_pitch": -0.20077764673197335,
       "label": "3",
       "icon_type": "room",
       "icon_color": "#06b6d4",
@@ -151,7 +151,7 @@
       "is_locked": 0,
       "metadata": "{\"iconSize\":2,\"customIconUrl\":\"\",\"mediaType\":\"\",\"mediaUrl\":\"\",\"transitionStyle\":\"zoom-fade\"}",
       "created_at": "2026-04-20T19:37:50.091Z",
-      "updated_at": "2026-04-29T12:33:23.068Z",
+      "updated_at": "2026-04-29T19:48:36.745Z",
       "animation_type": "ping",
       "animation_speed": 1,
       "animation_intensity": 0.5,
@@ -168,8 +168,8 @@
       "to_scene_id": "14928d8f-ae50-4d3f-8556-12cf6df811bc",
       "hotspot_yaw": 0.8185829564396293,
       "hotspot_pitch": -0.11990823024742102,
-      "target_yaw": null,
-      "target_pitch": null,
+      "target_yaw": 2.420723059465631,
+      "target_pitch": -0.10747651818698929,
       "label": "1",
       "icon_type": "room",
       "icon_color": "#06b6d4",
@@ -181,7 +181,7 @@
       "is_locked": 0,
       "metadata": "{\"iconSize\":2,\"customIconUrl\":\"\",\"mediaType\":\"\",\"mediaUrl\":\"\",\"transitionStyle\":\"zoom-fade\"}",
       "created_at": "2026-04-20T19:41:37.913Z",
-      "updated_at": "2026-04-26T08:58:07.509Z",
+      "updated_at": "2026-04-29T19:50:31.256Z",
       "animation_type": "ping",
       "animation_speed": 1,
       "animation_intensity": 0.5,
@@ -198,8 +198,8 @@
       "to_scene_id": "14928d8f-ae50-4d3f-8556-12cf6df811bc",
       "hotspot_yaw": -1.3288608978033254,
       "hotspot_pitch": -0.04434271767344359,
-      "target_yaw": null,
-      "target_pitch": null,
+      "target_yaw": -1.3879013151409747,
+      "target_pitch": -0.07889778431580637,
       "label": "",
       "icon_type": "room",
       "icon_color": "#10b981",
@@ -211,7 +211,7 @@
       "is_locked": 0,
       "metadata": "{\"iconSize\":2,\"customIconUrl\":\"\",\"mediaType\":\"\",\"mediaUrl\":\"\",\"transitionStyle\":\"zoom-fade\"}",
       "created_at": "2026-04-21T11:54:10.305Z",
-      "updated_at": "2026-04-27T10:18:57.375Z",
+      "updated_at": "2026-04-29T19:49:55.120Z",
       "animation_type": "ping",
       "animation_speed": 1,
       "animation_intensity": 0.5,
@@ -260,8 +260,8 @@
       "to_scene_id": "d7d20ab2-49d1-4230-b46d-5e3eff15c5ee",
       "hotspot_yaw": 0.8652676240013855,
       "hotspot_pitch": -0.06170182379210803,
-      "target_yaw": 1.9774347384473083,
-      "target_pitch": -0.41090795928816265,
+      "target_yaw": 2.1553407389841794,
+      "target_pitch": -0.10054164498858438,
       "label": "",
       "icon_type": "room",
       "icon_color": "#06b6d4",
@@ -283,7 +283,7 @@
       "always_visible": 1,
       "background_color": null,
       "created_at": "2026-04-24T19:07:10.311Z",
-      "updated_at": "2026-04-29T20:39:48.115Z"
+      "updated_at": "2026-04-30T07:54:24.882Z"
     },
     {
       "id": "663af7b9-166d-4b02-9d82-a3841b1144c3",
@@ -291,8 +291,8 @@
       "to_scene_id": "fbcb7ee9-7545-4ace-b575-80704ae3fa3b",
       "hotspot_yaw": -0.7359721039087214,
       "hotspot_pitch": -0.1017184841656051,
-      "target_yaw": null,
-      "target_pitch": null,
+      "target_yaw": -3.0806764304007124,
+      "target_pitch": -0.035969818442687596,
       "label": "",
       "icon_type": "room",
       "icon_color": "#06b6d4",
@@ -314,7 +314,7 @@
       "always_visible": 1,
       "background_color": null,
       "created_at": "2026-04-25T09:33:03.974Z",
-      "updated_at": "2026-04-29T06:23:07.443Z"
+      "updated_at": "2026-04-29T19:52:49.911Z"
     },
     {
       "id": "f119b6b9-d289-4c23-9731-e460e45ad23b",
@@ -322,8 +322,8 @@
       "to_scene_id": "14928d8f-ae50-4d3f-8556-12cf6df811bc",
       "hotspot_yaw": 1.620350983216606,
       "hotspot_pitch": -0.030401594818944205,
-      "target_yaw": null,
-      "target_pitch": null,
+      "target_yaw": 1.4452779625966043,
+      "target_pitch": -0.096709573991386,
       "label": "",
       "icon_type": "room",
       "icon_color": "#06b6d4",
@@ -345,7 +345,7 @@
       "always_visible": 1,
       "background_color": null,
       "created_at": "2026-04-25T09:37:07.408Z",
-      "updated_at": "2026-04-26T08:57:40.161Z"
+      "updated_at": "2026-04-29T19:47:34.675Z"
     },
     {
       "id": "650aaf5c-9e52-430e-a90b-bd189cbb123f",
@@ -353,8 +353,8 @@
       "to_scene_id": "1d6712ef-21c9-41ff-8457-8229870251d6",
       "hotspot_yaw": 1.2114597181655784,
       "hotspot_pitch": -0.08834586965969198,
-      "target_yaw": null,
-      "target_pitch": null,
+      "target_yaw": 2.05136180085752,
+      "target_pitch": -0.2905897373334695,
       "label": "",
       "icon_type": "room",
       "icon_color": "#06b6d4",
@@ -376,7 +376,7 @@
       "always_visible": 1,
       "background_color": null,
       "created_at": "2026-04-25T14:10:13.895Z",
-      "updated_at": "2026-04-26T08:57:24.434Z"
+      "updated_at": "2026-04-29T19:51:27.979Z"
     }
   ],
   "ai_tags": [],
@@ -557,6 +557,29 @@
   ],
   "assets": [
     {
+      "id": "ab6773a8-c760-475f-893d-2ea525f9a039",
+      "name": "lite",
+      "type": "Other",
+      "brand": "22",
+      "model": "66",
+      "serial_number": "66666",
+      "scene_id": "1d6712ef-21c9-41ff-8457-8229870251d6",
+      "yaw": 0.325443875922056,
+      "pitch": -0.4818170290939231,
+      "floor": null,
+      "room": null,
+      "status": "active",
+      "walkthrough_id": "1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4",
+      "org_id": null,
+      "property_id": null,
+      "purchase_date": null,
+      "warranty_date": null,
+      "compliance": null,
+      "created_at": "2026-04-29T19:36:12.971Z",
+      "updated_at": "2026-04-29T19:36:12.971Z",
+      "health_score": 100
+    },
+    {
       "id": "8efd5c1d-f600-43bf-b321-a363bb33a90e",
       "name": "test",
       "type": "HVAC",
@@ -575,7 +598,8 @@
       "purchase_date": null,
       "warranty_date": null,
       "created_at": "2026-04-29T06:25:17.560Z",
-      "updated_at": "2026-04-29T06:25:17.561Z"
+      "updated_at": "2026-04-29T06:25:17.561Z",
+      "health_score": 85
     },
     {
       "id": "edf6a51d-5938-48d4-ae8f-bb68343619bd",
@@ -592,7 +616,8 @@
       "status": "active",
       "walkthrough_id": "1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4",
       "created_at": "2026-04-26T16:04:10.642Z",
-      "updated_at": "2026-04-26T16:04:10.642Z"
+      "updated_at": "2026-04-26T16:04:10.642Z",
+      "health_score": 85
     },
     {
       "id": "083b074d-e9f1-49aa-850f-a61eb460cb9c",
@@ -609,7 +634,8 @@
       "status": "active",
       "walkthrough_id": null,
       "created_at": "2026-04-26T14:50:42.404Z",
-      "updated_at": "2026-04-26T14:50:42.405Z"
+      "updated_at": "2026-04-26T14:50:42.405Z",
+      "health_score": 100
     }
   ],
   "versions": [],
@@ -622,7 +648,7 @@
       "file_name": "Arbeiterlaubnis.pdf",
       "file_type": "pdf",
       "file_size": 3757069,
-      "file_path": "C:\\Users\\H68618\\Downloads\\360_spatial_tours\\backend\\uploads\\hotspot-media\\bb06927a-6917-417c-b364-822ce45d244a.pdf",
+      "file_path": "C:/Users/H68618/Downloads/360_spatial_tour\\backend\\uploads\\hotspot-media\\bb06927a-6917-417c-b364-822ce45d244a.pdf",
       "title": "Arbeiterlaubnis",
       "description": null,
       "sort_order": 0,
@@ -632,5 +658,50 @@
     }
   ],
   "hotspot_links": [],
+  "maintenance_schedules": [
+    {
+      "id": "e4db5582-484f-4c35-957a-29976a51461b",
+      "asset_id": "test-asset-1",
+      "frequency_days": 90,
+      "next_due_date": "2026-07-28T20:40:26.479Z",
+      "status": "active",
+      "created_at": "2026-04-29T20:40:26.479Z",
+      "updated_at": "2026-04-29T20:40:26.479Z"
+    }
+  ],
+  "checklist_templates": [],
+  "inspections": [
+    {
+      "id": "5c71d487-f992-42a3-b8bb-0078ea88a303",
+      "walkthrough_id": "walk-1",
+      "title": "Inspection for asset test-asset-1",
+      "status": "in_progress",
+      "items": [
+        {
+          "label": "Check filters",
+          "checked": false,
+          "created_at": "2026-04-29T21:34:00.737Z",
+          "id": "695a6f01-a294-45fe-9e6f-2e5192491119_0"
+        },
+        {
+          "label": "Inspect belts",
+          "checked": false,
+          "created_at": "2026-04-29T21:34:00.737Z",
+          "id": "ecdcf5a8-d3f0-4ece-9673-7ea857a6f471_1"
+        },
+        {
+          "label": "Test operation",
+          "checked": false,
+          "created_at": "2026-04-29T21:34:00.737Z",
+          "id": "d3be060a-d5c1-48ac-94cf-191316cce31f_2"
+        }
+      ],
+      "created_at": "2026-04-29T21:34:00.737Z",
+      "updated_at": "2026-04-29T21:34:00.740Z",
+      "asset_id": "test-asset-1",
+      "due_date": "2026-05-14T21:34:00.736Z",
+      "auto_generated": true
+    }
+  ],
   "organizations": []
 }

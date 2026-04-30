@@ -9,17 +9,6 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const http_1 = require("http");
 const storage_1 = require("./config/storage");
 const error_1 = require("./middleware/error");
-const walkthroughs_1 = __importDefault(require("./routes/walkthroughs"));
-const scenes_1 = __importDefault(require("./routes/scenes"));
-const ai_1 = __importDefault(require("./routes/ai"));
-const auth_1 = __importDefault(require("./routes/auth"));
-const dashboard_1 = __importDefault(require("./routes/dashboard"));
-const hotspots_1 = __importDefault(require("./routes/hotspots"));
-const hotspot_media_1 = __importDefault(require("./routes/hotspot-media"));
-const hotspot_links_1 = __importDefault(require("./routes/hotspot-links"));
-const users_1 = __importDefault(require("./routes/users"));
-const assets_1 = __importDefault(require("./routes/assets"));
-const issuesRoutes_1 = __importDefault(require("./routes/issuesRoutes"));
 const routes_1 = __importDefault(require("./routes"));
 // Load environment variables
 dotenv_1.default.config();
@@ -43,17 +32,6 @@ app.get('/health', (req, res) => {
     });
 });
 // API Routes
-app.use('/api/auth', auth_1.default);
-app.use('/api/dashboard', dashboard_1.default);
-app.use('/api/walkthroughs', walkthroughs_1.default);
-app.use('/api', scenes_1.default);
-app.use('/api', hotspots_1.default);
-app.use('/api', hotspot_media_1.default);
-app.use('/api', hotspot_links_1.default);
-app.use('/api', ai_1.default);
-app.use('/api/users', users_1.default);
-app.use('/api/assets', assets_1.default);
-app.use('/api/issues', issuesRoutes_1.default);
 app.use('/api', routes_1.default);
 // Error handling
 app.use(error_1.notFoundHandler);

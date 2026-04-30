@@ -214,13 +214,27 @@ const AssetManagement: React.FC = () => {
               <p className="text-sm text-gray-400">Manage assets and their locations</p>
             </div>
           </div>
-          <button
-            onClick={() => { resetForm(); setEditingAsset(null); setShowForm(true); }}
-            className="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-sm flex items-center gap-2 transition-colors"
-          >
-            <Plus size={16} />
-            Add Asset
-          </button>
+          <div className="flex gap-2">
+            <Link
+              to="/checklists"
+              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm transition-colors"
+            >
+              Checklist Engine
+            </Link>
+            <Link
+              to="/inspections"
+              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm transition-colors"
+            >
+              All Inspections
+            </Link>
+            <button
+              onClick={() => { resetForm(); setEditingAsset(null); setShowForm(true); }}
+              className="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-sm flex items-center gap-2 transition-colors"
+            >
+              <Plus size={16} />
+              Add Asset
+            </button>
+          </div>
         </div>
       </header>
 

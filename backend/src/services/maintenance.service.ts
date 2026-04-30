@@ -1,6 +1,9 @@
-import db from '../config/database';
+import database, { save } from '../config/database';
+const db = database.tables;
 import { generateId } from '../utils/generateId';
 import { MaintenanceSchedule } from '../types/maintenance';
+import { createIssue } from './issue.service';
+import { getAssetById } from './asset.service';
 
 function now() { return new Date().toISOString(); }
 
@@ -22,7 +25,7 @@ export async function createSchedule(data: {
   };
   const table = (db as any)['maintenance_schedules'] as any[];
   table.push(schedule);
-  // save handled by db wrapper
+  save();
   return schedule;
 }
 
@@ -41,6 +44,7 @@ export async function updateSchedule(id: string, data: Partial<MaintenanceSchedu
   const idx = table.findIndex(s => s.id === id);
   if (idx === -1) return null;
   table[idx] = { ...table[idx], ...data, updated_at: now() };
+  save();
   return table[idx];
 }
 
@@ -49,24 +53,47 @@ export async function deleteSchedule(id: string): Promise<boolean> {
   const idx = table.findIndex(s => s.id === id);
   if (idx === -1) return false;
   table.splice(idx, 1);
+  save();
   return true;
 }
 
-// Placeholder for auto-creating work orders (not implemented yet)
-export async function generateWorkOrders(): Promise<void> {
+// Auto-creating work orders (Issues) based on schedules
+export async function generateWorkOrders(): Promise<number> {
   const table = (db as any)['maintenance_schedules'] as any[] || [];
   const nowDate = new Date();
+  let count = 0;
+
   for (const sched of table) {
     if (sched.status !== 'active') continue;
     const due = new Date(sched.next_due_date);
     if (due <= nowDate) {
-      // In a real implementation, create a work order here
-      console.log(`Should create work order for asset ${sched.asset_id}`);
-      // Update next due date
-      const next = new Date(due.getTime() + sched.frequency_days * 86400000);
-      sched.next_due_date = next.toISOString();
-      sched.last_completed_date = now();
-      sched.updated_at = now();
+      // Create a maintenance issue
+      const asset = await getAssetById(sched.asset_id);
+      if (asset && asset.walkthrough_id && asset.scene_id) {
+        await createIssue({
+          walkthrough_id: asset.walkthrough_id,
+          scene_id: asset.scene_id,
+          yaw: asset.yaw || 0,
+          pitch: asset.pitch || 0,
+          floor: asset.floor,
+          room: asset.room,
+          type: 'maintenance',
+          severity: 'medium',
+          priority: 'medium',
+          title: `Scheduled Maintenance: ${asset.name}`,
+          description: `Auto-generated maintenance issue based on schedule. Frequency: ${sched.frequency_days} days.`,
+          due_date: sched.next_due_date,
+        });
+
+        // Update next due date
+        const next = new Date(due.getTime() + sched.frequency_days * 86400000);
+        sched.next_due_date = next.toISOString();
+        sched.last_completed_date = now();
+        sched.updated_at = now();
+        count++;
+      }
     }
   }
+  if (count > 0) save();
+  return count;
 }

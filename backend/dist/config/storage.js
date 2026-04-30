@@ -18,6 +18,7 @@ exports.storagePaths = {
     thumbnails: (walkthroughId) => path_1.default.join(STORAGE_BASE, 'walkthroughs', walkthroughId, 'thumbnails'),
     exports: (walkthroughId) => path_1.default.join(STORAGE_BASE, 'walkthroughs', walkthroughId, 'exports'),
     issues: (walkthroughId) => path_1.default.join(STORAGE_BASE, 'walkthroughs', walkthroughId, 'issues'),
+    documents: (assetId) => path_1.default.join(STORAGE_BASE, 'assets', assetId, 'documents'),
 };
 // Ensure storage directories exist
 function initializeStorage() {

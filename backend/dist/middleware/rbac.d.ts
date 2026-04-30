@@ -5,5 +5,5 @@ import { Request, Response, NextFunction } from 'express';
  *
  * Usage: requirePermission('asset', 'read')
  */
-export declare function requirePermission(resource: 'asset' | 'issue' | 'walkthrough', action: 'read' | 'write'): (req: Request, res: Response, next: NextFunction) => Promise<void | Response<any, Record<string, any>>>;
+export declare function requirePermission(resource: 'asset' | 'issue' | 'walkthrough' | 'inspection' | 'report', action: 'read' | 'write'): (req: Request, res: Response, next: NextFunction) => Promise<void | Response<any, Record<string, any>>>;
 //# sourceMappingURL=rbac.d.ts.map

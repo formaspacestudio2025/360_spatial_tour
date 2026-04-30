@@ -20,6 +20,8 @@ function AssetFormModal({ isOpen, onClose, onSubmit, initialData, isPending, sce
     model: '',
     serial_number: '',
     status: 'active' as Asset['status'],
+    purchase_date: '',
+    warranty_date: '',
   });
 
   useEffect(() => {
@@ -31,6 +33,8 @@ function AssetFormModal({ isOpen, onClose, onSubmit, initialData, isPending, sce
         model: initialData.model || '',
         serial_number: initialData.serial_number || '',
         status: initialData.status,
+        purchase_date: initialData.purchase_date || '',
+        warranty_date: initialData.warranty_date || '',
       });
     } else {
       setFormData({
@@ -40,6 +44,8 @@ function AssetFormModal({ isOpen, onClose, onSubmit, initialData, isPending, sce
         model: '',
         serial_number: '',
         status: 'active' as Asset['status'],
+        purchase_date: '',
+        warranty_date: '',
       });
     }
   }, [initialData]);
@@ -138,6 +144,26 @@ function AssetFormModal({ isOpen, onClose, onSubmit, initialData, isPending, sce
               <option value="maintenance">Maintenance</option>
               <option value="retired">Retired</option>
             </select>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-gray-400 mb-1">Purchase Date</label>
+              <input
+                type="date"
+                value={formData.purchase_date}
+                onChange={(e) => setFormData({ ...formData, purchase_date: e.target.value })}
+                className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 text-sm focus:border-primary-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-400 mb-1">Warranty Expiry</label>
+              <input
+                type="date"
+                value={formData.warranty_date}
+                onChange={(e) => setFormData({ ...formData, warranty_date: e.target.value })}
+                className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 text-sm focus:border-primary-500 focus:outline-none"
+              />
+            </div>
           </div>
           <div className="flex gap-3 pt-2">
             <button
