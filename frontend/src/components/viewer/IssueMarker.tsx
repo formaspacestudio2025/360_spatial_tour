@@ -9,7 +9,7 @@ interface IssueMarkerProps {
   onClick?: (issue: Issue) => void;
 }
 
-function yawPitchToPosition(yaw: number, pitch: number, radius: number = 10): THREE.Vector3 {
+function yawPitchToPosition(yaw: number, pitch: number, radius: number = 25): THREE.Vector3 {
   const y = Math.sin(pitch) * radius;
   const rProj = Math.cos(pitch) * radius;
   const x = Math.sin(yaw) * rProj;
@@ -28,7 +28,7 @@ function IssueMarker({ issue, onClick }: IssueMarkerProps) {
   const meshRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
 
-  const position = yawPitchToPosition(issue.yaw, issue.pitch, 10);
+  const position = yawPitchToPosition(issue.yaw, issue.pitch, 25);
 
   useFrame(() => {
     if (meshRef.current) {

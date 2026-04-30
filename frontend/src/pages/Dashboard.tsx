@@ -11,6 +11,7 @@ import StatCards from '@/components/dashboard/StatCards';
 import ActivityFeed from '@/components/dashboard/ActivityFeed';
 import DashboardCharts from '@/components/dashboard/DashboardCharts';
 import AssetWidgets from '@/components/dashboard/AssetWidgets';
+import RecentInspections from '@/components/dashboard/RecentInspections';
 import { useAuthStore, canEdit, canDelete } from '@/stores/authStore';
 import { Box, Image, Pencil, Trash2, MapPin, Building2, AlertCircle } from 'lucide-react';
 
@@ -181,9 +182,26 @@ function Dashboard() {
             <StatCards stats={stats} isLoading={statsLoading} />
           </div>
 
-          {/* Asset Widgets */}
-          <div className="mb-6">
-            <AssetWidgets />
+          {/* Asset Intelligence Section */}
+          <div className="mb-10">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="p-2 bg-primary-500/10 rounded-lg">
+                <Box className="text-primary-500" size={20} />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold">Asset Intelligence</h2>
+                <p className="text-xs text-gray-500">Global asset health monitoring and recent inspections</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              <div className="lg:col-span-3">
+                <AssetWidgets />
+              </div>
+              <div className="lg:col-span-1">
+                <RecentInspections compact />
+              </div>
+            </div>
           </div>
 
           {/* Enterprise Charts */}

@@ -39,12 +39,26 @@ export interface UpdateAssetData {
   warranty_date?: string;
 }
 
+export interface AssetFilters {
+  walkthrough_id?: string;
+  page?: number;
+  limit?: number;
+  type?: string;
+  status?: string;
+  health_min?: number;
+  q?: string; // search query
+}
+
 export const assetsApi = {
-  getAll: (walkthrough_id?: string, page: number = 1, limit: number = 10) => {
+  getAll: (filters: AssetFilters = {}) => {
     const params = new URLSearchParams();
-    if (walkthrough_id) params.append('walkthrough_id', walkthrough_id);
-    params.append('page', page.toString());
-    params.append('limit', limit.toString());
+    if (filters.walkthrough_id) params.append('walkthrough_id', filters.walkthrough_id);
+    if (filters.type) params.append('type', filters.type);
+    if (filters.status) params.append('status', filters.status);
+    if (filters.health_min !== undefined) params.append('health_min', filters.health_min.toString());
+    if (filters.q) params.append('q', filters.q);
+    params.append('page', (filters.page || 1).toString());
+    params.append('limit', (filters.limit || 10).toString());
     const query = params.toString() ? `?${params.toString()}` : '';
     return api.get<{ success: boolean; data: Asset[]; total: number; page: number; limit: number }>(`/api/assets${query}`)
       .then(r => ({ assets: r.data.data, total: r.data.total, page: r.data.page, limit: r.data.limit }));
@@ -88,4 +102,12 @@ export const assetsApi = {
   deleteDocument: (id: string, filename: string) =>
     api.delete<{ success: boolean; message: string }>(`/api/assets/${id}/documents/${filename}`)
       .then(r => r.data),
+
+  getContext: (id: string) =>
+    api.get<{ success: boolean; data: { asset: any; issues: any[]; inspections: any[]; workOrders: any[] } }>(`/api/assets/${id}/context`)
+      .then(r => r.data.data),
+
+  getRecentInspections: (limit: number = 5) =>
+    api.get<{ success: boolean; data: any[] }>(`/api/assets/recent-inspections?limit=${limit}`)
+      .then(r => r.data.data),
 };

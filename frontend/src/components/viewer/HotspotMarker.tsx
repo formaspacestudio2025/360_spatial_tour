@@ -18,7 +18,7 @@ interface HotspotMarkerProps {
   onNavigate: (sceneId: string, orientation?: { yaw: number; pitch: number }, transitionStyle?: string) => void;
 }
 
-function yawPitchToPosition(yaw: number, pitch: number, radius: number = 10): THREE.Vector3 {
+function yawPitchToPosition(yaw: number, pitch: number, radius: number = 25): THREE.Vector3 {
   const y = Math.sin(pitch) * radius;
   const rProj = Math.cos(pitch) * radius;
   const x = Math.sin(yaw) * rProj;
@@ -102,7 +102,7 @@ function HotspotMarker({ hotspot, onNavigate }: HotspotMarkerProps) {
   const { user } = useAuthStore();
   const isSelected = selectedHotspot?.id === hotspot.id;
 
-  const position = yawPitchToPosition(hotspot.yaw, hotspot.pitch, 10);
+  const position = yawPitchToPosition(hotspot.yaw, hotspot.pitch);
 
   // Check if user has permission to access this hotspot
   const hasPermission = () => {

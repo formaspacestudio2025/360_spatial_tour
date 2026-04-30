@@ -5,7 +5,7 @@ import { AITag } from '../../api/ai';
 import { useAITagStore, TagCategory } from '../../stores/aiTagStore';
 import { Eye, EyeOff, AlertTriangle, Box, Wind, Hammer, Home, Armchair } from 'lucide-react';
 
-function yawPitchToPosition(yaw: number, pitch: number, radius: number = 10): THREE.Vector3 {
+function yawPitchToPosition(yaw: number, pitch: number, radius: number = 25): THREE.Vector3 {
   const y = Math.sin(pitch) * radius;
   const rProj = Math.cos(pitch) * radius;
   const x = Math.sin(yaw) * rProj;
@@ -35,7 +35,7 @@ interface AITagMarkerProps {
   radius?: number;
 }
 
-export function AITagMarker({ tag, radius = 10 }: AITagMarkerProps) {
+export function AITagMarker({ tag, radius = 25 }: AITagMarkerProps) {
   const [hovered, setHovered] = useState(false);
   const { selectTag, selectedTag, getTagCategory } = useAITagStore();
   const category = getTagCategory(tag);
@@ -44,8 +44,14 @@ export function AITagMarker({ tag, radius = 10 }: AITagMarkerProps) {
   const position = useMemo(() => {
     if (tag.bounding_box) {
       const bbox = tag.bounding_box;
-      const yaw = ((bbox.x + bbox.width / 2) / 100) * Math.PI * 2 - Math.PI;
-      const pitch = Math.PI / 2 - ((bbox.y + bbox.height / 2) / 100) * Math.PI;
+      // Assume normalized coordinates (0-1). If they are 0-100, we should divide by 100.
+      // Most vision models return normalized 0-1.
+      const x = bbox.x + bbox.width / 2;
+      const y = bbox.y + bbox.height / 2;
+      
+      const yaw = x * Math.PI * 2 - Math.PI;
+      const pitch = Math.PI / 2 - y * Math.PI;
+      
       return yawPitchToPosition(yaw, pitch, radius);
     }
     return new THREE.Vector3(0, 0, -radius);

@@ -157,19 +157,17 @@ function MarkerCluster({
         clusters.map(cluster => {
           const isExpanded = expandedCluster === cluster.id;
 
-          if (isExpanded) {
-            // Show individual markers when expanded
+          if (isExpanded || cluster.count === 1) {
+            // Show individual markers when expanded or if only one marker in cluster
             return (
               <group key={cluster.id}>
                 {cluster.markers.map(marker => (
                   <group
                     key={marker.id}
-                    onClick={(e) => {
+                    onClick={onMarkerClick ? (e) => {
                       e.stopPropagation();
-                      if (onMarkerClick) {
-                        onMarkerClick(marker);
-                      }
-                    }}
+                      onMarkerClick(marker);
+                    } : undefined}
                   >
                     {renderMarker(marker)}
                   </group>
@@ -193,12 +191,10 @@ function MarkerCluster({
         markers.map(marker => (
           <group
             key={marker.id}
-            onClick={(e) => {
+            onClick={onMarkerClick ? (e) => {
               e.stopPropagation();
-              if (onMarkerClick) {
-                onMarkerClick(marker);
-              }
-            }}
+              onMarkerClick(marker);
+            } : undefined}
           >
             {renderMarker(marker)}
           </group>

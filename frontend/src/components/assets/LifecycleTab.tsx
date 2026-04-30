@@ -1,5 +1,6 @@
 import { Asset } from '@/types';
-import { Calendar, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { Calendar, AlertTriangle, CheckCircle, Clock, TrendingDown } from 'lucide-react';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine } from 'recharts';
 
 interface LifecycleTabProps {
   asset: Asset;
@@ -46,7 +47,26 @@ const LifecycleTab: React.FC<LifecycleTabProps> = ({ asset }) => {
     };
   };
 
+  const calculateDepreciationData = () => {
+    if (!asset.purchase_date || !asset.purchase_price) return null;
+
+    const purchasePrice = asset.purchase_price;
+    const usefulLife = asset.useful_life_years || 10;
+    const salvageValue = asset.salvage_value || 0;
+    const purchaseDate = new Date(asset.purchase_date);
+    
+    const data = [];
+    for (let i = 0; i <= usefulLife; i++) {
+      const year = purchaseDate.getFullYear() + i;
+      const value = Math.max(salvageValue, purchasePrice - (i * (purchasePrice - salvageValue) / usefulLife));
+      data.push({ year, value: Math.round(value) });
+    }
+    return data;
+  };
+
   const lifecycle = calculateLifecycle();
+  const depData = calculateDepreciationData();
+  const currentYear = new Date().getFullYear();
 
   const warrantyStatusConfig = {
     active: {
@@ -93,9 +113,9 @@ const LifecycleTab: React.FC<LifecycleTabProps> = ({ asset }) => {
                 {lifecycle.ageYears}
               </span>
               <span className="text-gray-400">years</span>
-              {lifecycle.ageMonths && lifecycle.ageMonths > 0 && (
+              {lifecycle.ageMonths !== null && lifecycle.ageMonths > 0 && (
                 <>
-                  <span className="text-2xl font-bold text-white">
+                  <span className="text-2xl font-bold text-white ml-2">
                     {lifecycle.ageMonths}
                   </span>
                   <span className="text-gray-400">months</span>
@@ -108,6 +128,68 @@ const LifecycleTab: React.FC<LifecycleTabProps> = ({ asset }) => {
           </div>
         ) : (
           <div className="text-sm text-gray-500">Purchase date not set</div>
+        )}
+      </div>
+
+      {/* Depreciation Section */}
+      <div className="bg-gray-800/50 rounded-lg p-4">
+        <h3 className="text-sm font-medium text-gray-400 mb-3 flex items-center gap-2">
+          <TrendingDown size={16} />
+          Value Depreciation (Straight-Line)
+        </h3>
+        {depData ? (
+          <div className="space-y-4">
+            <div className="h-40 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={depData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
+                  <XAxis 
+                    dataKey="year" 
+                    stroke="#9ca3af" 
+                    fontSize={10} 
+                    tickLine={false} 
+                    axisLine={false}
+                  />
+                  <YAxis 
+                    stroke="#9ca3af" 
+                    fontSize={10} 
+                    tickLine={false} 
+                    axisLine={false}
+                    tickFormatter={(val) => `$${val}`}
+                  />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#111827', border: '1px solid #374151', fontSize: '12px' }}
+                    itemStyle={{ color: '#60a5fa' }}
+                  />
+                  <ReferenceLine x={currentYear} stroke="#ef4444" strokeDasharray="3 3" label={{ position: 'top', value: 'Now', fill: '#ef4444', fontSize: 10 }} />
+                  <Line 
+                    type="monotone" 
+                    dataKey="value" 
+                    stroke="#3b82f6" 
+                    strokeWidth={2} 
+                    dot={{ r: 3, fill: '#3b82f6' }}
+                    activeDot={{ r: 5 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-gray-500">Original Value</p>
+                <p className="text-white font-medium">${asset.purchase_price?.toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">Current Est. Value</p>
+                <p className="text-primary-400 font-bold">
+                  ${depData.find(d => d.year === currentYear)?.value.toLocaleString() || 'N/A'}
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="text-sm text-gray-500">
+            Purchase price and date required for depreciation chart.
+          </div>
         )}
       </div>
 

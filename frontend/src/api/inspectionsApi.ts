@@ -52,4 +52,12 @@ export const inspectionsApi = {
   signOff: (id: string) =>
     api.post<{ success: boolean; data: Inspection }>(`/api/inspections/${id}/signoff`)
       .then(r => r.data.data),
+
+  update: (id: string, data: Partial<Inspection>) =>
+    api.put<{ success: boolean; data: Inspection }>(`/api/inspections/${id}`, data)
+      .then(r => r.data.data),
+
+  delete: (id: string) =>
+    api.delete<{ success: boolean; message: string }>(`/api/inspections/${id}`)
+      .then(r => r.data),
 };

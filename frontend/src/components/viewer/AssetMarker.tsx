@@ -7,15 +7,23 @@ import { Asset } from '@/types';
 interface AssetMarkerProps {
   asset: Asset;
   onClick?: (asset: Asset) => void;
+  issueCount?: number;
+  healthScore?: number;
 }
 
-function yawPitchToPosition(yaw: number, pitch: number, radius: number = 10): THREE.Vector3 {
+function yawPitchToPosition(yaw: number, pitch: number, radius: number = 25): THREE.Vector3 {
   const y = Math.sin(pitch) * radius;
   const rProj = Math.cos(pitch) * radius;
   const x = Math.sin(yaw) * rProj;
   const z = Math.cos(yaw) * rProj;
   return new THREE.Vector3(x, y, z);
 }
+
+const statusColors: Record<string, string> = {
+  active: '#22c55e',      // green
+  maintenance: '#f59e0b',  // amber
+  retired: '#6b7280',     // gray
+};
 
 const typeColors: Record<string, string> = {
   HVAC: '#3b82f6',      // blue
@@ -26,12 +34,12 @@ const typeColors: Record<string, string> = {
   Other: '#6b7280',     // gray
 };
 
-function AssetMarker({ asset, onClick }: AssetMarkerProps) {
+function AssetMarker({ asset, onClick, issueCount, healthScore }: AssetMarkerProps) {
   const meshRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
 
-  const position = asset.yaw && asset.pitch
-    ? yawPitchToPosition(asset.yaw, asset.pitch, 10)
+  const position = asset.yaw !== undefined && asset.pitch !== undefined
+    ? yawPitchToPosition(asset.yaw, asset.pitch, 25)
     : new THREE.Vector3(0, 0, 0);
 
   useFrame(() => {
@@ -43,7 +51,9 @@ function AssetMarker({ asset, onClick }: AssetMarkerProps) {
     }
   });
 
-  const color = typeColors[asset.type] || typeColors.Other;
+  const typeColor = typeColors[asset.type] || typeColors.Other;
+  const statusColor = statusColors[asset.status] || null;
+  const color = statusColor || typeColor; // Status color takes priority
 
   const handleClick = (e: any) => {
     e.stopPropagation();
@@ -77,6 +87,28 @@ function AssetMarker({ asset, onClick }: AssetMarkerProps) {
         />
       </mesh>
 
+      {/* Issue count badge */}
+      {issueCount !== undefined && issueCount > 0 && (
+        <Html center distanceFactor={10} position={[0, 0.5, 0]} style={{ pointerEvents: 'none' }}>
+          <div
+            style={{
+              background: '#ef4444',
+              color: 'white',
+              borderRadius: '50%',
+              width: '18px',
+              height: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '10px',
+              fontWeight: 'bold',
+            }}
+          >
+            {issueCount > 9 ? '9+' : issueCount}
+          </div>
+        </Html>
+      )}
+
       <Html center distanceFactor={10} style={{ pointerEvents: 'none' }}>
         <div
           style={{
@@ -90,6 +122,11 @@ function AssetMarker({ asset, onClick }: AssetMarkerProps) {
           }}
         >
           {asset.name}
+          {healthScore !== undefined && (
+            <span style={{ marginLeft: '6px', color: healthScore >= 80 ? '#4ade80' : healthScore >= 60 ? '#fbbf24' : '#f87171' }}>
+              ({healthScore})
+            </span>
+          )}
         </div>
       </Html>
     </group>

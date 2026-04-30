@@ -164,14 +164,18 @@ function SceneContent({
       {/* Clustered Hotspots */}
       {hotspots && hotspots.length > 0 && (
         <MarkerCluster
-          markers={hotspots.map(h => ({
-            position: [
-              Math.sin(h.yaw) * 500,
-              Math.sin(h.pitch) * 500,
-              Math.cos(h.yaw) * 500
-            ],
-            ...h
-          }))}
+          markers={hotspots.map(h => {
+            return {
+              position: [
+                Math.cos(h.pitch) * Math.sin(h.yaw) * 25,
+                Math.sin(h.pitch) * 25,
+                Math.cos(h.pitch) * Math.cos(h.yaw) * 25
+              ],
+              ...h
+            };
+          })}
+          clusterDistance={0.5} // Much smaller cluster distance
+          maxClusterZoom={150} // Effectively disable clustering unless extremely zoomed out
           currentFov={persCamera.fov}
           renderMarker={(marker) => (
             <HotspotMarker
@@ -190,14 +194,18 @@ function SceneContent({
       {/* Clustered Issue Markers */}
       {issueMarkers && issueMarkers.length > 0 && (
         <MarkerCluster
-          markers={issueMarkers.filter(i => typeof i.yaw === 'number' && typeof i.pitch === 'number').map(i => ({
-            position: [
-              Math.sin(i.yaw) * 500,
-              Math.sin(i.pitch) * 500,
-              Math.cos(i.yaw) * 500
-            ],
-            ...i
-          }))}
+          markers={issueMarkers.filter(i => typeof i.yaw === 'number' && typeof i.pitch === 'number').map(i => {
+            return {
+              position: [
+                Math.cos(i.pitch) * Math.sin(i.yaw) * 25,
+                Math.sin(i.pitch) * 25,
+                Math.cos(i.pitch) * Math.cos(i.yaw) * 25
+              ],
+              ...i
+            };
+          })}
+          clusterDistance={0.5}
+          maxClusterZoom={150}
           currentFov={persCamera.fov}
           renderMarker={(marker) => (
             <IssueMarker key={marker.id} issue={marker as unknown as Issue} />
@@ -208,15 +216,23 @@ function SceneContent({
       {/* Clustered Asset Markers */}
       {assetMarkers && assetMarkers.length > 0 && (
         <MarkerCluster
-          markers={assetMarkers.filter(a => typeof a.yaw === 'number' && typeof a.pitch === 'number').map(a => ({
-            position: [
-              Math.sin(a.yaw || 0) * 500,
-              Math.sin(a.pitch || 0) * 500,
-              Math.cos(a.yaw || 0) * 500
-            ],
-            ...a
-          }))}
+          markers={assetMarkers.filter(a => typeof a.yaw === 'number' && typeof a.pitch === 'number').map(a => {
+            const radius = 20;
+            return {
+              position: [
+                Math.cos(a.pitch || 0) * Math.sin(a.yaw || 0) * 25,
+                Math.sin(a.pitch || 0) * 25,
+                Math.cos(a.pitch || 0) * Math.cos(a.yaw || 0) * 25
+              ],
+              ...a
+            };
+          })}
+          clusterDistance={0.5}
+          maxClusterZoom={150}
           currentFov={persCamera.fov}
+          onMarkerClick={(marker) => {
+            if (onAssetClick) onAssetClick(marker as unknown as Asset);
+          }}
           renderMarker={(marker) => (
             <AssetMarker key={marker.id} asset={marker as unknown as Asset} onClick={onAssetClick} />
           )}
@@ -451,6 +467,8 @@ function Viewer360({
             />
           </group>
         </Suspense>
+        <ambientLight intensity={1.5} />
+        <pointLight position={[0, 0, 0]} intensity={2.0} />
         <OrbitControls
           ref={controlsRef}
           enableZoom={true}

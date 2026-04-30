@@ -11,6 +11,7 @@ interface IssueFormModalProps {
   initialData?: Partial<Issue>;
   mode: 'create' | 'edit';
   isPending?: boolean;
+  walkthroughId?: string;
 }
 
 type TabType = 'details' | 'assignment' | 'history' | 'comments';
@@ -41,13 +42,18 @@ const workflowStatuses = [
   { value: 'reopened', label: 'Reopened', color: 'bg-orange-500/20 text-orange-400' },
 ];
 
+import { useQuery } from '@tanstack/react-query';
+import { assetsApi } from '@/api/assetsApi';
+import { Box } from 'lucide-react';
+
 export default function IssueFormModal({
   isOpen,
   onClose,
   onSubmit,
   initialData,
   mode,
-  isPending
+  isPending,
+  walkthroughId
 }: IssueFormModalProps) {
   const [activeTab, setActiveTab] = useState<TabType>('details');
   const [formData, setFormData] = useState<Partial<Issue>>({
@@ -59,7 +65,15 @@ export default function IssueFormModal({
     status: 'open',
     assigned_to: '',
     due_date: '',
+    asset_id: '',
   });
+
+  const { data: assetsResponse } = useQuery({
+    queryKey: ['assets-linkable', walkthroughId],
+    queryFn: () => assetsApi.getAll({ walkthrough_id: walkthroughId, limit: 100 }),
+    enabled: isOpen && !!walkthroughId,
+  });
+  const assets = assetsResponse?.assets || [];
 
   useEffect(() => {
     if (initialData) {
@@ -72,6 +86,7 @@ export default function IssueFormModal({
         status: initialData.status || 'open',
         assigned_to: initialData.assigned_to || '',
         due_date: initialData.due_date ? initialData.due_date.split('T')[0] : '', // Extract YYYY-MM-DD
+        asset_id: (initialData as any).asset_id || '',
       });
     } else {
       setFormData({
@@ -83,6 +98,7 @@ export default function IssueFormModal({
         status: 'open',
         assigned_to: '',
         due_date: '',
+        asset_id: '',
       });
     }
     setActiveTab('details');
@@ -104,9 +120,25 @@ export default function IssueFormModal({
           required
           value={formData.title}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          className="w-full bg-gray-800/50 border border-gray-700 text-white rounded-xl px-4 py-2.5 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-all"
+          className="w-full bg-gray-800/50 border border-gray-700 text-white rounded-xl px-4 py-2.5 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-all text-sm"
           placeholder="e.g. Cracked floor tile"
         />
+      </div>
+
+      <div>
+        <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wider flex items-center gap-1.5">
+          <Box size={14} /> Link to Asset (Optional)
+        </label>
+        <select
+          value={formData.asset_id}
+          onChange={(e) => setFormData({ ...formData, asset_id: e.target.value })}
+          className="w-full bg-gray-800/50 border border-gray-700 text-white rounded-xl px-4 py-2.5 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-all text-sm"
+        >
+          <option value="">No Asset Linked</option>
+          {assets.map(a => (
+            <option key={a.id} value={a.id}>{a.name} ({a.brand} {a.model})</option>
+          ))}
+        </select>
       </div>
 
       <div>
@@ -114,7 +146,7 @@ export default function IssueFormModal({
         <textarea
           value={formData.description}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          className="w-full bg-gray-800/50 border border-gray-700 text-white rounded-xl px-4 py-2.5 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-all min-h-[80px]"
+          className="w-full bg-gray-800/50 border border-gray-700 text-white rounded-xl px-4 py-2.5 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-all min-h-[80px] text-sm"
           placeholder="Describe the issue in detail..."
         />
       </div>
@@ -125,7 +157,7 @@ export default function IssueFormModal({
           <select
             value={formData.type}
             onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-            className="w-full bg-gray-800/50 border border-gray-700 text-white rounded-xl px-4 py-2.5 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-all"
+            className="w-full bg-gray-800/50 border border-gray-700 text-white rounded-xl px-4 py-2.5 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-all text-sm"
           >
             {issueTypes.map((t) => (
               <option key={t.value} value={t.value}>{t.label}</option>
@@ -138,7 +170,7 @@ export default function IssueFormModal({
           <select
             value={formData.severity}
             onChange={(e) => setFormData({ ...formData, severity: e.target.value as any })}
-            className="w-full bg-gray-800/50 border border-gray-700 text-white rounded-xl px-4 py-2.5 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-all"
+            className="w-full bg-gray-800/50 border border-gray-700 text-white rounded-xl px-4 py-2.5 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-all text-sm"
           >
             {severities.map((s) => (
               <option key={s.value} value={s.value}>{s.label}</option>

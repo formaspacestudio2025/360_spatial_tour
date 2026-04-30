@@ -36,6 +36,9 @@ function MaintenanceOverlay({
   const [filterPriority, setFilterPriority] = useState<'all' | 'low' | 'medium' | 'high' | 'critical'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newWOTitle, setNewWOTitle] = useState('');
+  const [newWODesc, setNewWODesc] = useState('');
+  const [newWOPriority, setNewWOPriority] = useState<'low' | 'medium' | 'high' | 'critical'>('medium');
 
   // Get work orders for selected asset
   const selectedAssetWorkOrders = useMemo(() => {
@@ -251,32 +254,46 @@ function MaintenanceOverlay({
                 </div>
 
                 {showCreateForm && (
-                  <div className="mb-3 p-3 bg-gray-800/50 rounded-lg border border-gray-700">
+                  <div className="mb-3 p-3 bg-gray-800/50 rounded-lg border border-gray-700 animate-in fade-in slide-in-from-top-2 duration-300">
                     <input
                       type="text"
+                      value={newWOTitle}
+                      onChange={(e) => setNewWOTitle(e.target.value)}
                       placeholder="Work order title..."
                       className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm mb-2 focus:border-amber-500 focus:outline-none"
                     />
                     <textarea
+                      value={newWODesc}
+                      onChange={(e) => setNewWODesc(e.target.value)}
                       placeholder="Description..."
                       className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm mb-2 focus:border-amber-500 focus:outline-none resize-none"
                       rows={2}
                     />
                     <div className="flex gap-2">
-                      <select className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:border-amber-500 focus:outline-none">
+                      <select 
+                        value={newWOPriority}
+                        onChange={(e) => setNewWOPriority(e.target.value as any)}
+                        className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:border-amber-500 focus:outline-none"
+                      >
                         <option value="low">Low Priority</option>
                         <option value="medium">Medium Priority</option>
                         <option value="high">High Priority</option>
                         <option value="critical">Critical</option>
                       </select>
                       <button
-                        onClick={() => handleCreateWorkOrder({
-                          title: 'New Work Order',
-                          description: 'Description here',
-                          priority: 'medium',
-                          status: 'pending'
-                        })}
-                        className="px-4 py-2 bg-amber-600 hover:bg-amber-700 rounded-lg text-white text-sm transition-colors"
+                        onClick={() => {
+                          if (!newWOTitle) return;
+                          handleCreateWorkOrder({
+                            title: newWOTitle,
+                            description: newWODesc,
+                            priority: newWOPriority,
+                            status: 'pending'
+                          });
+                          setNewWOTitle('');
+                          setNewWODesc('');
+                        }}
+                        disabled={!newWOTitle}
+                        className="px-4 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white text-sm transition-colors"
                       >
                         Create
                       </button>
