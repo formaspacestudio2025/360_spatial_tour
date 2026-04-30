@@ -4,11 +4,13 @@ import * as THREE from 'three';
 import { Html } from '@react-three/drei';
 import { Hotspot } from '@/api/hotspots';
 import { useHotspotStore } from '@/stores/hotspotStore';
+import { useAuthStore } from '@/stores/authStore';
 import AnimatedHotspot from './AnimatedHotspot';
-import { 
+import PinPrompt from './PinPrompt';
+import {
   Navigation2, Info, AlertTriangle, AlertCircle, Image, Video, FileText, Link, Music, X, ExternalLink,
   Download, Eye, Copy, Check, Maximize2, Layers, MapPin, Tag, MessageSquare, ClipboardList,
-  Ruler, Camera, Zap, Shield, AlertOctagon, Bookmark
+  Ruler, Camera, Zap, Shield, AlertOctagon, Bookmark, Lock
 } from 'lucide-react';
 
 interface HotspotMarkerProps {
@@ -94,10 +96,43 @@ function HotspotMarker({ hotspot, onNavigate }: HotspotMarkerProps) {
   const [showMedia, setShowMedia] = useState(false);
   const [copied, setCopied] = useState(false);
   const [quickViewUrl, setQuickViewUrl] = useState<string | null>(null);
+  const [showPinPrompt, setShowPinPrompt] = useState(false);
+  const [pinError, setPinError] = useState('');
   const selectedHotspot = useHotspotStore((s) => s.selectedHotspot);
+  const { user } = useAuthStore();
   const isSelected = selectedHotspot?.id === hotspot.id;
 
   const position = yawPitchToPosition(hotspot.yaw, hotspot.pitch, 10);
+
+  // Check if user has permission to access this hotspot
+  const hasPermission = () => {
+    if (!hotspot.required_role) return true; // No restriction
+
+    const roleHierarchy: Record<string, number> = {
+      viewer: 1,
+      editor: 2,
+      manager: 3,
+      admin: 4
+    };
+
+    const userLevel = user ? roleHierarchy[user.role] || 0 : 0;
+    const requiredLevel = roleHierarchy[hotspot.required_role] || 0;
+
+    return userLevel >= requiredLevel;
+  };
+
+  // Verify PIN (placeholder - in real app, this would verify against backend)
+  const verifyPin = (pin: string) => {
+    // For demo purposes, accept any 4-digit PIN
+    // In production, this should call an API endpoint
+    if (pin.length === 4) {
+      setShowPinPrompt(false);
+      setPinError('');
+      return true;
+    }
+    setPinError('Invalid PIN');
+    return false;
+  };
 
   // Copy to clipboard helper
   const copyToClipboard = async (text: string) => {
@@ -124,20 +159,26 @@ function HotspotMarker({ hotspot, onNavigate }: HotspotMarkerProps) {
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     if (useHotspotStore.getState().isPlacingHotspot) return;
-    
+
+    // Check permissions first
+    if (!hasPermission()) {
+      setShowPinPrompt(true);
+      return;
+    }
+
     // If hotspot has media, show media overlay
     if (hotspot.media_type && hotspot.media_url) {
       setShowMedia(true);
       return;
     }
-    
+
     // Otherwise navigate
     const orientation = (hotspot.target_yaw !== undefined && hotspot.target_pitch !== undefined)
       ? { yaw: hotspot.target_yaw, pitch: hotspot.target_pitch }
       : undefined;
-      
+
     const transitionStyle = hotspot.metadata?.transitionStyle || 'zoom-fade';
-    
+
     onNavigate(hotspot.to_scene_id, orientation, transitionStyle);
   };
 
@@ -169,6 +210,7 @@ function HotspotMarker({ hotspot, onNavigate }: HotspotMarkerProps) {
             isHovered={hovered}
             isSelected={isSelected}
             onClick={() => setShowMedia(true)}
+            isRestricted={!hasPermission()}
           />
         </div>
       </Html>
@@ -423,6 +465,25 @@ function HotspotMarker({ hotspot, onNavigate }: HotspotMarkerProps) {
                 </a>
               </div>
             </div>
+          </div>
+        </Html>
+      )}
+
+      {/* PIN Prompt for restricted hotspots */}
+      {showPinPrompt && (
+        <Html center distanceFactor={2}>
+          <div className="pointer-events-auto">
+            <PinPrompt
+              isOpen={showPinPrompt}
+              onClose={() => {
+                setShowPinPrompt(false);
+                setPinError('');
+              }}
+              onVerify={verifyPin}
+              title="Restricted Hotspot"
+              description={`This hotspot requires ${hotspot.required_role} access or PIN verification`}
+              error={pinError}
+            />
           </div>
         </Html>
       )}

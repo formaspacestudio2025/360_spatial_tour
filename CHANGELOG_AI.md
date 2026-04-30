@@ -6,6 +6,135 @@ All changes made with Claude assistance, documenting what changed and why.
 
 ## 2026-04-29 - Module 3: Asset Management (Task 3.2 - Asset-Scene Mapping)
 
+## 2026-04-29 - Module 1: Core Viewer Enhancements Complete
+
+### Issue: Module 1 - Core Viewer Enhancements Complete
+
+**Issue:**
+The Executable_Engineering_tasks.md outlined 10 tasks for Module 1: Core Viewer Enhancements, but none were implemented. The viewer lacked advanced modes, navigation features, and enterprise-level functionality.
+
+**Fix:**
+Implemented all 10 Module 1 tasks:
+
+1. **Inspection Mode** (`InspectionSidebar.tsx`):
+   - Red overlay UI with safety checklist
+   - Category-based inspection items (Safety, Structural, Electrical, Plumbing, HVAC, Fire Safety, Accessibility, Cleanliness)
+   - Required vs optional item tracking with severity levels
+   - Progress tracking and export functionality
+   - Integrated into `WalkthroughViewer` with mode toggle
+
+2. **Maintenance Mode** (`MaintenanceOverlay.tsx`):
+   - Asset tag highlighting and work order context
+   - Work order creation and management
+   - Priority-based filtering (critical, high, medium, low)
+   - Status tracking (pending, in_progress, completed, cancelled)
+   - Asset-to-work-order mapping
+   - Integrated into `WalkthroughViewer` with mode toggle
+
+3. **Emergency Mode** (`EmergencyOverlay.tsx`):
+   - Red banners and emergency contacts display
+   - Evacuation routes with distance/time estimates
+   - Emergency reporting system (fire, medical, flood, power, security, other)
+   - Safety guidelines and quick actions
+   - Integrated into `WalkthroughViewer` with mode toggle
+
+4. **Guided Tour Mode** (`TourControls.tsx`):
+   - Auto-advance scenes with configurable duration
+   - Narration text display
+   - Step counter and progress tracking
+   - Playback controls (play/pause/stop/next/previous)
+   - Speed adjustment and settings
+   - Integrated into `WalkthroughViewer` with new Tour tab
+
+5. **Floor Navigation UI** (`FloorSelector.tsx`):
+   - Floor selector with scene filtering
+   - Scene count per floor
+   - Quick navigation between floors
+   - Current floor highlighting
+   - Integrated into `WalkthroughViewer` Scenes tab
+
+6. **Hotspot Permissions**:
+   - Added `required_role` field to Hotspot type in backend (`hotspot.service.ts`) and frontend (`hotspots.ts`)
+   - Backend role-based filtering with role hierarchy (viewer < editor < manager < admin)
+   - `PinPrompt.tsx` component for restricted hotspots
+   - Visual lock indicators on restricted hotspots
+   - Role hierarchy checks in `HotspotMarker.tsx`
+
+7. **Hotspot Categories** (`HotspotFilters.tsx`):
+   - Added `HotspotCategory` enum (navigation, information, warning, issue, media, document, custom)
+   - Dynamic filtering by category
+   - Category counts and visual indicators
+   - Quick select/deselect all functionality
+   - Integrated into `WalkthroughViewer` Hotspots tab
+
+8. **Smart Scene Switch** (`Breadcrumbs.tsx` + `navigation.ts`):
+   - Nearest scene suggestions based on 3D position
+   - Breadcrumb trail navigation
+   - Back button functionality
+   - Navigation utilities for scene relationships
+   - Floor-based scene filtering
+   - Integrated into `WalkthroughViewer` Scenes tab
+
+9. **Minimap** (`Minimap.tsx`):
+   - 2D floor plan rendering with canvas
+   - Real-time position tracking with camera orientation
+   - Click-to-jump scene functionality
+   - Floor-specific views
+   - Scene connections visualization
+   - Integrated into `WalkthroughViewer` with new Map tab
+
+10. **Hotspot Clustering** (`MarkerCluster.tsx`):
+    - Groups overlapping markers into cluster icons
+    - Displays count and expands on click
+    - Zoom-based unclustering (FOV threshold)
+    - Applied to hotspots, issues, and assets in `Viewer360.tsx`
+    - Custom cluster rendering with count display
+
+**Files changed:**
+- `frontend/src/components/viewer/InspectionSidebar.tsx` (new component)
+- `frontend/src/components/viewer/MaintenanceOverlay.tsx` (new component)
+- `frontend/src/components/viewer/EmergencyOverlay.tsx` (new component)
+- `frontend/src/components/viewer/TourControls.tsx` (new component)
+- `frontend/src/components/viewer/FloorSelector.tsx` (new component)
+- `frontend/src/components/viewer/PinPrompt.tsx` (new component)
+- `frontend/src/components/viewer/HotspotFilters.tsx` (new component)
+- `frontend/src/components/viewer/Breadcrumbs.tsx` (new component)
+- `frontend/src/components/viewer/Minimap.tsx` (new component)
+- `frontend/src/components/viewer/MarkerCluster.tsx` (new component)
+- `frontend/src/utils/navigation.ts` (new utilities file)
+- `frontend/src/api/hotspots.ts` (added HotspotCategory enum and required_role field)
+- `backend/src/services/hotspot.service.ts` (added required_role field)
+- `frontend/src/components/viewer/HotspotMarker.tsx` (added permission checks and PIN prompt)
+- `frontend/src/components/viewer/AnimatedHotspot.tsx` (added restricted indicator)
+- `frontend/src/components/viewer/Viewer360.tsx` (integrated clustering)
+- `frontend/src/pages/WalkthroughViewer.tsx` (integrated all new components and modes)
+
+**Risk:**
+- LOW - All changes are additive and follow existing patterns
+- New components are opt-in via mode toggles and tabs
+- No breaking changes to existing functionality
+- Backend changes add optional fields with backward compatibility
+
+**How to verify:**
+1. Start backend: `cd backend && npm run dev`
+2. Start frontend: `cd frontend && npm run dev`
+3. Login at `http://localhost:5173`
+4. Open a walkthrough and test each new feature:
+   - Click "Inspect" button for Inspection Mode
+   - Click "Maintain" button for Maintenance Mode
+   - Click "Emergency" button for Emergency Mode
+   - Click "Tour" tab for Guided Tour Mode
+   - Use Floor Selector in Scenes tab
+   - Use Hotspot Filters in Hotspots tab
+   - Use Breadcrumbs in Scenes tab
+   - Click "Map" tab for Minimap
+   - Observe marker clustering when zooming out
+
+---
+
+## 2026-04-24
+>>>>>>> origin/main
+
 ### What Changed
 1. **AssetManagement.tsx** - Added "Jump to Scene" button
    - Added `useNavigate` hook import

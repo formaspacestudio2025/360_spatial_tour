@@ -1,5 +1,14 @@
 import apiClient from './client';
 
+export type HotspotCategory =
+  | 'navigation'
+  | 'information'
+  | 'warning'
+  | 'issue'
+  | 'media'
+  | 'document'
+  | 'custom';
+
 export interface Hotspot {
   id: string;
   from_scene_id: string;
@@ -17,8 +26,10 @@ export interface Hotspot {
   media_url?: string;         // Media URL
   custom_icon_url?: string;   // Custom icon image
   is_locked?: boolean;        // Lock hotspot
+  required_role?: string;     // NEW: Minimum role required to access this hotspot
   metadata?: any;             // Extended properties
-  
+  category?: HotspotCategory;  // NEW: Hotspot category for filtering
+
   // NEW: Animation & Style Controls
   animation_type?: string;        // pulse-ring, bounce, glow, ripple, floating, arrow-sweep, breathing, orbit-halo, ping, spotlight, tooltip, progress, warning-flash, checkmark
   animation_speed?: number;       // 0.5 - 3.0 (default 1.0)
@@ -30,7 +41,7 @@ export interface Hotspot {
   visible_distance?: number;      // 0 - 100 (default 0 = always visible)
   always_visible?: boolean;       // default true
   background_color?: string;      // hex color for background circle
-  
+
   created_at: string;
 }
 
@@ -49,8 +60,10 @@ export interface CreateHotspotData {
   media_url?: string;
   custom_icon_url?: string;
   is_locked?: boolean;
+  required_role?: string;     // NEW: Minimum role required to access this hotspot
   metadata?: any;
-  
+  category?: HotspotCategory;  // NEW: Hotspot category for filtering
+
   // NEW: Animation & Style Controls
   animation_type?: string;
   animation_speed?: number;

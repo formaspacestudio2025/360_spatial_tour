@@ -1,8 +1,8 @@
 import { Hotspot } from '@/api/hotspots';
-import { 
+import {
   Navigation2, Info, AlertTriangle, AlertCircle, Image, Video, FileText, Link, Music,
   Layers, MapPin, Tag, MessageSquare, ClipboardList,
-  Ruler, Camera, Zap, Shield, AlertOctagon, Bookmark, Check
+  Ruler, Camera, Zap, Shield, AlertOctagon, Bookmark, Check, Lock
 } from 'lucide-react';
 
 interface AnimatedHotspotProps {
@@ -11,6 +11,7 @@ interface AnimatedHotspotProps {
   isHovered: boolean;
   isSelected: boolean;
   onClick: () => void;
+  isRestricted?: boolean;
 }
 
 // Helper to get icon based on hotspot type
@@ -43,12 +44,13 @@ function getHotspotIcon(iconType?: string, size: number = 16) {
   }
 }
 
-export default function AnimatedHotspot({ 
-  hotspot, 
+export default function AnimatedHotspot({
+  hotspot,
   onNavigate,
-  isHovered, 
+  isHovered,
   isSelected,
-  onClick 
+  onClick,
+  isRestricted = false
 }: AnimatedHotspotProps) {
   const {
     animation_type = 'pulse-ring',
@@ -511,14 +513,21 @@ export default function AnimatedHotspot({
   return (
     <div
       className="cursor-pointer transition-transform duration-200 relative flex items-center justify-center"
-      style={{ 
+      style={{
         opacity,
         transform: isHovered ? `scale(${hover_scale})` : 'scale(1)',
       }}
       onClick={handleClick}
     >
       {renderAnimation()}
-      
+
+      {/* Lock icon for restricted hotspots */}
+      {isRestricted && (
+        <div className="absolute -top-1 -right-1 bg-red-500 rounded-full p-1 shadow-lg z-20">
+          <Lock size={10} className="text-white" />
+        </div>
+      )}
+
       {/* Enterprise Smart Preview Tooltip */}
       {isHovered && title && animation_type !== 'tooltip' && animation_type !== 'floating' && (
         <div className={`absolute ${labelPositionClass} px-3 py-2 bg-black/90 backdrop-blur-md border border-gray-700/50 rounded-xl shadow-2xl z-50 min-w-[120px] max-w-[200px] text-center transition-all animate-in fade-in slide-in-from-bottom-2 duration-200 pointer-events-none`}>
