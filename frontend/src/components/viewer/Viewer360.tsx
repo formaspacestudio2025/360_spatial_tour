@@ -448,7 +448,6 @@ function Viewer360({
               targetFov={targetFov}
               onAssetClick={onAssetClick}
               opacity={opacity}
-              onAssetClick={onAssetClick}
             />
           </group>
         </Suspense>
