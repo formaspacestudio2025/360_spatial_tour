@@ -1,5 +1,5 @@
 import express from 'express';
-import { createAsset, getAssets, getAssetById, updateAsset, deleteAsset, updateAssetSceneMapping, getAssetsByScene, addAssetDocument, getAssetDocuments, deleteAssetDocument, getAssetContext, generateInventoryReport, createWorkOrder, updateWorkOrder, getRecentInspections } from '../services/asset.service';
+import { createAsset, getAssets, getAssetById, updateAsset, deleteAsset, updateAssetSceneMapping, getAssetsByScene, addAssetDocument, getAssetDocuments, deleteAssetDocument, getAssetContext, generateInventoryReport, createWorkOrder, updateWorkOrder, getRecentInspections, transitionAssetState, getAllowedTransitions } from '../services/asset.service';
 import { generateQRCodeBuffer } from '../services/qrcode.service';
 import { authenticate } from '../middleware/auth';
 import { requirePermission } from '../middleware/rbac';
@@ -70,6 +70,26 @@ router.put('/:id', requirePermission('asset','write'), async (req, res) => {
       return res.status(404).json({ success: false, message: 'Asset not found' });
     }
     res.json({ success: true, data: asset });
+  } catch (error: unknown) {
+    const err = error as { statusCode?: number; message?: string };
+    res.status(err.statusCode || 500).json({ success: false, message: err.message });
+  }
+});
+
+// Transition asset state
+router.put('/:id/transition', requirePermission('asset','write'), async (req: any, res) => {
+  try {
+    const { id } = req.params;
+    const { newStatus, reason } = req.body;
+    const userId = req.user?.id || req.body.userId; // prefer authenticated user
+    if (!newStatus || !reason) {
+      return res.status(400).json({ success: false, message: 'newStatus and reason are required' });
+    }
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'User ID not found' });
+    }
+    const updated = await transitionAssetState(id, newStatus, reason, userId);
+    res.json({ success: true, data: updated });
   } catch (error: unknown) {
     const err = error as { statusCode?: number; message?: string };
     res.status(err.statusCode || 500).json({ success: false, message: err.message });

@@ -28,6 +28,27 @@ interface Database {
   inspections: any[];
   organizations: any[];
   work_orders: any[];
+  asset_events: any[];
+  migrations: any[];
+}
+
+// Extended database interface for the adapter
+export interface ExtendedDatabase extends Database {
+  asset_events: any[];
+  migrations: any[];
+}
+
+// Get extended database
+export function getExtendedDb(): ExtendedDatabase {
+  const extDb = db as any;
+  if (!extDb.asset_events) extDb.asset_events = [];
+  if (!extDb.migrations) extDb.migrations = [];
+  return extDb as ExtendedDatabase;
+}
+
+// Write database
+export function writeDb(): void {
+  save();
 }
 
 // Load or create database
@@ -49,6 +70,8 @@ let db: Database = {
   inspections: [],
   organizations: [],
   work_orders: [],
+  asset_events: [],
+  migrations: [],
 };
 
 if (fs.existsSync(DB_PATH)) {

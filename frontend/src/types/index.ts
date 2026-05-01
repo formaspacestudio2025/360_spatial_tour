@@ -125,6 +125,80 @@ export interface Comment {
   created_at: string;
 }
 
+export interface AssetTransition {
+  from_status: string;
+  to_status: string;
+  reason: string;
+  user_id: string;
+  timestamp: string;
+}
+
+export type AssetEventType =
+  | 'created'
+  | 'inspected'
+  | 'maintained'
+  | 'issue_opened'
+  | 'issue_resolved'
+  | 'state_changed'
+  | 'document_added'
+  | 'health_changed'
+  | 'location_changed'
+  | 'warranty_claimed';
+
+export interface AssetEvent {
+  id: string;
+  asset_id: string;
+  event_type: AssetEventType;
+  title: string;
+  description: string;
+  metadata?: Record<string, any>;
+  user_id?: string;
+  user_name?: string;
+  created_at: string;
+}
+
+export interface DigitalTwinSummary {
+  total_inspections: number;
+  total_maintenance: number;
+  total_issues: number;
+  resolved_issues: number;
+  uptime_percentage: number;
+  mtbf_days: number;
+  total_cost: number;
+  last_inspection?: string;
+  last_maintenance?: string;
+  health_trend: 'improving' | 'stable' | 'declining';
+}
+
+export interface Asset {
+  health_score?: number;
+  compliance?: ComplianceTag[];
+  id: string;
+  name: string;
+  type: AssetType;
+  brand?: string;
+  model?: string;
+  serial_number?: string;
+  scene_id?: string;
+  yaw?: number;
+  pitch?: number;
+  floor?: number;
+  room?: string;
+  status: 'commissioning' | 'active' | 'maintenance' | 'repair' | 'decommissioned' | 'disposed';
+  walkthrough_id?: string;
+  org_id?: string;
+  property_id?: string;
+  purchase_date?: string;
+  purchase_price?: number;
+  useful_life_years?: number;
+  salvage_value?: number;
+  warranty_date?: string;
+  documents?: AssetDocument[];
+  created_at: string;
+  updated_at: string;
+  transition_history?: AssetTransition[];
+}
+
 export type AssetType = 'HVAC' | 'Elevator' | 'Fire Extinguisher' | 'Lighting' | 'Plumbing' | 'Other';
 
 export interface ComplianceTag {
@@ -143,30 +217,6 @@ export interface AssetDocument {
   mimetype: string;
 }
 
-export interface Asset {
-  health_score?: number;
-  compliance?: ComplianceTag[];
-  id: string;
-  name: string;
-  type: AssetType;
-  brand?: string;
-  model?: string;
-  serial_number?: string;
-  scene_id?: string;
-  yaw?: number;
-  pitch?: number;
-  floor?: number;
-  room?: string;
-  status: 'active' | 'maintenance' | 'retired';
-  walkthrough_id?: string;
-  org_id?: string;
-  property_id?: string;
-  purchase_date?: string;
-  warranty_date?: string;
-  documents?: AssetDocument[];
-  created_at: string;
-  updated_at: string;
-}
 
 // API Response Types
 export interface ApiResponse<T> {

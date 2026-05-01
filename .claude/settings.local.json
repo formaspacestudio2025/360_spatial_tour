@@ -41,7 +41,11 @@
       "Bash(taskkill *)",
       "Bash(awk '{print $5}')",
       "Bash(git commit -m ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(Get-Content \"C:\\\\Users\\\\H68618\\\\Downloads\\\\360_spatial_tour\\\\MEMORY.md\")",
+      "Bash(Select-Object -Last 20)",
+      "Bash(not exist *)",
+      "PowerShell(New-Item *)"
     ]
   },
   "sandbox": {

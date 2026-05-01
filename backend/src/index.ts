@@ -7,6 +7,7 @@ import { initializeStorage, storagePaths } from './config/storage';
 import { errorHandler, notFoundHandler } from './middleware/error';
 import apiRoutes from './routes';
 import { cronService } from './services/cron.service';
+import { runMigrations } from './config/migrations';
 
 // Load environment variables
 dotenv.config();
@@ -17,6 +18,9 @@ const PORT = process.env.PORT || 3000;
 
 // Initialize storage
 initializeStorage();
+
+// Run database migrations
+runMigrations();
 
 // Middleware
 app.use(cors());

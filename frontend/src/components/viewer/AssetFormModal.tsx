@@ -140,9 +140,12 @@ function AssetFormModal({ isOpen, onClose, onSubmit, initialData, isPending, sce
               onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
               className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 text-sm focus:border-primary-500 focus:outline-none"
             >
+              <option value="commissioning">Commissioning</option>
               <option value="active">Active</option>
               <option value="maintenance">Maintenance</option>
-              <option value="retired">Retired</option>
+              <option value="repair">Repair</option>
+              <option value="decommissioned">Decommissioned</option>
+              <option value="disposed">Disposed</option>
             </select>
           </div>
           <div className="grid grid-cols-2 gap-4">

@@ -242,7 +242,7 @@ const InspectionsTab: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {[
           { label: 'Total', value: inspections.length, icon: ClipboardList, color: 'text-blue-400' },
-          { label: 'Pending', value: inspections.filter(i => i.status === 'scheduled').length, icon: Clock, color: 'text-yellow-400' },
+          { label: 'Pending', value: inspections.filter(i => i.status !== 'completed' && i.status !== 'signed_off').length, icon: Clock, color: 'text-yellow-400' },
           { label: 'Completed', value: inspections.filter(i => ['completed', 'signed_off'].includes(i.status)).length, icon: CheckCircle2, color: 'text-green-400' },
           { label: 'High Priority', value: 0, icon: Filter, color: 'text-red-400' },
         ].map((stat, idx) => (

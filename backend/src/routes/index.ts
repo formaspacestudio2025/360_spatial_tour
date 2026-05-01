@@ -16,6 +16,8 @@ import qrcodeRoutes from './qrcode';
 import inspectionsRoutes from './inspections';
 import maintenanceRoutes from './maintenance';
 import checklistsRoutes from './checklists';
+import assetEventsRoutes from './assetEvents';
+import adminRoutes from './admin';
 
 const router = express.Router();
 
@@ -43,5 +45,7 @@ router.use('/qrcode', qrcodeRoutes);
 router.use('/inspections', inspectionsRoutes);
 router.use('/maintenance', maintenanceRoutes);
 router.use('/checklists', checklistsRoutes);
+router.use('/asset-events', assetEventsRoutes);
+router.use('/admin', adminRoutes);
 
 export default router;

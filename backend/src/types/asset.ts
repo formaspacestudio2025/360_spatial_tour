@@ -14,6 +14,14 @@ export interface ComplianceTag {
   checked_at?: string;
 }
 
+export interface AssetTransition {
+  from_status: string;
+  to_status: string;
+  reason: string;
+  user_id: string;
+  timestamp: string;
+}
+
 export interface Asset {
   id: string;
   name: string;
@@ -26,7 +34,7 @@ export interface Asset {
   pitch?: number;
   floor?: number;
   room?: string;
-  status: 'active' | 'maintenance' | 'retired';
+  status: 'commissioning' | 'active' | 'maintenance' | 'repair' | 'decommissioned' | 'disposed';
   walkthrough_id?: string;  // which property/walkthrough it belongs to
   org_id?: string;         // organization that owns this asset
   property_id?: string;     // specific property (if different from walkthrough)
@@ -38,6 +46,7 @@ export interface Asset {
   documents?: AssetDocument[]; // attached documents
   health_score?: number; // 0-100, calculated by service
   compliance?: ComplianceTag[]; // compliance tags
+  transition_history?: AssetTransition[]; // log of status changes
   created_at: string;
   updated_at: string;
 }

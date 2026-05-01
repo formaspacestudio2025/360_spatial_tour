@@ -1,6 +1,7 @@
 import db from '../config/database';
 import { generateId } from '../utils/generateId';
 import { Asset, AssetDocument, ComplianceTag } from '../types/asset';
+import { logAssetEvent } from './assetEvent.service';
 
 export interface AssetLifecycle {
   ageYears: number | null;
@@ -185,6 +186,17 @@ export async function createAsset(data: {
     now
   );
 
+  // Log creation event
+  try {
+    await logAssetEvent({
+      asset_id: id,
+      event_type: 'created',
+      title: `Asset Created: ${data.name}`,
+      description: `Asset ${data.name} was added to the system.`,
+      metadata: { status: data.status || 'active', type: data.type },
+    });
+  } catch (e) { console.error('Failed to log asset creation event:', e); }
+
   return {
     id,
     ...data,
@@ -301,6 +313,10 @@ export async function getAssetById(id: string): Promise<Asset | null> {
     // Parse compliance JSON if stored as string
     if (asset.compliance && typeof asset.compliance === 'string') {
       try { asset.compliance = JSON.parse(asset.compliance); } catch {}
+    }
+    // Parse transition_history JSON if stored as string
+    if (asset.transition_history && typeof asset.transition_history === 'string') {
+      try { asset.transition_history = JSON.parse(asset.transition_history); } catch {}
     }
   }
   return asset;
@@ -466,10 +482,18 @@ export async function calculateHealthScore(asset: Asset): Promise<number> {
   }
 
   // Factor 3: Status
-  if (asset.status === 'maintenance') {
+  if (asset.status === 'commissioning') {
+    score -= 5; // brand new, slight uncertainty
+  } else if (asset.status === 'active') {
+    // no penalty
+  } else if (asset.status === 'maintenance') {
     score -= 10;
-  } else if (asset.status === 'retired') {
-    score -= 50;
+  } else if (asset.status === 'repair') {
+    score -= 25; // more severe than maintenance
+  } else if (asset.status === 'decommissioned') {
+    score -= 70;
+  } else if (asset.status === 'disposed') {
+    score -= 90;
   }
 
   // Factor 4: Open issues linked to this asset
@@ -510,6 +534,147 @@ export async function getAssetContext(id: string): Promise<{
     inspections,
     workOrders,
   };
+}
+
+/**
+ * Validates if a state transition is allowed according to business rules
+ * Returns true if transition is valid, false otherwise
+ */
+export function isValidTransition(
+  fromStatus: 'commissioning' | 'active' | 'maintenance' | 'repair' | 'decommissioned' | 'disposed',
+  toStatus: 'commissioning' | 'active' | 'maintenance' | 'repair' | 'decommissioned' | 'disposed'
+): boolean {
+  // Define allowed transitions
+  const allowedTransitions: Record<
+    'commissioning' | 'active' | 'maintenance' | 'repair' | 'decommissioned' | 'disposed',
+    ('commissioning' | 'active' | 'maintenance' | 'repair' | 'decommissioned' | 'disposed')[]
+  > = {
+    // Commissioning -> Active (normal activation)
+    commissioning: ['active'],
+
+    // Active -> Maintenance (scheduled maintenance) or Repair (unexpected failure)
+    active: ['maintenance', 'repair', 'decommissioned'],
+
+    // Maintenance -> Active (completed maintenance) or Repair (issue found)
+    maintenance: ['active', 'repair'],
+
+    // Repair -> Active (fixed) or Maintenance (needs more work)
+    repair: ['active', 'maintenance'],
+
+    // Decommissioned -> Disposed (final removal) or Reactivate (rare cases)
+    decommissioned: ['disposed', 'active'],
+
+    // Disposed -> (terminal state, no transitions out)
+    disposed: []
+  };
+
+  return allowedTransitions[fromStatus].includes(toStatus);
+}
+
+/**
+ * Logs a state transition in the asset's history
+ */
+export async function logTransition(
+  assetId: string,
+  fromStatus: string,
+  toStatus: string,
+  reason: string,
+  userId: string
+): Promise<void> {
+  const asset = await getAssetById(assetId);
+  if (!asset) {
+    throw new Error(`Asset ${assetId} not found`);
+  }
+
+  const transition = {
+    from_status: fromStatus,
+    to_status: toStatus,
+    reason: reason,
+    user_id: userId,
+    timestamp: new Date().toISOString()
+  };
+
+  const history = asset.transition_history || [];
+  history.push(transition);
+
+  await db.prepare(
+    'UPDATE assets SET transition_history = ?, updated_at = ? WHERE id = ?'
+  ).run(
+    JSON.stringify(history),
+    new Date().toISOString(),
+    assetId
+  );
+}
+
+/**
+ * Transitions an asset to a new status with validation
+ * Throws error if transition is invalid
+ */
+export async function transitionAssetState(
+  assetId: string,
+  newStatus: 'commissioning' | 'active' | 'maintenance' | 'repair' | 'decommissioned' | 'disposed',
+  reason: string,
+  userId: string
+): Promise<Asset> {
+  const asset = await getAssetById(assetId);
+  if (!asset) {
+    throw new Error(`Asset ${assetId} not found`);
+  }
+
+  // Validate the transition is allowed
+  if (!isValidTransition(asset.status, newStatus)) {
+    throw new Error(
+      `Invalid state transition from ${asset.status} to ${newStatus}. ` +
+      `Allowed transitions: ${getAllowedTransitions(asset.status).join(', ')}`
+    );
+  }
+
+  // Log the transition before making changes
+  await logTransition(assetId, asset.status, newStatus, reason, userId);
+
+  // Update the asset status
+  const updatedAsset = await updateAsset(assetId, {
+    status: newStatus
+  });
+
+  if (!updatedAsset) {
+    throw new Error(`Failed to update asset ${assetId}`);
+  }
+
+  // Log state change event
+  try {
+    await logAssetEvent({
+      asset_id: assetId,
+      event_type: 'state_changed',
+      title: `Status changed: ${asset.status} → ${newStatus}`,
+      description: reason,
+      metadata: { from_status: asset.status, to_status: newStatus },
+      user_id: userId,
+    });
+  } catch (e) { console.error('Failed to log state change event:', e); }
+
+  return updatedAsset;
+}
+
+/**
+ * Helper function to get allowed transitions for a status
+ */
+export function getAllowedTransitions(
+  status: 'commissioning' | 'active' | 'maintenance' | 'repair' | 'decommissioned' | 'disposed'
+): ('commissioning' | 'active' | 'maintenance' | 'repair' | 'decommissioned' | 'disposed')[] {
+  const allowedTransitions: Record<
+    'commissioning' | 'active' | 'maintenance' | 'repair' | 'decommissioned' | 'disposed',
+    ('commissioning' | 'active' | 'maintenance' | 'repair' | 'decommissioned' | 'disposed')[]
+  > = {
+    commissioning: ['active'],
+    active: ['maintenance', 'repair', 'decommissioned'],
+    maintenance: ['active', 'repair'],
+    repair: ['active', 'maintenance'],
+    decommissioned: ['disposed', 'active'],
+    disposed: []
+  };
+
+  return allowedTransitions[status];
 }
 
 export async function createWorkOrder(data: {

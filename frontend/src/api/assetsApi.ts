@@ -1,5 +1,5 @@
 import api from './client';
-import { Asset, AssetType } from '@/types';
+import { Asset, AssetType, AssetEvent, DigitalTwinSummary } from '@/types';
 
 export interface CreateAssetData {
   name: string;
@@ -12,7 +12,7 @@ export interface CreateAssetData {
   pitch?: number;
   floor?: number;
   room?: string;
-  status?: 'active' | 'maintenance' | 'retired';
+  status?: 'commissioning' | 'active' | 'maintenance' | 'repair' | 'decommissioned' | 'disposed';
   walkthrough_id?: string;
   org_id?: string;
   property_id?: string;
@@ -31,7 +31,7 @@ export interface UpdateAssetData {
   pitch?: number;
   floor?: number;
   room?: string;
-  status?: 'active' | 'maintenance' | 'retired';
+  status?: 'commissioning' | 'active' | 'maintenance' | 'repair' | 'decommissioned' | 'disposed';
   walkthrough_id?: string;
   org_id?: string;
   property_id?: string;
@@ -109,5 +109,17 @@ export const assetsApi = {
 
   getRecentInspections: (limit: number = 5) =>
     api.get<{ success: boolean; data: any[] }>(`/api/assets/recent-inspections?limit=${limit}`)
+      .then(r => r.data.data),
+
+  transition: (id: string, newStatus: string, reason: string, userId: string) =>
+    api.put<{ success: boolean; data: Asset }>(`/api/assets/${id}/transition`, { newStatus, reason, userId })
+      .then(r => r.data.data),
+
+  getTimeline: (assetId: string, params: { limit?: number; offset?: number; event_type?: string } = {}) =>
+    api.get<{ success: boolean; data: AssetEvent[]; total: number }>(`/api/asset-events/${assetId}/timeline`, { params })
+      .then(r => ({ events: r.data.data, total: r.data.total })),
+
+  getDigitalTwinSummary: (assetId: string) =>
+    api.get<{ success: boolean; data: DigitalTwinSummary }>(`/api/asset-events/${assetId}/summary`)
       .then(r => r.data.data),
 };

@@ -504,6 +504,29 @@
   ],
   "assets": [
     {
+      "id": "338d4279-485e-4b9f-a137-333053e332a9",
+      "name": "rrrrr",
+      "type": "HVAC",
+      "brand": "rrrrr",
+      "model": "rrrr",
+      "serial_number": "111111",
+      "scene_id": "14928d8f-ae50-4d3f-8556-12cf6df811bc",
+      "yaw": 2.30622669866159,
+      "pitch": -0.18757516166088806,
+      "floor": null,
+      "room": null,
+      "status": "commissioning",
+      "walkthrough_id": "1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4",
+      "org_id": null,
+      "property_id": null,
+      "purchase_date": "2026-11-11",
+      "warranty_date": "2026-12-12",
+      "compliance": null,
+      "created_at": "2026-05-01T13:34:03.976Z",
+      "updated_at": "2026-05-01T13:34:03.976Z",
+      "health_score": 96
+    },
+    {
       "id": "bfabacd8-ef58-4c67-8857-e226697f89df",
       "name": "eee",
       "type": "HVAC",
@@ -524,7 +547,7 @@
       "compliance": null,
       "created_at": "2026-04-30T16:06:59.237Z",
       "updated_at": "2026-04-30T16:06:59.238Z",
-      "health_score": 84
+      "health_score": 92
     },
     {
       "id": "ab6773a8-c760-475f-893d-2ea525f9a039",
@@ -569,7 +592,7 @@
       "warranty_date": null,
       "created_at": "2026-04-29T06:25:17.560Z",
       "updated_at": "2026-04-29T06:25:17.561Z",
-      "health_score": 92
+      "health_score": 100
     },
     {
       "id": "edf6a51d-5938-48d4-ae8f-bb68343619bd",
@@ -587,7 +610,7 @@
       "walkthrough_id": "1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4",
       "created_at": "2026-04-26T16:04:10.642Z",
       "updated_at": "2026-04-26T16:04:10.642Z",
-      "health_score": 92
+      "health_score": 100
     },
     {
       "id": "083b074d-e9f1-49aa-850f-a61eb460cb9c",
@@ -641,6 +664,39 @@
   ],
   "checklist_templates": [
     {
+      "id": "5c59476f-fc23-469e-9088-26df92f8128e",
+      "name": "Test",
+      "description": "",
+      "items": [
+        {
+          "label": "W",
+          "id": "95da8a63-6e59-4553-96cc-26c2d167e6f6_0"
+        },
+        {
+          "label": "a",
+          "id": "9de4b538-fa3e-4980-9799-7299325c50ac_1"
+        },
+        {
+          "label": "b",
+          "id": "8699742c-f8a8-488c-a171-03f24e11704e_2"
+        },
+        {
+          "label": "c",
+          "id": "70d2fbcf-6414-4ad8-9772-dfdef91e539a_3"
+        },
+        {
+          "label": "d",
+          "id": "f2e96e13-447d-4d0e-83ce-b26dfa60dc15_4"
+        },
+        {
+          "label": "e",
+          "id": "5d2b16c9-489a-426b-8da7-b304f1115889_5"
+        }
+      ],
+      "created_at": "2026-05-01T14:33:36.418Z",
+      "updated_at": "2026-05-01T14:33:36.418Z"
+    },
+    {
       "id": "8223aa22-6647-4c8d-bc7f-c40322807120",
       "name": "ccv",
       "description": "xxcxvxv",
@@ -665,34 +721,34 @@
   ],
   "inspections": [
     {
-      "id": "5c71d487-f992-42a3-b8bb-0078ea88a303",
-      "walkthrough_id": "walk-1",
-      "title": "Inspection for asset test-asset-1",
+      "id": "c0424ed7-207b-46cb-aaf4-a4f900405f77",
+      "walkthrough_id": "1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4",
+      "title": "Inspection for asset edf6a51d-5938-48d4-ae8f-bb68343619bd",
       "status": "in_progress",
       "items": [
         {
-          "label": "Check filters",
+          "label": "wwwww",
           "checked": false,
-          "created_at": "2026-04-29T21:34:00.737Z",
-          "id": "695a6f01-a294-45fe-9e6f-2e5192491119_0"
+          "created_at": "2026-04-30T17:40:52.105Z",
+          "id": "0d4681ec-34ca-4593-bf2b-f572587c009b_0"
         },
         {
-          "label": "Inspect belts",
+          "label": "sdsdsd",
           "checked": false,
-          "created_at": "2026-04-29T21:34:00.737Z",
-          "id": "ecdcf5a8-d3f0-4ece-9673-7ea857a6f471_1"
+          "created_at": "2026-04-30T17:40:52.105Z",
+          "id": "1d4aeda8-6d8f-44cf-b127-d36350c7ab1a_1"
         },
         {
-          "label": "Test operation",
+          "label": "dssds",
           "checked": false,
-          "created_at": "2026-04-29T21:34:00.737Z",
-          "id": "d3be060a-d5c1-48ac-94cf-191316cce31f_2"
+          "created_at": "2026-04-30T17:40:52.105Z",
+          "id": "5ca81409-30db-4bcb-a700-2f6e5464b162_2"
         }
       ],
-      "created_at": "2026-04-29T21:34:00.737Z",
-      "updated_at": "2026-04-29T21:34:00.740Z",
-      "asset_id": "test-asset-1",
-      "due_date": "2026-05-14T21:34:00.736Z",
+      "created_at": "2026-04-30T17:40:52.118Z",
+      "updated_at": "2026-04-30T17:40:52.129Z",
+      "asset_id": "edf6a51d-5938-48d4-ae8f-bb68343619bd",
+      "due_date": "2026-04-30T17:40:51.914Z",
       "auto_generated": true
     },
     {
@@ -727,37 +783,111 @@
       "auto_generated": true
     },
     {
-      "id": "c0424ed7-207b-46cb-aaf4-a4f900405f77",
-      "walkthrough_id": "1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4",
-      "title": "Inspection for asset edf6a51d-5938-48d4-ae8f-bb68343619bd",
+      "id": "5c71d487-f992-42a3-b8bb-0078ea88a303",
+      "walkthrough_id": "walk-1",
+      "title": "Inspection for asset test-asset-1",
       "status": "in_progress",
       "items": [
         {
-          "label": "wwwww",
+          "label": "Check filters",
           "checked": false,
-          "created_at": "2026-04-30T17:40:52.105Z",
-          "id": "0d4681ec-34ca-4593-bf2b-f572587c009b_0"
+          "created_at": "2026-04-29T21:34:00.737Z",
+          "id": "695a6f01-a294-45fe-9e6f-2e5192491119_0"
         },
         {
-          "label": "sdsdsd",
+          "label": "Inspect belts",
           "checked": false,
-          "created_at": "2026-04-30T17:40:52.105Z",
-          "id": "1d4aeda8-6d8f-44cf-b127-d36350c7ab1a_1"
+          "created_at": "2026-04-29T21:34:00.737Z",
+          "id": "ecdcf5a8-d3f0-4ece-9673-7ea857a6f471_1"
         },
         {
-          "label": "dssds",
+          "label": "Test operation",
           "checked": false,
-          "created_at": "2026-04-30T17:40:52.105Z",
-          "id": "5ca81409-30db-4bcb-a700-2f6e5464b162_2"
+          "created_at": "2026-04-29T21:34:00.737Z",
+          "id": "d3be060a-d5c1-48ac-94cf-191316cce31f_2"
         }
       ],
-      "created_at": "2026-04-30T17:40:52.118Z",
-      "updated_at": "2026-04-30T17:40:52.129Z",
-      "asset_id": "edf6a51d-5938-48d4-ae8f-bb68343619bd",
-      "due_date": "2026-04-30T17:40:51.914Z",
+      "created_at": "2026-04-29T21:34:00.737Z",
+      "updated_at": "2026-04-29T21:34:00.740Z",
+      "asset_id": "test-asset-1",
+      "due_date": "2026-05-14T21:34:00.736Z",
+      "auto_generated": true
+    },
+    {
+      "id": "966801d2-4bdd-482e-9fe0-fc8f249acd73",
+      "walkthrough_id": "1dc7fa90-b9e5-4242-b66e-8b0b6170a8b4",
+      "title": "Inspection for asset bfabacd8-ef58-4c67-8857-e226697f89df",
+      "status": "in_progress",
+      "items": [
+        {
+          "label": "W",
+          "checked": false,
+          "created_at": "2026-05-01T14:46:50.349Z",
+          "id": "7c0a3604-497c-4598-a266-29aae0369166_0"
+        },
+        {
+          "label": "a",
+          "checked": false,
+          "created_at": "2026-05-01T14:46:50.349Z",
+          "id": "e7b99bd8-1fb2-4f84-8b88-97439a55ecfd_1"
+        },
+        {
+          "label": "b",
+          "checked": false,
+          "created_at": "2026-05-01T14:46:50.349Z",
+          "id": "0f628e96-c8ac-4705-9822-9e3511b95df4_2"
+        },
+        {
+          "label": "c",
+          "checked": false,
+          "created_at": "2026-05-01T14:46:50.349Z",
+          "id": "e5d5b2db-d5ca-4e62-872a-0120bc9bd4f9_3"
+        },
+        {
+          "label": "d",
+          "checked": false,
+          "created_at": "2026-05-01T14:46:50.349Z",
+          "id": "a8a94fdc-b7d7-4a3c-877b-9bb3f8f83d7d_4"
+        },
+        {
+          "label": "e",
+          "checked": false,
+          "created_at": "2026-05-01T14:46:50.349Z",
+          "id": "83186ca1-6d17-4c71-b8bd-a8909a897f7c_5"
+        }
+      ],
+      "created_at": "2026-05-01T14:46:50.349Z",
+      "updated_at": "2026-05-01T14:46:50.353Z",
+      "asset_id": "bfabacd8-ef58-4c67-8857-e226697f89df",
+      "due_date": "2026-02-20",
       "auto_generated": true
     }
   ],
   "organizations": [],
-  "work_orders": []
+  "work_orders": [
+    {
+      "id": "86679d4e-89b2-4926-9dda-0c038f193d03",
+      "asset_id": "bfabacd8-ef58-4c67-8857-e226697f89df",
+      "title": "c c",
+      "description": "x",
+      "priority": "medium",
+      "status": "pending",
+      "due_date": null,
+      "assigned_to": null,
+      "created_at": "2026-05-01T13:27:57.684Z",
+      "updated_at": "2026-05-01T13:27:57.684Z"
+    },
+    {
+      "id": "674820be-bb07-483f-838a-84e02b7e40df",
+      "asset_id": "ab6773a8-c760-475f-893d-2ea525f9a039",
+      "title": "wfwsfscsx",
+      "description": "sdsds",
+      "priority": "medium",
+      "status": "pending",
+      "due_date": null,
+      "assigned_to": null,
+      "created_at": "2026-05-01T14:29:00.485Z",
+      "updated_at": "2026-05-01T14:29:00.485Z"
+    }
+  ]
 }

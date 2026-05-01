@@ -7,8 +7,6 @@ export interface IssueAttachment {
 }
 
 export interface Issue {
-  resolution_image_url?: string;
-  resolved_at?: string;
   id: string;
   walkthrough_id: string;
   scene_id: string;
@@ -16,12 +14,46 @@ export interface Issue {
   pitch: number; // Panorama pitch coordinate (radians)
   floor?: number; // Optional floor number
   room?: string; // Optional room name
-  title: string;
-  description: string;
-  status: 'open' | 'in-progress' | 'resolved' | 'closed';
+  asset_id?: string; // optional link to an asset
+  type: 'damage' | 'safety' | 'maintenance' | 'compliance' | 'custom';
+  severity: 'low' | 'medium' | 'high' | 'critical';
   priority: 'low' | 'medium' | 'high' | 'critical';
-  org_id?: string;         // organization that owns this issue
-  property_id?: string;     // specific property (if different from walkthrough)
+  status: 'open' | 'assigned' | 'in_progress' | 'pending_approval' | 'resolved' | 'verified' | 'closed' | 'reopened' | 'scheduled' | 'completed' | 'signed_off';
+  title: string;
+  description?: string;
+  assigned_to?: string;
+  due_date?: string;
+  resolution_proof_url?: string;
+  history?: IssueHistory[];
+  comments?: IssueComment[];
   attachments?: IssueAttachment[];
+  created_at: string;
+  updated_at: string;
 }
-export type CreateIssueData = Omit<Issue, 'id'>;
+
+export interface IssueHistory {
+  id: string;
+  issue_id: string;
+  action: string;
+  field?: string;
+  old_value?: any;
+  new_value?: any;
+  user_id: string;
+  user_name?: string;
+  timestamp?: string;
+  details?: string;
+  created_at: string;
+}
+
+export interface IssueComment {
+  id: string;
+  user_id: string;
+  user_name: string;
+  body: string;
+  timestamp: string;
+  attachments?: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export type CreateIssueData = Omit<Issue, 'id' | 'created_at' | 'updated_at' | 'history' | 'comments' | 'attachments'>;

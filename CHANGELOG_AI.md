@@ -4,6 +4,92 @@ All changes made with Claude assistance, documenting what changed and why.
 
 ---
 
+## 2026-05-01 - Asset Timeline Label Fix
+
+### What Changed
+1. **frontend/src/components/assets/AssetTimeline.tsx** - Fixed typo in `eventTypeLabels`
+   - Changed key `maintined` to `maintained` to match `AssetEventType` enum
+   - Ensures "Maintained" events display correct label instead of raw enum value
+
+### Why
+- Typo caused incorrect label rendering for maintenance events in asset timeline
+- Aligns UI labels with backend event type enum for consistency
+
+### Testing
+- Frontend build passes
+- Event labels now correctly display "Maintained" for maintenance events
+
+---
+
+## 2026-05-01 - Asset State & Timeline Test Script
+
+### What Changed
+1. **test_asset_state_and_timeline.ps1** – PowerShell script added to verify:
+   - Asset State Machine transitions (Module 8)
+   - Timeline event logging and pagination (Module 9)
+   - Digital Twin summary calculation
+2. Script prints API responses, making it easy to spot failures.
+
+### Why
+- Provides a quick manual smoke-test for critical asset functionality after changes.
+- Helps developers and QA verify that state transitions, event logging, and summary calculations work as expected without writing full automated test suites.
+
+### How to Run
+1. Start the backend (`npm run dev`).
+2. Obtain a valid JWT (login in the UI, copy the token from localStorage).
+3. Replace `REPLACE_WITH_YOUR_JWT` in the script.
+4. Execute `.\test_asset_state_and_timeline.ps1` in PowerShell.
+5. Observe the ✅/❌ output.
+
+---
+
+## 2026-05-01 - TypeScript Build Fixes (Frontend)
+
+### What Changed
+1. **frontend/src/api/assetsApi.ts** - Added missing type imports
+   - Added `AssetEvent` and `DigitalTwinSummary` to imports from `@/types`
+
+2. **frontend/src/pages/AssetDetail.tsx** - Removed duplicate import
+   - Removed duplicate `import { useState } from 'react'`
+
+3. **frontend/src/types/issue.ts** - Updated Issue interface
+   - Added `asset_id?: string` to `Issue` interface
+   - Updated `CreateIssueData` to make `status` and `priority` optional
+
+4. **frontend/src/components/viewer/IssueFormModal.tsx** - Fixed type errors
+   - Corrected `asset_id` handling in form data
+   - Fixed type assertions for `severity`, `priority`, `status` fields
+   - Added proper type imports from `@/types/issue`
+
+5. **frontend/src/components/assets/InspectionsTab.tsx** - Fixed status comparison
+   - Changed `'scheduled'` to proper filter checking `status !== 'completed' && status !== 'signed_off'`
+
+6. **frontend/src/pages/AssetManagement.tsx** - Added missing imports
+   - Added `Search` icon import from `lucide-react`
+   - Added `BulkImport` component import
+
+7. **frontend/src/components/assets/AssetQuickPanel.tsx** - Added mode prop
+   - Added `mode?: 'view' | 'inspect' | 'maintain'` prop
+   - Initial tab now set based on mode prop
+
+8. **backend/src/types/issue.ts** - Extended Issue interface
+   - Added `asset_id?: string` field
+   - Extended `status` union to include `'scheduled' | 'completed' | 'signed_off'`
+
+### Why
+- Frontend build was failing with 8+ TypeScript errors
+- Missing type imports caused `Cannot find name` errors
+- `asset_id` field was used in forms but missing from `Issue` type
+- `CreateIssueData` required `status` and `priority` but form didn't always provide them
+- Status comparisons used values not in the type union
+
+### Testing
+- ✅ `npm run build` now succeeds with no TypeScript errors
+- All type errors resolved
+- Frontend builds successfully to `dist/`
+
+---
+
 ## 2026-04-29 - Module 3: Asset Management (Task 3.2 - Asset-Scene Mapping)
 
 ## 2026-04-29 - Module 1: Core Viewer Enhancements Complete

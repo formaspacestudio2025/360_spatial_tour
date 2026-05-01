@@ -2,7 +2,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { assetsApi } from '@/api/assetsApi';
 import { Asset } from '@/types';
-import { ArrowLeft, Map, Calendar, QrCode, Box, AlertCircle, FileText, Activity } from 'lucide-react';
+import { ArrowLeft, Map, Calendar, QrCode, Box, AlertCircle, FileText, Activity, ArrowRight, History } from 'lucide-react';
 import QRModal from '@/components/assets/QRModal';
 import DocumentUpload from '@/components/assets/DocumentUpload';
 import HealthBadge from '@/components/assets/HealthBadge';
@@ -10,13 +10,20 @@ import PMSchedule from '@/components/assets/PMSchedule';
 import ComplianceTags from '@/components/assets/ComplianceTags';
 import { useState } from 'react';
 import LifecycleTab from '@/components/assets/LifecycleTab';
+import AssetTimeline from '@/components/assets/AssetTimeline';
+import { useAuthStore } from '@/stores/authStore';
 
 const AssetDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [showQR, setShowQR] = useState(false);
   const [showLifecycle, setShowLifecycle] = useState(false);
+  const [showTransitionModal, setShowTransitionModal] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [reason, setReason] = useState('');
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const queryClient = useQueryClient();
+  const { user } = useAuthStore();
 
   const { data: asset, isLoading, error } = useQuery({
     queryKey: ['asset', id],
@@ -27,6 +34,12 @@ const AssetDetail: React.FC = () => {
   const { data: documents = [], refetch: refetchDocuments } = useQuery({
     queryKey: ['asset-documents', id],
     queryFn: () => assetsApi.getDocuments(id!),
+    enabled: !!id,
+  });
+
+  const { data: twinSummary } = useQuery({
+    queryKey: ['asset-twin-summary', id],
+    queryFn: () => assetsApi.getDigitalTwinSummary(id!),
     enabled: !!id,
   });
 
@@ -68,9 +81,38 @@ const AssetDetail: React.FC = () => {
   };
 
   const statusColors: Record<string, string> = {
+    commissioning: 'bg-blue-500/20 text-blue-400',
     active: 'bg-green-500/20 text-green-400',
     maintenance: 'bg-yellow-500/20 text-yellow-400',
-    retired: 'bg-gray-500/20 text-gray-400',
+    repair: 'bg-red-500/20 text-red-400',
+    decommissioned: 'bg-gray-400/20 text-gray-400',
+    disposed: 'bg-gray-600/20 text-gray-500',
+  };
+
+  const allowedTransitionsMap: Record<string, string[]> = {
+    commissioning: ['active'],
+    active: ['maintenance', 'repair', 'decommissioned'],
+    maintenance: ['active', 'repair'],
+    repair: ['active', 'maintenance'],
+    decommissioned: ['disposed', 'active'],
+    disposed: [],
+  };
+  const allowedTransitions = allowedTransitionsMap[a.status] || [];
+
+  const handleTransition = async () => {
+    if (!selectedStatus || !reason.trim()) return;
+    setIsTransitioning(true);
+    try {
+      await assetsApi.transition(id!, selectedStatus, reason, user?.id || 'unknown');
+      setShowTransitionModal(false);
+      setSelectedStatus('');
+      setReason('');
+      queryClient.invalidateQueries({ queryKey: ['asset', id] });
+    } catch (error: any) {
+      alert('Transition failed: ' + error.message);
+    } finally {
+      setIsTransitioning(false);
+    }
   };
 
   return (
@@ -128,6 +170,14 @@ const AssetDetail: React.FC = () => {
                 <span className={`text-xs px-3 py-1 rounded-full ${statusColors[a.status]}`}>
                   {a.status}
                 </span>
+                {allowedTransitions.length > 0 && (
+                  <button
+                    onClick={() => setShowTransitionModal(true)}
+                    className="ml-2 text-xs px-2 py-1 bg-gray-800 hover:bg-gray-700 rounded"
+                  >
+                    Change State
+                  </button>
+                )}
                 {a.health_score !== undefined && (
                   <HealthBadge assetId={a.id} score={a.health_score} size="sm" />
                 )}
@@ -248,6 +298,94 @@ const AssetDetail: React.FC = () => {
               }} />
             )}
 
+            {/* State History */}
+            {a.transition_history && a.transition_history.length > 0 && (
+              <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <History size={18} />
+                  State History
+                </h3>
+                <div className="space-y-3 max-h-60 overflow-y-auto">
+                  {a.transition_history.slice().reverse().map((trans: any, idx: number) => (
+                    <div key={idx} className="flex items-start gap-3 text-sm border-b border-gray-800 pb-3 last:border-0">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-0.5 rounded text-xs ${statusColors[trans.from_status] || 'bg-gray-500/20 text-gray-400'}`}>
+                            {trans.from_status}
+                          </span>
+                          <ArrowRight size={12} className="text-gray-500" />
+                          <span className={`px-2 py-0.5 rounded text-xs ${statusColors[trans.to_status] || 'bg-gray-500/20 text-gray-400'}`}>
+                            {trans.to_status}
+                          </span>
+                        </div>
+                        <p className="text-gray-400 mt-1">{trans.reason}</p>
+                        <p className="text-gray-500 text-xs mt-1">
+                          {new Date(trans.timestamp).toLocaleString()} by {trans.user_id}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Asset Timeline */}
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <History size={18} />
+                Asset Timeline
+              </h3>
+              <AssetTimeline assetId={a.id} />
+            </div>
+
+            {/* Digital Twin Summary */}
+            {twinSummary && (
+              <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Activity size={18} />
+                  Digital Twin Summary
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-gray-500">Total Inspections</p>
+                    <p className="text-white text-xl font-bold">{twinSummary.total_inspections}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Total Maintenance</p>
+                    <p className="text-white text-xl font-bold">{twinSummary.total_maintenance}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Issues Resolved</p>
+                    <p className="text-white text-xl font-bold">{twinSummary.resolved_issues}/{twinSummary.total_issues}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Uptime</p>
+                    <p className="text-white text-xl font-bold">{twinSummary.uptime_percentage.toFixed(1)}%</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">MTBF (days)</p>
+                    <p className="text-white text-xl font-bold">{twinSummary.mtbf_days}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Total Cost</p>
+                    <p className="text-white text-xl font-bold">${twinSummary.total_cost.toFixed(2)}</p>
+                  </div>
+                </div>
+                <div className="mt-4 pt-4 border-t border-gray-800">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500">Health Trend:</span>
+                    <span className={`text-xs px-2 py-1 rounded-full ${
+                      twinSummary.health_trend === 'improving' ? 'bg-green-500/20 text-green-400' :
+                      twinSummary.health_trend === 'declining' ? 'bg-red-500/20 text-red-400' :
+                      'bg-gray-500/20 text-gray-400'
+                    }`}>
+                      {twinSummary.health_trend}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
           </div> {/* closes md:col-span-2 */}
 
           {/* Sidebar */}
@@ -311,6 +449,51 @@ const AssetDetail: React.FC = () => {
           assetName={a.name}
           onClose={() => setShowQR(false)}
         />
+      )}
+
+      {/* State Transition Modal */}
+      {showTransitionModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">Change Asset State</h2>
+              <button
+                onClick={() => setShowTransitionModal(false)}
+                className="p-1 text-gray-400 hover:text-white transition-colors"
+              >
+                <ArrowLeft size={20} />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <label className="block text-sm mb-1">New Status</label>
+              <select
+                value={selectedStatus}
+                onChange={e => setSelectedStatus(e.target.value)}
+                className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white"
+              >
+                <option value="" disabled>Select status</option>
+                {allowedTransitions.map(st => (
+                  <option key={st} value={st}>{st}</option>
+                ))}
+              </select>
+              <label className="block text-sm mb-1">Reason</label>
+              <textarea
+                value={reason}
+                onChange={e => setReason(e.target.value)}
+                className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white"
+                rows={3}
+                placeholder="Explain why the state is changing"
+              />
+              <button
+                onClick={handleTransition}
+                disabled={isTransitioning || !selectedStatus || !reason.trim()}
+                className="w-full px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded disabled:opacity-50"
+              >
+                {isTransitioning ? 'Updating...' : 'Update State'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Lifecycle Modal */}

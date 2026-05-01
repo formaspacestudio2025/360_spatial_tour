@@ -20,9 +20,12 @@ function yawPitchToPosition(yaw: number, pitch: number, radius: number = 25): TH
 }
 
 const statusColors: Record<string, string> = {
-  active: '#22c55e',      // green
-  maintenance: '#f59e0b',  // amber
-  retired: '#6b7280',     // gray
+  commissioning: '#3b82f6', // blue
+  active: '#22c55e',        // green
+  maintenance: '#f59e0b',    // amber
+  repair: '#ef4444',         // red
+  decommissioned: '#9ca3af', // light gray
+  disposed: '#6b7280',       // gray
 };
 
 const typeColors: Record<string, string> = {

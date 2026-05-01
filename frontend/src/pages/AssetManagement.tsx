@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { assetsApi } from '@/api/assetsApi';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Pencil, Trash2, Box, Map, QrCode, Calendar, X, Navigation2, Upload, Download } from 'lucide-react';
+import { ArrowLeft, Plus, Pencil, Trash2, Box, Map, QrCode, Calendar, X, Navigation2, Upload, Download, Search } from 'lucide-react';
 import { Asset, AssetType } from '@/types';
 import QRModal from '@/components/assets/QRModal';
 import HealthBadge from '@/components/assets/HealthBadge';
 import LifecycleTab from '@/components/assets/LifecycleTab';
 import ChecklistEngineTab from '@/components/assets/ChecklistEngineTab';
 import InspectionsTab from '@/components/assets/InspectionsTab';
+import BulkImport from '@/components/assets/BulkImport';
 
 type AdminTab = 'assets' | 'checklists' | 'inspections';
 

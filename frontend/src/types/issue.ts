@@ -39,10 +39,11 @@ export interface Issue {
   pitch: number;
   floor?: number;
   room?: string;
+  asset_id?: string; // optional link to an asset
   type: 'damage' | 'safety' | 'maintenance' | 'compliance' | 'custom';
   severity: 'low' | 'medium' | 'high' | 'critical';
   priority: 'low' | 'medium' | 'high' | 'critical';
-  status: 'open' | 'assigned' | 'in_progress' | 'pending_approval' | 'resolved' | 'verified' | 'closed' | 'reopened';
+  status: 'open' | 'assigned' | 'in_progress' | 'pending_approval' | 'resolved' | 'verified' | 'closed' | 'reopened' | 'scheduled' | 'completed' | 'signed_off';
   title: string;
   description?: string;
   assigned_to?: string;
