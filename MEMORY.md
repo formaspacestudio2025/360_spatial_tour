@@ -14,6 +14,16 @@
   - `issueManagement/EditIssueStatus.tsx` - Issue status editor
   - `viewer/AssetFormModal.tsx` - Asset creation/editing form modal
   - `viewer/AssetMarker.tsx` - 3D asset marker in 360° viewer
+  - `assets/LifecycleTab.tsx` - Asset lifecycle management
+  - `assets/QRModal.tsx` - QR code generation for assets
+  - `graph/SceneGraphEditor.tsx` - Visual scene graph editor
+  - `graph/SceneNode.tsx` - Scene node component for graph
+  - `graph/GraphToolbar.tsx` - Toolbar for graph editor
+  - `viewer/BulkUpload.tsx` - Bulk file upload component
+  - `viewer/MediaManager.tsx` - Media management interface
+  - `viewer/NadirPatch.tsx` - Nadir patch editing
+  - `viewer/SceneSettings.tsx` - Scene configuration
+  - `viewer/ViewModeToolbar.tsx` - View mode switching
   - `walkthrough/` - Walkthrough CRUD components
   - `auth/ProtectedRoute.tsx` - Route guard
 - **API Layer**: `api/client.ts` (axios instance with auth interceptor), `api/walkthroughs.ts`, `api/issuesApi.ts`, `api/usersApi.ts`, `api/assetsApi.ts`
@@ -22,15 +32,15 @@
 
 ## Backend Structure (backend/src/)
 - **Entry**: `index.ts` (Express + CORS + JSON middleware)
-- **Routes**: `routes/` (auth, dashboard, walkthroughs, scenes, hotspots, hotspot-media, hotspot-links, ai, issuesRoutes, assetsRoutes, index.ts)
-- **Services**: `services/issue.service.ts`, `services/ai.service.ts`, `services/asset.service.ts`
+- **Routes**: `routes/` (auth, dashboard, walkthroughs, scenes, hotspots, hotspot-media, hotspot-links, ai, issuesRoutes, assetsRoutes, orgs, inspections, qrcode, reports, index.ts)
+- **Services**: `services/issue.service.ts`, `services/ai.service.ts`, `services/asset.service.ts`, `services/inspection.service.ts`, `services/qrcode.service.ts`, `services/report.service.ts`
 - **Database**: `config/database.ts` (JSON file-based, NOT SQLite), `data/db.json`
 - **Types**: `types/issue.ts`, `types/asset.ts`
 
 ## Database Flow
 - **Type**: JSON file store (`backend/data/db.json`)
 - **Wrapper**: `config/database.ts` emulates SQLite API (prepare/run/all/get)
-- **Tables**: users, walkthroughs, scenes, navigation_edges, ai_tags, issues, versions, walkthrough_members, comments, hotspot_media, hotspot_links
+- **Tables**: users, walkthroughs, scenes, navigation_edges, ai_tags, issues, assets, versions, walkthrough_members, comments, hotspot_media, hotspot_links, organizations
 - **Persistence**: Auto-saves to `db.json` on write operations
 
 ## Authentication Flow
