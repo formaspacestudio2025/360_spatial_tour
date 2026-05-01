@@ -43,7 +43,10 @@ const AssetQuickPanel: React.FC<AssetQuickPanelProps> = ({ assetId, onClose, mod
   ];
 
   return (
-    <div className="fixed right-0 top-0 h-full w-full max-w-md bg-gray-900 border-l border-gray-800 shadow-2xl z-40 flex flex-col animate-in slide-in-from-right duration-300">
+    <>
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black/50" />
+      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-gray-900 border-l border-gray-800 shadow-2xl z-40 flex flex-col animate-in slide-in-from-right duration-300">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-800 bg-gray-900/95 backdrop-blur-sm sticky top-0 z-10">
         <div>
