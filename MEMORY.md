@@ -14,6 +14,16 @@
   - `issueManagement/EditIssueStatus.tsx` - Issue status editor
   - `viewer/AssetFormModal.tsx` - Asset creation/editing form modal
   - `viewer/AssetMarker.tsx` - 3D asset marker in 360° viewer
+  - `assets/LifecycleTab.tsx` - Asset lifecycle management
+  - `assets/QRModal.tsx` - QR code generation for assets
+  - `graph/SceneGraphEditor.tsx` - Visual scene graph editor
+  - `graph/SceneNode.tsx` - Scene node component for graph
+  - `graph/GraphToolbar.tsx` - Toolbar for graph editor
+  - `viewer/BulkUpload.tsx` - Bulk file upload component
+  - `viewer/MediaManager.tsx` - Media management interface
+  - `viewer/NadirPatch.tsx` - Nadir patch editing
+  - `viewer/SceneSettings.tsx` - Scene configuration
+  - `viewer/ViewModeToolbar.tsx` - View mode switching
   - `walkthrough/` - Walkthrough CRUD components
   - `auth/ProtectedRoute.tsx` - Route guard
 - **API Layer**: `api/client.ts` (axios instance with auth interceptor), `api/walkthroughs.ts`, `api/issuesApi.ts`, `api/usersApi.ts`, `api/assetsApi.ts`
@@ -22,15 +32,15 @@
 
 ## Backend Structure (backend/src/)
 - **Entry**: `index.ts` (Express + CORS + JSON middleware)
-- **Routes**: `routes/` (auth, dashboard, walkthroughs, scenes, hotspots, hotspot-media, hotspot-links, ai, issuesRoutes, assetsRoutes, index.ts)
-- **Services**: `services/issue.service.ts`, `services/ai.service.ts`, `services/asset.service.ts`
+- **Routes**: `routes/` (auth, dashboard, walkthroughs, scenes, hotspots, hotspot-media, hotspot-links, ai, issuesRoutes, assetsRoutes, orgs, inspections, qrcode, reports, index.ts)
+- **Services**: `services/issue.service.ts`, `services/ai.service.ts`, `services/asset.service.ts`, `services/inspection.service.ts`, `services/qrcode.service.ts`, `services/report.service.ts`
 - **Database**: `config/database.ts` (JSON file-based, NOT SQLite), `data/db.json`
 - **Types**: `types/issue.ts`, `types/asset.ts`
 
 ## Database Flow
 - **Type**: JSON file store (`backend/data/db.json`)
 - **Wrapper**: `config/database.ts` emulates SQLite API (prepare/run/all/get)
-- **Tables**: users, walkthroughs, scenes, navigation_edges, ai_tags, issues, versions, walkthrough_members, comments, hotspot_media, hotspot_links
+- **Tables**: users, walkthroughs, scenes, navigation_edges, ai_tags, issues, assets, versions, walkthrough_members, comments, hotspot_media, hotspot_links, organizations
 - **Persistence**: Auto-saves to `db.json` on write operations
 
 ## Authentication Flow
@@ -157,16 +167,16 @@
 157: 25. Smooth Transitions & Target View Capture (added: real-time camera orientation tracking in `viewerStore`, "Capture Current View" button in `HotspotEditor`, and smooth crossfade transitions in `Viewer360`).
 158: 26. Black Screen Bug Fix (fixed: missing `opacity` prop in `SceneContent` component caused scene to remain invisible after refactor).
 159: 27. Performance Optimization (fixed: high-frequency camera rotation updates in `viewerStore` were causing massive re-renders of the entire `WalkthroughViewer` component. Switched to specific selectors and added meaningful change threshold).
-28. Asset-Scene Mapping (added: `onAssetClick` prop to Viewer360/SceneContent/AssetMarker, `handleAssetClick` in WalkthroughViewer to jump to asset's scene or focus camera, "Jump to Scene" button in AssetManagement with navigation to `/walkthrough/:id?scene=:scene_id`, AssetDetail page with route `/assets/:id` showing full asset details, QR code, lifecycle tab, quick actions).
-29. HotspotEditor.tsx bug fixes (fixed malformed JSX comment at line 539 `/* Target Scene *//}` → `/* Target Scene */}`, fixed `target_yaw` type mismatch from `number | null` to `number | undefined` in two places, fixed `onSceneChange` type in Viewer360Props to accept 3 arguments).
-30. Asset Module 3.2 Complete (Asset markers are now clickable in 360° viewer, clicking jumps to the scene where asset is located with camera orientation, or focuses camera on asset if already in same scene. AssetManagement list has "Jump to Scene" button. AssetDetail page provides comprehensive asset view with QR code and lifecycle info).
-31. Module 1.1 Inspection Mode implemented (added: `InspectionSidebar.tsx` component with red overlay UI, safety checklist with categories (Safety, Structural, Electrical, Plumbing, HVAC, Fire Safety, Accessibility, Cleanliness), required vs optional item tracking, progress tracking, export functionality, integrated into `WalkthroughViewer` with mode toggle).
-32. Module 1.2 Maintenance Mode implemented (added: `MaintenanceOverlay.tsx` component with asset tag highlighting, work order context, work order creation and management, priority-based filtering and status tracking, asset-to-work-order mapping, integrated into `WalkthroughViewer` with mode toggle).
-33. Module 1.3 Emergency Mode implemented (added: `EmergencyOverlay.tsx` component with red banners, emergency contacts display, evacuation routes with distance/time estimates, emergency reporting system (fire, medical, flood, power, security, other), safety guidelines, integrated into `WalkthroughViewer` with mode toggle).
-34. Module 1.4 Guided Tour Mode implemented (added: `TourControls.tsx` component with auto-advance scenes, configurable duration, narration text display, step counter and progress tracking, playback controls (play/pause/stop/next/previous), integrated into `WalkthroughViewer` with new Tour tab).
-35. Module 1.5 Floor Navigation UI implemented (added: `FloorSelector.tsx` component with floor selector, scene filtering by floor, scene count per floor, quick navigation between floors, integrated into `WalkthroughViewer` Scenes tab).
-36. Module 1.6 Hotspot Permissions implemented (added: `required_role` field to Hotspot type in backend and frontend, backend role-based filtering, `PinPrompt.tsx` component for restricted hotspots, visual lock indicators on restricted hotspots, role hierarchy checks in `HotspotMarker.tsx`).
-37. Module 1.7 Hotspot Categories implemented (added: `HotspotCategory` enum (navigation, information, warning, issue, media, document, custom), `HotspotFilters.tsx` component with dynamic filtering by category, category counts and visual indicators, integrated into `WalkthroughViewer` Hotspots tab).
-38. Module 1.8 Smart Scene Switch implemented (added: `Breadcrumbs.tsx` component, `navigation.ts` utilities with nearest scene suggestions, breadcrumb trail navigation, back button functionality, navigation utilities for scene relationships, integrated into `WalkthroughViewer` Scenes tab).
-39. Module 1.9 Minimap implemented (added: `Minimap.tsx` component with 2D floor plan rendering, real-time position tracking with camera orientation, click-to-jump scene functionality, floor-specific views, integrated into `WalkthroughViewer` with new Map tab).
-40. Module 1.10 Hotspot Clustering implemented (added: `MarkerCluster.tsx` component for grouping overlapping markers into cluster icons, displays count and expands on click, zoom-based unclustering, applied to hotspots, issues, and assets in `Viewer360.tsx`).
+160: 28. Module 1.1 Inspection Mode implemented (added: `InspectionSidebar.tsx` component with red overlay UI, safety checklist with categories (Safety, Structural, Electrical, Plumbing, HVAC, Fire Safety, Accessibility, Cleanliness), required vs optional item tracking, progress tracking, export functionality, integrated into `WalkthroughViewer` with mode toggle).
+161: 29. Module 1.2 Maintenance Mode implemented (added: `MaintenanceOverlay.tsx` component with asset tag highlighting, work order context, work order creation and management, priority-based filtering and status tracking, asset-to-work-order mapping, integrated into `WalkthroughViewer` with mode toggle).
+162: 30. Module 1.3 Emergency Mode implemented (added: `EmergencyOverlay.tsx` component with red banners, emergency contacts display, evacuation routes with distance/time estimates, emergency reporting system (fire, medical, flood, power, security, other), safety guidelines, integrated into `WalkthroughViewer` with mode toggle).
+163: 31. Module 1.4 Guided Tour Mode implemented (added: `TourControls.tsx` component with auto-advance scenes, configurable duration, narration text display, step counter and progress tracking, playback controls (play/pause/stop/next/previous), integrated into `WalkthroughViewer` with new Tour tab).
+164: 32. Module 1.5 Floor Navigation UI implemented (added: `FloorSelector.tsx` component with floor selector, scene filtering by floor, scene count per floor, quick navigation between floors, integrated into `WalkthroughViewer` Scenes tab).
+165: 33. Module 1.6 Hotspot Permissions implemented (added: `required_role` field to Hotspot type in backend and frontend, backend role-based filtering, `PinPrompt.tsx` component for restricted hotspots, visual lock indicators on restricted hotspots, role hierarchy checks in `HotspotMarker.tsx`).
+166: 34. Module 1.7 Hotspot Categories implemented (added: `HotspotCategory` enum (navigation, information, warning, issue, media, document, custom), `HotspotFilters.tsx` component with dynamic filtering by category, category counts and visual indicators, integrated into `WalkthroughViewer` Hotspots tab).
+167: 35. Module 1.8 Smart Scene Switch implemented (added: `Breadcrumbs.tsx` component, `navigation.ts` utilities with nearest scene suggestions, breadcrumb trail navigation, back button functionality, navigation utilities for scene relationships, integrated into `WalkthroughViewer` Scenes tab).
+168: 36. Module 1.9 Minimap implemented (added: `Minimap.tsx` component with 2D floor plan rendering, real-time position tracking with camera orientation, click-to-jump scene functionality, floor-specific views, integrated into `WalkthroughViewer` with new Map tab).
+169: 37. Module 1.10 Hotspot Clustering implemented (added: `MarkerCluster.tsx` component for grouping overlapping markers into cluster icons, displays count and expands on click, zoom-based unclustering, applied to hotspots, issues, and assets in `Viewer360.tsx`).
+170: 38. Additional Backend Services implemented (added: `inspection.service.ts` for inspection management with CRUD operations, `qrcode.service.ts` for QR code generation with data URL and buffer output, `report.service.ts` for PDF report generation using Puppeteer).
+171: 39. Additional Frontend Components implemented (added: `SceneGraphEditor.tsx` for visual scene graph editing with React Flow, `LifecycleTab.tsx` for asset lifecycle management, `QRModal.tsx` for QR code generation, `BulkUpload.tsx` for bulk file uploads, `MediaManager.tsx` for media management, `NadirPatch.tsx` for nadir patch editing, `SceneSettings.tsx` for scene configuration, `ViewModeToolbar.tsx` for view mode switching).
+172: 40. Database Schema updated (added: `assets` and `organizations` tables to JSON database schema in `config/database.ts`, updated table list in documentation).

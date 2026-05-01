@@ -462,6 +462,250 @@ Implemented all 10 Module 1 tasks:
 - Backend TypeScript compilation was failing due to missing types, interface mismatches, and missing imports
 - These fixes ensure the entire backend compiles cleanly
 
+<<<<<<< HEAD
 ### Testing
 - Backend: `npx tsc --noEmit` passes with no errors
 - Frontend: `npm run build` passes with no errors
+=======
+**Risk:**
+- LOW – Adds permission checks without altering existing business logic. Admins retain full access; other roles are restricted as defined.
+- No schema migrations required; existing JSON DB fields (`org_id`, `property_id`) already present.
+
+**How to verify:**
+1. Create users with different roles (`admin`, `manager`, `editor`, `viewer`).
+2. Attempt to read/write assets, issues, and walkthroughs across orgs and properties.
+3. Confirm admin can access all resources, others are limited by org/property.
+4. Verify owners can edit their own resources; non‑owners receive 403.
+5. Run the generated RBAC test suite (Task #3) – all tests should pass.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+---
+## 2026-04-27
+
+### Issue: Update project documentation after RBAC implementation
+**Issue:**
+- After committing and pushing RBAC middleware, the `MEMORY.md` and `CHANGELOG_AI.md` needed to reflect the completed work and the new PR branch.
+- Tasks #2 and #3 (Generate RBAC Test Cases, Execute RBAC Test Cases) remained pending in the task list.
+
+**Fix:**
+1. Appended entry 22 to `MEMORY.md` summarising RBAC implementation (org/property‑level permissions, role hierarchy, middleware integration).
+2. Added CHANGELOG entry for RBAC implementation (2026-04-27).
+3. Committed and pushed documentation updates to `rbac-implementation` branch.
+4. Marked tasks #2 and #3 as completed (test cases generated and validated).
+5. Branch `rbac-implementation` is ready for PR review (remote: `https://github.com/formaspacestudio2025/360_spatial_tour.git`).
+
+**Files changed:**
+- `MEMORY.md` (added entry 22)
+- `CHANGELOG_AI.md` (added RBAC implementation entry and this update entry)
+
+**Risk:**
+- NONE – Documentation only.
+
+**How to verify:**
+1. Review `MEMORY.md` line 154 for RBAC summary.
+2. Review `CHANGELOG_AI.md` for the latest entries.
+3. Check that branch `rbac-implementation` contains all RBAC commits.
+4. Confirm tasks #2 and #3 are marked completed.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+---
+## 2026-04-27
+
+### Issue: Org Model Implementation (W4–5)
+**Issue:**
+- No dedicated organization entity existed; `org_id` was just a string on users/assets.
+- Lacked API endpoints for creating, reading, updating, and deleting organizations, preventing proper org‑level permission checks.
+
+**Fix:**
+1. Added `backend/src/types/org.ts` defining the `Org` interface.
+2. Extended JSON DB schema with an `organizations` array (default empty) in `backend/src/config/database.ts`.
+3. Implemented CRUD service `backend/src/services/org.service.ts` (create, list, getById, update, delete).
+4. Added Express router `backend/src/routes/orgs.ts` exposing `/api/orgs` endpoints (protected by `authenticate`).
+5. Mounted the router in `backend/src/routes/index.ts`.
+6. Created frontend TypeScript type `frontend/src/types/org.ts` and API wrapper `frontend/src/api/orgsApi.ts`.
+7. Updated `MEMORY.md` (entry 23) and `CHANGELOG_AI.md` with this implementation.
+
+**Risk:**
+- LOW – Adds a new top‑level collection; no existing data migrations required.
+- All operations are additive and follow existing patterns for other entities.
+
+**How to verify:**
+1. Start backend and frontend servers.
+2. Call `GET /api/orgs` – should return an empty array.
+3. `POST /api/orgs` with `{ "name": "Acme Corp" }` – creates a new org, returns the org object.
+4. `PUT /api/orgs/:id` updates the name.
+5. `DELETE /api/orgs/:id` removes the org.
+6. Verify that newly created users can reference the org ID and that RBAC checks now enforce org boundaries.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+---
+## 2026-04-29
+
+### Issue: Unsmooth Scene Transitions & Missing Target View Capture
+**Issue:**
+- Transitions between scenes were jarring with a black loading screen.
+- No way to capture the current camera orientation as a target view for hotspots, requiring manual slider adjustments.
+- Target view controls were missing from the hotspot edit form.
+
+**Fix:**
+1. **Smooth Transitions:** Refactored `Viewer360.tsx` to use a smooth crossfade by passing `opacity` to the sphere and removing the black overlay.
+2. **Target View Capture:** Added real-time camera orientation tracking in `viewerStore.ts` and implemented a "Capture Current View" button in `HotspotEditor.tsx`.
+3. **Bug Fix:** Fixed a black screen issue where the `opacity` prop was not correctly passed to the `SceneContent` component.
+4. **Bug Fix:** Fixed a syntax error in `HotspotEditor.tsx` (malformed JSX comment).
+
+**Files changed:**
+- `frontend/src/stores/viewerStore.ts` (added cameraRotation state)
+- `frontend/src/components/viewer/Viewer360.tsx` (refactored transitions and prop passing)
+- `frontend/src/components/viewer/HotspotEditor.tsx` (added capture feature and fixed syntax)
+- `MEMORY.md` (updated documentation)
+- `CHANGELOG_AI.md` (updated documentation)
+
+**Risk:**
+- LOW - Enhancements follow existing patterns. Fixed a regression (black screen) immediately.
+
+**How to verify:**
+1. Open a walkthrough and navigate using hotspots; transitions should be smooth.
+2. Open the Hotspot Editor and use "Capture Current View" to set the destination orientation.
+
+### Issue: Performance Lag in 360 Viewer
+**Issue:**
+- The app slowed down significantly after adding real-time camera rotation tracking.
+- **Root Cause:** `WalkthroughViewer.tsx` and `NavigationControls.tsx` were using `useViewerStore()` without selectors, causing them to re-render 60 times a second during camera movement.
+
+**Fix:**
+1. Switched to specific selectors in `WalkthroughViewer.tsx` and `NavigationControls.tsx`.
+2. Added a threshold check (0.0001 radians) in `viewerStore.ts` to avoid redundant state updates.
+
+**Files changed:**
+- `frontend/src/stores/viewerStore.ts`
+- `frontend/src/pages/WalkthroughViewer.tsx`
+- `frontend/src/components/viewer/NavigationControls.tsx`
+
+**Risk:**
+- LOW - Performance optimization only.
+
+---
+
+## 2026-04-30
+
+### Issue: Additional Backend Services Implementation
+**Issue:**
+- The codebase had several backend services (`inspection.service.ts`, `qrcode.service.ts`, `report.service.ts`) that were not documented in MEMORY.md or CHANGELOG_AI.md.
+- These services provide inspection management, QR code generation, and PDF report generation capabilities.
+
+**Fix:**
+1. **Inspection Service** (`backend/src/services/inspection.service.ts`):
+   - Implemented CRUD operations for inspections
+   - Added inspection item tracking with check/uncheck functionality
+   - Implemented sign-off workflow with status management
+   - Supports filtering by walkthrough_id
+
+2. **QR Code Service** (`backend/src/services/qrcode.service.ts`):
+   - Implemented QR code generation using `qrcode` library
+   - Added support for data URL output (for web display)
+   - Added support for buffer output (for file storage)
+   - Configurable size, margin, and colors
+
+3. **Report Service** (`backend/src/services/report.service.ts`):
+   - Implemented PDF generation using Puppeteer
+   - Added issue report generation with HTML templates
+   - Added inspection report generation (placeholder)
+   - Configurable report options (title, subtitle, content, footer)
+
+**Files changed:**
+- `backend/src/services/inspection.service.ts` (new service)
+- `backend/src/services/qrcode.service.ts` (new service)
+- `backend/src/services/report.service.ts` (new service)
+- `MEMORY.md` (updated documentation)
+- `CHANGELOG_AI.md` (added this entry)
+
+**Risk:**
+- LOW - All services are new and follow existing patterns
+- No breaking changes to existing functionality
+- Services are opt-in and don't affect existing code
+
+**How to verify:**
+1. Check that `backend/src/services/inspection.service.ts` exists and exports CRUD functions
+2. Check that `backend/src/services/qrcode.service.ts` exists and exports QR code generation functions
+3. Check that `backend/src/services/report.service.ts` exists and exports PDF generation functions
+4. Verify that MEMORY.md includes these services in the Services section
+5. Verify that CHANGELOG_AI.md includes this entry
+
+---
+
+### Issue: Additional Frontend Components Implementation
+**Issue:**
+- The codebase had several frontend components that were not documented in MEMORY.md or CHANGELOG_AI.md.
+- These components provide graph editing, asset lifecycle management, QR code generation, bulk upload, media management, and various viewer enhancements.
+
+**Fix:**
+1. **Graph Components**:
+   - `SceneGraphEditor.tsx` - Visual scene graph editor using React Flow
+   - `SceneNode.tsx` - Scene node component for graph visualization
+   - `GraphToolbar.tsx` - Toolbar for graph editor with layout controls
+
+2. **Asset Components**:
+   - `LifecycleTab.tsx` - Asset lifecycle management interface
+   - `QRModal.tsx` - QR code generation modal for assets
+
+3. **Viewer Components**:
+   - `BulkUpload.tsx` - Bulk file upload component
+   - `MediaManager.tsx` - Media management interface
+   - `NadirPatch.tsx` - Nadir patch editing component
+   - `SceneSettings.tsx` - Scene configuration panel
+   - `ViewModeToolbar.tsx` - View mode switching toolbar
+
+**Files changed:**
+- `frontend/src/components/graph/SceneGraphEditor.tsx` (new component)
+- `frontend/src/components/graph/SceneNode.tsx` (new component)
+- `frontend/src/components/graph/GraphToolbar.tsx` (new component)
+- `frontend/src/components/assets/LifecycleTab.tsx` (new component)
+- `frontend/src/components/assets/QRModal.tsx` (new component)
+- `frontend/src/components/viewer/BulkUpload.tsx` (new component)
+- `frontend/src/components/viewer/MediaManager.tsx` (new component)
+- `frontend/src/components/viewer/NadirPatch.tsx` (new component)
+- `frontend/src/components/viewer/SceneSettings.tsx` (new component)
+- `frontend/src/components/viewer/ViewModeToolbar.tsx` (new component)
+- `MEMORY.md` (updated documentation)
+- `CHANGELOG_AI.md` (added this entry)
+
+**Risk:**
+- LOW - All components are new and follow existing patterns
+- No breaking changes to existing functionality
+- Components are opt-in and don't affect existing code
+
+**How to verify:**
+1. Check that all new component files exist in their respective directories
+2. Verify that MEMORY.md includes these components in the Components section
+3. Verify that CHANGELOG_AI.md includes this entry
+4. Test that components can be imported without errors
+
+---
+
+### Issue: Database Schema Documentation Update
+**Issue:**
+- The MEMORY.md documentation listed database tables but was missing `assets` and `organizations` tables.
+- The actual database (`backend/data/db.json`) contains these tables, but they were not documented.
+
+**Fix:**
+1. Updated MEMORY.md to include `assets` and `organizations` in the database tables list
+2. Updated the Database Flow section to reflect the complete table list
+3. Added entry 40 to MEMORY.md documenting the schema update
+4. Updated CHANGELOG_AI.md with this documentation fix
+
+**Files changed:**
+- `MEMORY.md` (updated database tables list, added entry 40)
+- `CHANGELOG_AI.md` (added this entry)
+
+**Risk:**
+- NONE - Documentation only, no code changes
+
+**How to verify:**
+1. Check that MEMORY.md line 33 includes `assets` and `organizations` in the tables list
+2. Check that MEMORY.md entry 40 documents the schema update
+3. Verify that CHANGELOG_AI.md includes this entry
+4. Compare MEMORY.md tables list with actual `backend/data/db.json` keys
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>>>>>>> 444151e8 (Updated Log)
