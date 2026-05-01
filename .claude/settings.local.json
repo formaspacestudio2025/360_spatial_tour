@@ -28,7 +28,20 @@
       "Bash(node -e ' *)",
       "Bash(node -e \"const db = require\\('./dist/config/database'\\).db; console.log\\('maintenance_schedules', typeof db.maintenance_schedules, db.maintenance_schedules?.length\\);\")",
       "Bash(node -e \"const db_orig = { a:1, b:2 }; const loaded = { a:10 }; const result = { ...db_orig, ...loaded }; console.log\\(result\\);\")",
-      "Bash(node -e \"const db = require\\('./dist/config/database'\\).default; console.log\\('maintenance_schedules type:', typeof db.maintenance_schedules, 'tables:', Object.keys\\(db\\).join\\(', '\\)\\);\")"
+      "Bash(node -e \"const db = require\\('./dist/config/database'\\).default; console.log\\('maintenance_schedules type:', typeof db.maintenance_schedules, 'tables:', Object.keys\\(db\\).join\\(', '\\)\\);\")",
+      "Bash(echo \"Backend starting, PID: $!\")",
+      "Bash(curl -s http://localhost:3000/health)",
+      "Bash(curl -s http://localhost:3000/api/assets)",
+      "Bash(curl -s http://localhost:3000/api/auth/login -H \"Content-Type: application/json\" -d \"{\\\\\"username\\\\\":\\\\\"admin\\\\\",\\\\\"password\\\\\":\\\\\"admin123\\\\\"}\")",
+      "Bash(taskkill /f /im node.exe)",
+      "Bash(curl -s http://localhost:3000/api/health)",
+      "Bash(curl -s http://localhost:3000/api/assets/inventory-report -H \"Authorization: Bearer test\")",
+      "Bash(curl *)",
+      "Bash(netstat -ano)",
+      "Bash(taskkill *)",
+      "Bash(awk '{print $5}')",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
     ]
   },
   "sandbox": {
