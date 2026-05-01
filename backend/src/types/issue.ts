@@ -16,6 +16,7 @@ export interface Issue {
   pitch: number; // Panorama pitch coordinate (radians)
   floor?: number; // Optional floor number
   room?: string; // Optional room name
+  asset_id?: string; // Link issue to specific asset
   title: string;
   description: string;
   status: 'open' | 'in-progress' | 'resolved' | 'closed';

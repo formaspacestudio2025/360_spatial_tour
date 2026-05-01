@@ -184,11 +184,10 @@ function EmergencyOverlay({
               {evacuationRoutes.map((route) => (
                 <div
                   key={route.id}
-                  className={`p-3 rounded-lg border transition-colors ${
-                    route.isPrimary
+                  className={`p-3 rounded-lg border transition-colors ${route.isPrimary
                       ? 'bg-green-900/20 border-green-500/30'
                       : 'bg-gray-800/50 border-gray-700'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">

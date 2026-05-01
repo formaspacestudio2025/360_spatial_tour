@@ -3,13 +3,14 @@ import { Issue, CreateIssueData, IssueComment, IssueAttachment } from '@/types/i
 
 export const issuesApi = {
   // Get all issues with optional filters
-  getAll: async (params?: { scene_id?: string; walkthrough_id?: string; status?: string; priority?: string; type?: string }) => {
+  getAll: async (params?: { scene_id?: string; walkthrough_id?: string; status?: string; priority?: string; type?: string; asset_id?: string }) => {
     const query = new URLSearchParams();
     if (params?.scene_id) query.set('scene_id', params.scene_id);
     if (params?.walkthrough_id) query.set('walkthrough_id', params.walkthrough_id);
     if (params?.status) query.set('status', params.status);
     if (params?.priority) query.set('priority', params.priority);
     if (params?.type) query.set('type', params.type);
+    if (params?.asset_id) query.set('asset_id', params.asset_id);
     const queryString = query.toString();
     const response = await apiClient.get<{ success: boolean; data: Issue[] }>(
       `/api/issues${queryString ? `?${queryString}` : ''}`
@@ -86,10 +87,7 @@ export const issuesApi = {
     formData.append('file', file);
     const response = await apiClient.post<{ success: boolean; data: IssueAttachment }>(
       `/api/issues/${issueId}/attachments`,
-      formData,
-      {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      }
+      formData
     );
     return response.data;
   },

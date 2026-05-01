@@ -97,7 +97,7 @@ function WalkthroughViewer() {
     };
   }, []);
   const [performingInspectionAsset, setPerformingInspectionAsset] = useState<Asset | null>(null);
-const [performingInspectionTemplateId, setPerformingInspectionTemplateId] = useState<string | null>(null);
+  const [performingInspectionTemplateId, setPerformingInspectionTemplateId] = useState<string | null>(null);
   const [selectedHotspotCategories, setSelectedHotspotCategories] = useState<HotspotCategory[]>([]);
 
   const { data: walkthroughData } = useQuery({
@@ -213,7 +213,7 @@ const [performingInspectionTemplateId, setPerformingInspectionTemplateId] = useS
       aiApi.getTags(id).then((res) => {
         setAiTags(res.data);
         setAITags(res.data);
-      }).catch(() => {});
+      }).catch(() => { });
     }
   }, [id, scenes.length]);
 
@@ -300,7 +300,7 @@ const [performingInspectionTemplateId, setPerformingInspectionTemplateId] = useS
 
   const handleAssetClick = useCallback((asset: Asset) => {
     if (!asset.scene_id) return;
-    
+
     if (asset.scene_id !== currentScene?.id) {
       handleSceneChange(asset.scene_id, { yaw: asset.yaw ?? 0, pitch: asset.pitch ?? 0 });
       return;
@@ -462,37 +462,34 @@ const [performingInspectionTemplateId, setPerformingInspectionTemplateId] = useS
 
           <button
             onClick={() => setAssetInteractionMode(prev => prev === 'inspect' ? 'view' : 'inspect')}
-            className={`px-3 py-1.5 rounded-lg transition-colors text-sm flex items-center gap-2 ${
-              assetInteractionMode === 'inspect'
+            className={`px-3 py-1.5 rounded-lg transition-colors text-sm flex items-center gap-2 ${assetInteractionMode === 'inspect'
                 ? 'bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20'
                 : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
-            }`}
+              }`}
             title="Toggle Inspection Mode"
           >
             <Shield size={14} />
             {assetInteractionMode === 'inspect' ? 'Exit Inspection' : 'Inspect'}
           </button>
- 
+
           <button
             onClick={() => setAssetInteractionMode(prev => prev === 'maintain' ? 'view' : 'maintain')}
-            className={`px-3 py-1.5 rounded-lg transition-colors text-sm flex items-center gap-2 ${
-              assetInteractionMode === 'maintain'
+            className={`px-3 py-1.5 rounded-lg transition-colors text-sm flex items-center gap-2 ${assetInteractionMode === 'maintain'
                 ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-600/20'
                 : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
-            }`}
+              }`}
             title="Toggle Maintenance Mode"
           >
             <Wrench size={14} />
             {assetInteractionMode === 'maintain' ? 'Exit Maintenance' : 'Maintain'}
           </button>
- 
+
           <button
             onClick={() => setIsEmergencyMode(!isEmergencyMode)}
-            className={`px-3 py-1.5 rounded-lg transition-colors text-sm flex items-center gap-2 ${
-              isEmergencyMode
+            className={`px-3 py-1.5 rounded-lg transition-colors text-sm flex items-center gap-2 ${isEmergencyMode
                 ? 'bg-red-600 hover:bg-red-700 text-white'
                 : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
-            }`}
+              }`}
             title="Toggle Emergency Mode"
           >
             <AlertTriangle size={14} />
@@ -625,11 +622,10 @@ const [performingInspectionTemplateId, setPerformingInspectionTemplateId] = useS
                   {editorMode === 'edit' && (
                     <button
                       onClick={() => setIsPlacingIssue(!isPlacingIssue)}
-                      className={`px-3 py-1.5 rounded-lg text-xs transition-colors ${
-                        isPlacingIssue
+                      className={`px-3 py-1.5 rounded-lg text-xs transition-colors ${isPlacingIssue
                           ? 'bg-red-600 hover:bg-red-700 text-white'
                           : 'bg-primary-600 hover:bg-primary-700 text-white'
-                      }`}
+                        }`}
                     >
                       {isPlacingIssue ? 'Cancel' : 'Place Issue Pin'}
                     </button>
@@ -666,12 +662,11 @@ const [performingInspectionTemplateId, setPerformingInspectionTemplateId] = useS
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium uppercase ${
-                          issue.severity === 'critical' ? 'bg-red-500/20 text-red-400' :
-                          issue.severity === 'high' ? 'bg-orange-500/20 text-orange-400' :
-                          issue.severity === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                          'bg-blue-500/20 text-blue-400'
-                        }`}>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium uppercase ${issue.severity === 'critical' ? 'bg-red-500/20 text-red-400' :
+                            issue.severity === 'high' ? 'bg-orange-500/20 text-orange-400' :
+                              issue.severity === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                                'bg-blue-500/20 text-blue-400'
+                          }`}>
                           {issue.severity}
                         </span>
                         <span className="text-[10px] text-gray-500 capitalize">{issue.status}</span>
@@ -697,11 +692,10 @@ const [performingInspectionTemplateId, setPerformingInspectionTemplateId] = useS
                       </button>
                       <button
                         onClick={() => setIsPlacingAsset(!isPlacingAsset)}
-                        className={`px-3 py-1.5 rounded-lg text-xs transition-colors ${
-                          isPlacingAsset
+                        className={`px-3 py-1.5 rounded-lg text-xs transition-colors ${isPlacingAsset
                             ? 'bg-red-600 hover:bg-red-700 text-white'
                             : 'bg-primary-600 hover:bg-primary-700 text-white'
-                        }`}
+                          }`}
                       >
                         {isPlacingAsset ? 'Cancel' : 'Place Asset Pin'}
                       </button>
@@ -713,8 +707,8 @@ const [performingInspectionTemplateId, setPerformingInspectionTemplateId] = useS
                 </div>
                 <div className="space-y-2">
                   {assetMarkers?.map(asset => (
-                    <div 
-                      key={asset.id} 
+                    <div
+                      key={asset.id}
                       className="p-3 bg-gray-800/50 border border-gray-700 rounded-xl hover:border-primary-500/50 transition-all group cursor-pointer"
                       onClick={() => handleAssetClick(asset)}
                     >

@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Eye, Edit3, Share2, Download, QrCode, Link as LinkIcon, Copy, Check } from 'lucide-react';
+import { Eye, Edit3, Share2, Download, QrCode, Link as LinkIcon, Copy, Check, Shield, Wrench, AlertTriangle } from 'lucide-react';
 
-export type ViewMode = 'view' | 'edit' | 'share';
+export type ViewMode = 'view' | 'edit' | 'share' | 'inspection' | 'maintenance' | 'emergency';
 
 interface ViewModeToolbarProps {
   currentMode: ViewMode;
@@ -91,6 +91,49 @@ export function ViewModeToolbar({ currentMode, onModeChange, walkthroughId, canE
         >
           <Share2 size={12} />
           <span>Share</span>
+        </button>
+
+        {/* Inspection Mode */}
+        {canEdit && (
+          <button
+            onClick={() => handleModeChange('inspection')}
+            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${
+              currentMode === 'inspection'
+                ? 'bg-red-600 text-white shadow-lg'
+                : 'text-gray-400 hover:text-white hover:bg-gray-700'
+            }`}
+          >
+            <Shield size={12} />
+            <span>Inspect</span>
+          </button>
+        )}
+
+        {/* Maintenance Mode */}
+        {canEdit && (
+          <button
+            onClick={() => handleModeChange('maintenance')}
+            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${
+              currentMode === 'maintenance'
+                ? 'bg-amber-600 text-white shadow-lg'
+                : 'text-gray-400 hover:text-white hover:bg-gray-700'
+            }`}
+          >
+            <Wrench size={12} />
+            <span>Maintain</span>
+          </button>
+        )}
+
+        {/* Emergency Mode */}
+        <button
+          onClick={() => handleModeChange('emergency')}
+          className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${
+            currentMode === 'emergency'
+              ? 'bg-red-700 text-white shadow-lg'
+              : 'text-gray-400 hover:text-white hover:bg-gray-700'
+          }`}
+        >
+          <AlertTriangle size={12} />
+          <span>Emergency</span>
         </button>
       </div>
 

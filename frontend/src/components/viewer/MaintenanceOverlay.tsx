@@ -201,11 +201,10 @@ function MaintenanceOverlay({
                   <button
                     key={asset.id}
                     onClick={() => handleAssetSelect(asset.id)}
-                    className={`w-full p-3 rounded-lg text-left transition-colors ${
-                      selectedAssetId === asset.id
+                    className={`w-full p-3 rounded-lg text-left transition-colors ${selectedAssetId === asset.id
                         ? 'bg-amber-600/20 border border-amber-500/30'
                         : 'bg-gray-800/50 hover:bg-gray-700/50 border border-transparent'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-start justify-between mb-1">
                       <div className="flex-1 min-w-0">
@@ -217,11 +216,10 @@ function MaintenanceOverlay({
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-2">
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded ${
-                        asset.status === 'active' ? 'bg-green-500/20 text-green-400' :
-                        asset.status === 'maintenance' ? 'bg-amber-500/20 text-amber-400' :
-                        'bg-gray-500/20 text-gray-400'
-                      }`}>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded ${asset.status === 'active' ? 'bg-green-500/20 text-green-400' :
+                          asset.status === 'maintenance' ? 'bg-amber-500/20 text-amber-400' :
+                            'bg-gray-500/20 text-gray-400'
+                        }`}>
                         {asset.status}
                       </span>
                       {asset.workOrders.length > 0 && (
@@ -270,7 +268,7 @@ function MaintenanceOverlay({
                       rows={2}
                     />
                     <div className="flex gap-2">
-                      <select 
+                      <select
                         value={newWOPriority}
                         onChange={(e) => setNewWOPriority(e.target.value as any)}
                         className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:border-amber-500 focus:outline-none"
